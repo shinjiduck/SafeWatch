@@ -114,6 +114,7 @@ trong sidebar (đã bị ở mức 1.3rem trước đó). */
 .sw-status-safe {{ background: linear-gradient(135deg, #16A34A, #15803D); }}
 .sw-status-monitoring {{ background: linear-gradient(135deg, #F97316, #C2410C); }}
 .sw-status-emergency {{ background: linear-gradient(135deg, #DC2626, #991B1B); }}
+.sw-status-nodata {{ background: linear-gradient(135deg, #64748B, #334155); }}
 
 /* Small status badge (pill) */
 .sw-badge {{
@@ -207,8 +208,13 @@ def sidebar_status_html(system_online):
 
 
 def status_banner_html(level, title, subtitle=""):
-    """level: 'safe' | 'monitoring' | 'emergency'"""
-    css_class = {"safe": "sw-status-safe", "monitoring": "sw-status-monitoring", "emergency": "sw-status-emergency"}[level]
+    """level: 'safe' | 'monitoring' | 'emergency' | 'nodata'"""
+    css_class = {
+        "safe": "sw-status-safe",
+        "monitoring": "sw-status-monitoring",
+        "emergency": "sw-status-emergency",
+        "nodata": "sw-status-nodata",
+    }[level]
     return f"""
     <div class="sw-status-banner {css_class}">
         <div class="sw-status-label">{title}</div>

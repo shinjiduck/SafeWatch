@@ -80,6 +80,17 @@ else:
     display_df = filtered[["Thời gian", "Loại sự cố", "Camera", "Chi tiết", "Trạng thái"]].reset_index(drop=True)
     st.dataframe(display_df, use_container_width=True, hide_index=True)
 
+with st.expander("Nhật ký trạng thái hệ thống (mất/khôi phục camera, mất/khôi phục quan sát)"):
+    status_rows = event_log.get_status_log(limit=500)
+    if not status_rows:
+        st.caption("Chưa có ghi nhận nào.")
+    else:
+        st.dataframe(
+            pd.DataFrame(status_rows, columns=["Thời gian", "Trạng thái", "Chi tiết"]),
+            use_container_width=True,
+            hide_index=True,
+        )
+
 with st.expander("Xoá toàn bộ lịch sử"):
     confirm = st.checkbox("Tôi chắc chắn muốn xoá toàn bộ lịch sử (không thể hoàn tác)")
     if st.button("Xoá lịch sử", disabled=not confirm):

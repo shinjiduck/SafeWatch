@@ -61,6 +61,8 @@ if last_status == "emergency":
     st.markdown(status_banner_html("emergency", "🚨 TÌNH HUỐNG KHẨN CẤP", "SOS đã được kích hoạt"), unsafe_allow_html=True)
 elif last_status == "monitoring":
     st.markdown(status_banner_html("monitoring", "⏳ ĐANG THEO DÕI SAU NGÃ", "Đang xác minh tình trạng người dùng"), unsafe_allow_html=True)
+elif last_status == "nodata":
+    st.markdown(status_banner_html("nodata", "⚠️ KHÔNG ĐỦ DỮ LIỆU", "Mất camera hoặc không thấy người — chưa xác nhận được an toàn"), unsafe_allow_html=True)
 elif last_status == "safe":
     st.markdown(status_banner_html("safe", "AN TOÀN", "Không có cảnh báo nào đang hoạt động"), unsafe_allow_html=True)
 else:

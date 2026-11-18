@@ -77,6 +77,15 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.frame_count = 0
         self.prev_time = time.time()
 
+        # Trạng thái quan sát (yêu cầu cải tiến số 3). recv() chạy trên thread
+        # của streamlit-webrtc, tick() chạy trên thread script chính -> cùng
+        # đụng vào state nên dùng chung 1 lock.
+        self.state_lock = threading.Lock()
+        self.last_frame_time = time.time()
+        self.pose_last_seen = time.time()
+        self.observation_lost = False
+        self.camera_lost = False
+
         event_log.init_db()
 
     def get_state(self):
@@ -84,18 +93,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
             return dict(self.public_state)
 
     # Webcam thường gửi ~30 frame/giây, nhưng recv() phải xử lý XONG mỗi
-    # frame mới được trả về hiển thị (khác hẳn bản cv2 cũ, video giờ hiện
-    # trực tiếp qua <video> của trình duyệt, không qua Streamlit nữa) — 1
-    # frame chạy đủ Pose+Hands+2-3 model TF dễ mất >100ms, tức <10fps thật,
-    # gây giật rõ dù máy mạnh hay yếu. Chỉ chạy AI mỗi PROCESS_EVERY_N_FRAMES
-    # frame, các frame còn lại trả về ngay (không chờ AI) — video mượt hơn
-    # nhiều, đổi lại tốc độ CẬP NHẬT kết quả nhận diện giảm (vẫn đủ nhanh
-    # cho mục đích an toàn — không cần kiểm tra 30 lần/giây).
+    # frame mới được trả về hiển thị — chỉ chạy AI mỗi PROCESS_EVERY_N_FRAMES
+    # frame, các frame còn lại trả về ngay (không chờ AI) để video mượt.
     PROCESS_EVERY_N_FRAMES = 3
 
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
         cfg = self.config
+        now = time.time()
 
         if cfg["mirror_camera"]:
             img = cv2.flip(img, 1)
@@ -106,55 +111,121 @@ class DetectionVideoProcessor(VideoProcessorBase):
             and self.frame_count % self.PROCESS_EVERY_N_FRAMES == 0
         )
 
-        if should_process:
-            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            pose_results = self.pose_detector.process(img_rgb) if cfg["enable_fall"] else None
-            hand_results = self.hand_detector.process(img_rgb) if cfg["enable_hand"] else None
+        with self.state_lock:
+            self.last_frame_time = now
+            if self.camera_lost:
+                self.camera_lost = False
+                event_log.log_status("Camera đã khôi phục", "Nhận lại hình ảnh từ camera")
+            if should_process:
+                img = self._process_frame(img, now)
+            self._update_alerts(now)
 
-            if cfg["enable_fall"] and pose_results.pose_landmarks:
+        fps = 1 / (now - self.prev_time) if now > self.prev_time else 0
+        self.prev_time = now
+        with self.lock:
+            self.public_state["fps"] = fps
+
+        return av.VideoFrame.from_ndarray(img, format="bgr24")
+
+    def tick(self, now=None):
+        """Gọi định kỳ từ thread script chính (views/live_view.py). Khi camera
+        ngừng gửi frame thì recv() không còn được gọi, nên phần kiểm tra mất
+        camera + đếm giờ sau ngã phải chạy được ở đây, độc lập với frame."""
+        now = time.time() if now is None else now
+        with self.state_lock:
+            if not self.camera_lost and now - self.last_frame_time >= engine.CAMERA_STALL_SECONDS:
+                self.camera_lost = True
+                self._reset_observation_windows()
+                self.fall_label = engine.NO_DATA_LABEL
+                event_log.log_status(
+                    "Mất tín hiệu camera",
+                    f"Không nhận được frame nào trong {engine.CAMERA_STALL_SECONDS:.0f}s",
+                )
+            if self.camera_lost:
+                self._update_alerts(now)
+
+    def _reset_observation_windows(self):
+        """Xoá mọi cửa sổ/vote cũ — không được nối dữ liệu trước và sau khi mất
+        quan sát thành 1 chuỗi, cũng không được giữ nhãn tay SOS cũ."""
+        self.fall_lm_window.clear()
+        self.fall_votes.clear()
+        self.hand_votes.clear()
+        self.hand_label = "No hands"
+        self.hand_confidence = 0.0
+        self.signal_window.clear()
+        self.signal_consecutive_count = 0
+        self.signal_detected = False
+
+    def _process_frame(self, img, now):
+        cfg = self.config
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        pose_results = self.pose_detector.process(img_rgb) if cfg["enable_fall"] else None
+        hand_results = self.hand_detector.process(img_rgb) if cfg["enable_hand"] else None
+
+        if cfg["enable_fall"]:
+            if pose_results.pose_landmarks:
                 self.fall_lm_window.append(engine.pose_landmarks_to_vector(pose_results))
+                self.pose_last_seen = now
+                if self.observation_lost:
+                    self.observation_lost = False
+                    event_log.log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")
                 if cfg["show_overlay"]:
                     img = engine.draw_pose(img, pose_results)
+            else:
+                # Có khoảng trống trong chuỗi -> cửa sổ hiện tại không còn liên
+                # tục, bỏ đi thay vì predict trên dữ liệu cũ.
+                self.fall_lm_window.clear()
+                if not self.observation_lost and now - self.pose_last_seen >= engine.POSE_LOST_SECONDS:
+                    self.observation_lost = True
+                    self.fall_votes.clear()
+                    self.fall_label = engine.NO_DATA_LABEL
+                    event_log.log_status(
+                        "Mất quan sát người",
+                        f"Không thấy landmark tư thế trong {engine.POSE_LOST_SECONDS:.1f}s",
+                    )
 
-            raw_vector = None
-            if cfg["enable_hand"]:
-                if hand_results.multi_hand_landmarks:
-                    if cfg["show_overlay"]:
-                        img = engine.draw_hand(img, hand_results)
-                    raw_vector = engine.hand_landmarks_to_vector(hand_results)
-                    self.signal_window.append(raw_vector)
-                else:
-                    self.hand_votes.clear()
-                    self.hand_label = "No hands"
-                    self.signal_window.clear()
-                    self.signal_consecutive_count = 0
-                    self.signal_detected = False
+        raw_vector = None
+        if cfg["enable_hand"]:
+            if hand_results.multi_hand_landmarks:
+                if cfg["show_overlay"]:
+                    img = engine.draw_hand(img, hand_results)
+                raw_vector = engine.hand_landmarks_to_vector(hand_results)
+                self.signal_window.append(raw_vector)
+            else:
+                self.hand_votes.clear()
+                self.hand_label = "No hands"
+                self.signal_window.clear()
+                self.signal_consecutive_count = 0
+                self.signal_detected = False
 
-            if cfg["enable_fall"] and len(self.fall_lm_window) == engine.FALL_TIMESTEPS:
-                self.fall_votes.append(engine.predict_fall(self.fall_model, list(self.fall_lm_window)))
-                self.fall_label = engine.majority_label(self.fall_votes, self.fall_label)
+        if cfg["enable_fall"] and len(self.fall_lm_window) == engine.FALL_TIMESTEPS:
+            self.fall_votes.append(engine.predict_fall(self.fall_model, list(self.fall_lm_window)))
+            self.fall_label = engine.majority_label(self.fall_votes, self.fall_label)
 
-            if cfg["enable_hand"] and raw_vector is not None:
-                raw_label, self.hand_confidence = engine.predict_hand(
-                    self.hand_model, raw_vector, cfg["hand_confidence_threshold"]
-                )
-                self.hand_votes.append(raw_label)
-                self.hand_label = engine.majority_label(self.hand_votes, self.hand_label)
+        if cfg["enable_hand"] and raw_vector is not None:
+            raw_label, self.hand_confidence = engine.predict_hand(
+                self.hand_model, raw_vector, cfg["hand_confidence_threshold"]
+            )
+            self.hand_votes.append(raw_label)
+            self.hand_label = engine.majority_label(self.hand_votes, self.hand_label)
 
-            if (
-                cfg["enable_hand"]
-                and cfg["enable_signal"]
-                and self.signal_model is not None
-                and raw_vector is not None
-                and len(self.signal_window) == SIGNAL_SEQUENCE_LENGTH
-            ):
-                raw_signal, self.signal_probability = engine.predict_signal_sequence(
-                    self.signal_model, list(self.signal_window), cfg["signal_confidence_threshold"]
-                )
-                self.signal_consecutive_count = self.signal_consecutive_count + 1 if raw_signal else 0
-                self.signal_detected = self.signal_consecutive_count >= engine.SIGNAL_CONSECUTIVE_REQUIRED
+        if (
+            cfg["enable_hand"]
+            and cfg["enable_signal"]
+            and self.signal_model is not None
+            and raw_vector is not None
+            and len(self.signal_window) == SIGNAL_SEQUENCE_LENGTH
+        ):
+            raw_signal, self.signal_probability = engine.predict_signal_sequence(
+                self.signal_model, list(self.signal_window), cfg["signal_confidence_threshold"]
+            )
+            self.signal_consecutive_count = self.signal_consecutive_count + 1 if raw_signal else 0
+            self.signal_detected = self.signal_consecutive_count >= engine.SIGNAL_CONSECUTIVE_REQUIRED
 
-        now = time.time()
+        return img
+
+    def _update_alerts(self, now):
+        cfg = self.config
 
         if cfg["enable_fall"]:
             if self.fall_label == "Fall":
@@ -162,6 +233,11 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     self.fall_down_since = now
                     self.was_fall_monitoring = True
                     self.episode_escalated = False
+            elif self.fall_label == engine.NO_DATA_LABEL:
+                # Mất quan sát KHÔNG phải bằng chứng đã đứng dậy: giữ nguyên
+                # đồng hồ theo dõi sau ngã (nếu đang chạy), không huỷ, không
+                # ghi "đã phục hồi". Hết giờ vẫn báo động như bình thường.
+                pass
             else:
                 if self.was_fall_monitoring and not self.episode_escalated:
                     event_log.log_event("Ngã - đã phục hồi", "Đứng lên lại trong lúc theo dõi, không báo động")
@@ -188,7 +264,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
 
         if sos_alert and not self.was_alerting:
             if cfg["enable_fall"] and self.fall_escalated:
-                event_log.log_event("Ngã (không đứng lên lại)", f"Sau {cfg['fall_grace_seconds']:.0f}s theo dõi")
+                note = ""
+                if self.camera_lost:
+                    note = " — camera mất tín hiệu trong lúc theo dõi"
+                elif self.observation_lost:
+                    note = " — không còn thấy người trong khung hình"
+                event_log.log_event(
+                    "Ngã (không đứng lên lại)", f"Sau {cfg['fall_grace_seconds']:.0f}s theo dõi{note}"
+                )
             elif cfg["enable_hand"] and self.hand_label in engine.SOS_HAND_LABELS:
                 event_log.log_event(self.hand_label, f"Độ tin cậy {self.hand_confidence * 100:.0f}%")
             elif cfg["enable_hand"] and cfg["enable_signal"] and self.signal_detected:
@@ -196,9 +279,6 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     "Signal for Help (chuỗi động tác)", f"Xác suất {self.signal_probability * 100:.0f}%"
                 )
         self.was_alerting = sos_alert
-
-        fps = 1 / (now - self.prev_time) if now > self.prev_time else 0
-        self.prev_time = now
 
         with self.lock:
             self.public_state.update(
@@ -212,8 +292,8 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     "fall_escalated": self.fall_escalated,
                     "sos_alert": sos_alert,
                     "recovered_message_until": self.recovered_message_until,
-                    "fps": fps,
+                    "observation_lost": self.observation_lost,
+                    "camera_lost": self.camera_lost,
+                    "last_frame_time": self.last_frame_time,
                 }
             )
-
-        return av.VideoFrame.from_ndarray(img, format="bgr24")

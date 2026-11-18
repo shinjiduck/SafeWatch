@@ -45,6 +45,13 @@ SIGNAL_MODEL_PATH = os.path.join(MODELS_DIR, "SignalForHelpSequenceModel.keras")
 FALL_TIMESTEPS = 10
 WARMUP_FRAMES = 40
 
+# Trạng thái an toàn khi mất hình (yêu cầu cải tiến số 3):
+# - Không thấy landmark Pose liên tục quá POSE_LOST_SECONDS -> "NoData": xoá
+#   cửa sổ cũ, KHÔNG coi là bình thường, KHÔNG huỷ theo dõi sau ngã.
+# - Không nhận được frame nào quá CAMERA_STALL_SECONDS -> mất camera.
+NO_DATA_LABEL = "NoData"
+POSE_LOST_SECONDS = 1.5
+CAMERA_STALL_SECONDS = 3.0
 
 HAND_LABELS = load_hand_labels()
 SOS_HAND_LABELS = {"Need Ambulance", "Need Help", "Signal For Help"}
@@ -68,6 +75,7 @@ FALL_LABEL_DISPLAY = {
     "Warmup...": "Đang khởi động...",
     "NotFall": "Không phát hiện ngã",
     "Fall": "Đã phát hiện ngã",
+    NO_DATA_LABEL: "Không đủ dữ liệu (không thấy người)",
 }
 HAND_LABEL_DISPLAY = {
     "Warmup...": "Đang khởi động...",

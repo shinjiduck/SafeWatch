@@ -30,6 +30,35 @@ def init_db():
             )
             """
         )
+        # Nhật ký trạng thái hệ thống (mất/khôi phục camera, mất/khôi phục
+        # quan sát người) — tách khỏi bảng events để không bị đếm thành "sự cố".
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS status_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                state TEXT NOT NULL,
+                details TEXT
+            )
+            """
+        )
+
+
+def log_status(state, details=""):
+    with _get_connection() as conn:
+        conn.execute(
+            "INSERT INTO status_log (timestamp, state, details) VALUES (?, ?, ?)",
+            (datetime.now().isoformat(timespec="seconds"), state, details),
+        )
+
+
+def get_status_log(limit=200):
+    with _get_connection() as conn:
+        cursor = conn.execute(
+            "SELECT timestamp, state, details FROM status_log ORDER BY id DESC LIMIT ?",
+            (limit,),
+        )
+        return cursor.fetchall()
 
 
 def log_event(event_type, details=""):
@@ -66,4 +95,5 @@ def prune_older_than(days):
     cutoff = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
     with _get_connection() as conn:
         cursor = conn.execute("DELETE FROM events WHERE timestamp < ?", (cutoff,))
+        conn.execute("DELETE FROM status_log WHERE timestamp < ?", (cutoff,))
         return cursor.rowcount

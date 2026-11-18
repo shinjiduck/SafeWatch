@@ -193,6 +193,9 @@ while webrtc_ctx.state.playing:
         time.sleep(0.2)
         continue
 
+    # Kiểm tra mất camera + đếm giờ sau ngã ngay cả khi không còn frame nào
+    # tới (khi đó recv() không chạy) — xem DetectionVideoProcessor.tick().
+    processor.tick()
     state = processor.get_state()
     now = time.time()
 
@@ -202,11 +205,18 @@ while webrtc_ctx.state.playing:
     fall_down_since = state["fall_down_since"]
     fall_escalated = state["fall_escalated"]
     recovered_message_until = state.get("recovered_message_until", 0.0)
+    camera_lost = state.get("camera_lost", False)
+    observation_lost = config["enable_fall"] and state.get("observation_lost", False)
+    fall_monitoring = config["enable_fall"] and fall_down_since is not None and not fall_escalated
 
+    # Thứ tự ưu tiên: khẩn cấp > đang theo dõi sau ngã > không đủ dữ liệu >
+    # an toàn. Mất tín hiệu KHÔNG bao giờ được hiển thị là "an toàn".
     if sos_alert:
         st.session_state["last_status"] = "emergency"
-    elif config["enable_fall"] and fall_down_since is not None and not fall_escalated:
+    elif fall_monitoring:
         st.session_state["last_status"] = "monitoring"
+    elif camera_lost or observation_lost:
+        st.session_state["last_status"] = "nodata"
     else:
         st.session_state["last_status"] = "safe"
 
@@ -215,19 +225,39 @@ while webrtc_ctx.state.playing:
             status_banner_html("emergency", "🚨 TÌNH HUỐNG KHẨN CẤP", "SOS đã được kích hoạt"),
             unsafe_allow_html=True,
         )
-    elif config["enable_fall"] and fall_down_since is not None and not fall_escalated:
+    elif fall_monitoring:
         remaining = max(0, config["fall_grace_seconds"] - (now - fall_down_since))
         progress = min(1.0, (now - fall_down_since) / config["fall_grace_seconds"])
+        if camera_lost:
+            sub = "Mất tín hiệu camera sau khi phát hiện ngã — vẫn tiếp tục đếm giờ."
+        elif observation_lost:
+            sub = "Không còn thấy người sau khi phát hiện ngã — vẫn tiếp tục đếm giờ."
+        else:
+            sub = "Phát hiện dấu hiệu ngã. Hệ thống đang xác minh tình trạng."
         with status_banner_placeholder.container():
             st.markdown(
-                status_banner_html(
-                    "monitoring",
-                    "⏳ ĐANG THEO DÕI SAU NGÃ",
-                    "Phát hiện dấu hiệu ngã. Hệ thống đang xác minh tình trạng.",
-                ),
+                status_banner_html("monitoring", "⏳ ĐANG THEO DÕI SAU NGÃ", sub),
                 unsafe_allow_html=True,
             )
             st.progress(progress, text=f"Còn {remaining:.0f}s trước khi báo động")
+    elif camera_lost:
+        status_banner_placeholder.markdown(
+            status_banner_html(
+                "nodata",
+                "📷 MẤT TÍN HIỆU CAMERA",
+                f"Không nhận được hình ảnh trong {now - state['last_frame_time']:.0f}s — chưa xác nhận được an toàn.",
+            ),
+            unsafe_allow_html=True,
+        )
+    elif observation_lost:
+        status_banner_placeholder.markdown(
+            status_banner_html(
+                "nodata",
+                "⚠️ KHÔNG ĐỦ DỮ LIỆU",
+                "Không thấy người trong khung hình — chưa thể đánh giá an toàn.",
+            ),
+            unsafe_allow_html=True,
+        )
     elif now < recovered_message_until:
         status_banner_placeholder.markdown(
             status_banner_html("safe", "✅ ĐÃ PHỤC HỒI", "Người dùng đã đứng lên lại — cảnh báo đã được huỷ."),
@@ -262,7 +292,12 @@ while webrtc_ctx.state.playing:
     elapsed = now - st.session_state["monitor_start_time"]
     hh, rem = divmod(int(elapsed), 3600)
     mm, ss = divmod(rem, 60)
-    render_kpi_card(camera_card_placeholder, "📷 Trạng thái camera", "Đang hoạt động", "Webcam của bạn")
+    render_kpi_card(
+        camera_card_placeholder,
+        "📷 Trạng thái camera",
+        "Mất tín hiệu" if camera_lost else "Đang hoạt động",
+        "Webcam của bạn",
+    )
     render_kpi_card(
         duration_card_placeholder, "⏱️ Thời gian giám sát", f"{hh:02d}:{mm:02d}:{ss:02d}", "Đang giám sát"
     )
