@@ -45,6 +45,7 @@ SIGNAL_MODEL_PATH = os.path.join(MODELS_DIR, "SignalForHelpSequenceModel.keras")
 FALL_TIMESTEPS = 10
 WARMUP_FRAMES = 40
 
+
 HAND_LABELS = load_hand_labels()
 SOS_HAND_LABELS = {"Need Ambulance", "Need Help", "Signal For Help"}
 UNCERTAIN_LABEL = "Uncertain"
@@ -202,9 +203,26 @@ def hand_landmarks_to_vector(results):
     return lm
 
 
+# Gọi model Keras kiểu eager (model(x)) với lớp LSTM rất chậm: đo được ~85ms
+# mỗi lần cho model ~1MB, vì TF chạy từng op của từng bước thời gian bằng
+# Python. Bọc trong tf.function để TF biên dịch thành graph 1 lần rồi tái
+# sử dụng: ~1.8ms, output giống hệt (đã kiểm tra lệch = 0). Đây là nguyên
+# nhân chính gây lag, không phải MediaPipe (~33ms cho Pose + Hands).
+_compiled_models = {}
+
+
+def _fast(model):
+    entry = _compiled_models.get(id(model))
+    if entry is None:
+        # Giữ tham chiếu tới model trong entry để id() không bị tái sử dụng.
+        entry = (model, tf.function(lambda x: model(x, training=False), reduce_retracing=True))
+        _compiled_models[id(model)] = entry
+    return entry[1]
+
+
 def predict_fall(model, lm_list):
     data = np.expand_dims(np.array(lm_list, dtype=np.float32), axis=0)
-    result = model(data, training=False).numpy()
+    result = _fast(model)(data).numpy()
     return "Fall" if result[0][0] > 0.5 else "NotFall"
 
 
@@ -212,7 +230,7 @@ def predict_hand(model, lm_vector, confidence_threshold):
     normalized = normalize_hand_landmarks(lm_vector)
     lstm_input = np.array(normalized, dtype=np.float32).reshape(1, 21, 3)
     dnn_input = np.array(normalized, dtype=np.float32).reshape(1, 63)
-    result = model([lstm_input, dnn_input], training=False).numpy()[0]
+    result = _fast(model)([lstm_input, dnn_input]).numpy()[0]
     confidence = float(np.max(result))
     if confidence < confidence_threshold:
         return UNCERTAIN_LABEL, confidence
@@ -222,7 +240,7 @@ def predict_hand(model, lm_vector, confidence_threshold):
 def predict_signal_sequence(model, frame_sequence, confidence_threshold):
     normalized = normalize_hand_sequence(frame_sequence)
     data = np.expand_dims(np.array(normalized, dtype=np.float32), axis=0)
-    probability = float(model(data, training=False).numpy()[0][0])
+    probability = float(_fast(model)(data).numpy()[0][0])
     return probability >= confidence_threshold, probability
 
 
