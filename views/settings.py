@@ -20,6 +20,15 @@ tab_detect, tab_camera, tab_alert, tab_storage = st.tabs(["Nhận diện", "Came
 
 with tab_detect:
     st.session_state["enable_fall"] = st.checkbox("Bật phát hiện Ngã", value=st.session_state["enable_fall"])
+    _versions = ["v2", "v1"]
+    st.session_state["fall_model_version"] = st.radio(
+        "Model phát hiện ngã",
+        _versions,
+        index=_versions.index(st.session_state["fall_model_version"]),
+        format_func=lambda v: {"v2": "v2 — cú rơi nhanh + theo dõi tư thế (mới)", "v1": "v1 — LSTM 10 frame (cũ)"}[v],
+        horizontal=True,
+        help="v2 cần models/fall_v2.keras (train bằng training/fall_eval/train_eval.py); thiếu thì tự dùng v1.",
+    )
     st.session_state["fall_grace_seconds"] = st.slider(
         "Thời gian xác minh sau khi Ngã (giây)",
         min_value=5,

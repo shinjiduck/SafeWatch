@@ -91,6 +91,11 @@ with control_col2:
 video_col, action_col = st.columns([7, 3])
 
 fall_model, hand_model, signal_model = engine.load_models()
+# Model ngã v2 (cú rơi nhanh + theo dõi tư thế) nếu đã train; không có thì dùng model cũ.
+fall_model_name = "LSTM 10 frame (cũ)"
+if s.get("fall_model_version", "v2") == "v2" and engine.load_fall_v2() is not None:
+    fall_model = engine.load_fall_v2()
+    fall_model_name = "v2: cú rơi nhanh + tư thế"
 if config["enable_signal"] and signal_model is None:
     config["enable_signal"] = False
 pose_detector, hand_detector = engine.get_mediapipe()
@@ -287,7 +292,7 @@ while webrtc_ctx.state.playing:
                     f"({state['signal_probability'] * 100:.0f}%)"
                 )
             st.caption(f"FPS xử lý: {state['fps']:.1f}")
-            st.caption("Model: LSTM (ngã) · DNN+LSTM 14 nhãn (tay) · LSTM nhị phân (signal, thử nghiệm)")
+            st.caption(f"Model ngã: {fall_model_name} · DNN+LSTM 14 nhãn (tay) · LSTM nhị phân (signal, thử nghiệm)")
 
     elapsed = now - st.session_state["monitor_start_time"]
     hh, rem = divmod(int(elapsed), 3600)

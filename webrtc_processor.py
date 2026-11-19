@@ -87,6 +87,12 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.observation_lost = False
         self.camera_lost = False
 
+        # Model ngã v2 (app truyền vào FallV2Model) dùng bộ theo dõi 3 bước riêng;
+        # không có thì giữ nguyên đường cũ (LSTM 10 frame + bỏ phiếu đa số).
+        self.fall_tracker = (
+            engine.FallV2Tracker(fall_model) if isinstance(fall_model, engine.FallV2Model) else None
+        )
+
         event_log.init_db()
         notifier.init_db()
 
@@ -151,6 +157,8 @@ class DetectionVideoProcessor(VideoProcessorBase):
         quan sát thành 1 chuỗi, cũng không được giữ nhãn tay SOS cũ."""
         self.fall_lm_window.clear()
         self.fall_votes.clear()
+        if self.fall_tracker is not None:
+            self.fall_tracker.clear_window()
         self.hand_votes.clear()
         self.hand_label = "No hands"
         self.hand_confidence = 0.0
@@ -168,6 +176,12 @@ class DetectionVideoProcessor(VideoProcessorBase):
             if pose_results.pose_landmarks:
                 self.fall_lm_window.append(engine.pose_landmarks_to_vector(pose_results))
                 self.pose_last_seen = now
+                if self.fall_tracker is not None:
+                    label = self.fall_tracker.update(
+                        [[lm.x, lm.y, lm.z, lm.visibility] for lm in pose_results.pose_landmarks.landmark], now
+                    )
+                    if label is not None:
+                        self.fall_label = label
                 if self.observation_lost:
                     self.observation_lost = False
                     event_log.log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")
@@ -177,6 +191,10 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 # Có khoảng trống trong chuỗi -> cửa sổ hiện tại không còn liên
                 # tục, bỏ đi thay vì predict trên dữ liệu cũ.
                 self.fall_lm_window.clear()
+                if self.fall_tracker is not None:
+                    label = self.fall_tracker.missing(now)
+                    if label is not None and not self.observation_lost:
+                        self.fall_label = label
                 if not self.observation_lost and now - self.pose_last_seen >= engine.POSE_LOST_SECONDS:
                     self.observation_lost = True
                     self.fall_votes.clear()
@@ -200,7 +218,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 self.signal_consecutive_count = 0
                 self.signal_detected = False
 
-        if cfg["enable_fall"] and len(self.fall_lm_window) == engine.FALL_TIMESTEPS:
+        if cfg["enable_fall"] and self.fall_tracker is None and len(self.fall_lm_window) == engine.FALL_TIMESTEPS:
             self.fall_votes.append(engine.predict_fall(self.fall_model, list(self.fall_lm_window)))
             self.fall_label = engine.majority_label(self.fall_votes, self.fall_label)
 

@@ -99,6 +99,7 @@ CAMERA_RESOLUTIONS = {
 }
 
 SETTINGS_DEFAULTS = {
+    "fall_model_version": "v2",
     "enable_fall": DEFAULT_ENABLE_FALL,
     "enable_hand": DEFAULT_ENABLE_HAND,
     "enable_signal": DEFAULT_ENABLE_SIGNAL,
@@ -150,6 +151,114 @@ def build_fall_model():
     return model
 
 
+FALL_V2_MODEL_PATH = os.path.join(MODELS_DIR, "fall_v2.keras")
+FALL_V2_META_PATH = os.path.join(MODELS_DIR, "fall_v2_meta.json")
+FALL_V2_CONSECUTIVE = 2  # số lần xử lý liên tiếp vượt ngưỡng mới tính là 1 cú ngã
+FALL_V2_RECOVER_SECONDS = 2.0  # đứng thẳng liên tục bao lâu mới coi là đã đứng dậy
+
+
+class FallV2Model:
+    """Model ngã v2 (training/fall_eval): nhận ra CÚ RƠI NHANH trên cửa sổ 1.5 s
+    đặc trưng khung xương đã chuẩn hoá + vận tốc — xem fall_v2.py."""
+
+    def __init__(self):
+        import json
+
+        self.model = tf.keras.models.load_model(FALL_V2_MODEL_PATH)
+        with open(FALL_V2_META_PATH, encoding="utf-8") as f:
+            meta = json.load(f)
+        self.window = int(meta["window"])
+        self.threshold = float(meta["threshold"])
+        self.mean = np.asarray(meta["mean"], dtype=np.float32)
+        self.std = np.asarray(meta["std"], dtype=np.float32)
+        self._fn = tf.function(lambda x: self.model(x, training=False), reduce_retracing=True)
+
+    def prob(self, window_features):
+        x = (np.asarray([window_features], dtype=np.float32) - self.mean) / self.std
+        return float(self._fn(x).numpy()[0, 0])
+
+
+class FallV2Tracker:
+    """Trạng thái ngã theo 3 bước: (1) model thấy cú rơi nhanh -> "Fall";
+    (2) giữ "Fall" (processor đếm giờ xác minh); (3) chỉ trả "NotFall" khi người
+    ĐỨNG/NGỒI THẲNG lại liên tục FALL_V2_RECOVER_SECONDS giây. Nằm xuống giường
+    chủ động không có cú rơi nhanh nên không bị báo.
+
+    Mất quan sát chỉ xoá cửa sổ đặc trưng, KHÔNG xoá trạng thái đã ngã — người
+    quay lại khung hình mà vẫn nằm thì vẫn đang theo dõi sau ngã."""
+
+    def __init__(self, model):
+        from collections import deque
+
+        import fall_v2
+
+        self.fv = fall_v2
+        self.model = model
+        self.features = deque(maxlen=model.window)
+        self.prev = None
+        self.hits = 0
+        self.down = False
+        self.upright_since = None
+        self.last_prob = 0.0
+
+    def clear_window(self):
+        self.features.clear()
+        self.prev = None
+        self.hits = 0
+        self.missing_run = 0
+
+    def missing(self, now):
+        """Lần xử lý không thấy người. Thiếu <= fall_v2.MAX_BRIDGE lần liên tiếp
+        (0.2 s — MediaPipe hay mất người đúng lúc đang ngã) thì nối bằng giá trị
+        trước, giống hệt lúc train; dài hơn thì xoá cửa sổ."""
+        self.missing_run = getattr(self, "missing_run", 0) + 1
+        if not self.features or self.missing_run > self.fv.MAX_BRIDGE:
+            self.clear_window()
+            return None
+        self.prev = None
+        return self._decide(self.fv.bridge_feature(self.features[-1]), now)
+
+    def update(self, landmarks, now):
+        """landmarks: 33 x [x, y, z, visibility]. Trả nhãn hoặc None (chưa đủ dữ liệu)."""
+        feature, self.prev = self.fv.feature_step(landmarks, self.prev)
+        if feature is None:
+            return self.missing(now)
+        self.missing_run = 0
+        return self._decide(feature, now)
+
+    def _decide(self, feature, now):
+        self.features.append(feature)
+        if self.down:
+            if self.fv.is_upright(feature):
+                self.upright_since = self.upright_since or now
+                if now - self.upright_since >= FALL_V2_RECOVER_SECONDS:
+                    self.down = False
+                    self.upright_since = None
+                    self.hits = 0
+                    return "NotFall"
+            else:
+                self.upright_since = None
+            return "Fall"
+        if len(self.features) < self.model.window:
+            return None
+        self.last_prob = self.model.prob(list(self.features))
+        self.hits = self.hits + 1 if self.last_prob >= self.model.threshold else 0
+        if self.hits >= FALL_V2_CONSECUTIVE:
+            self.down = True
+            self.upright_since = None
+            return "Fall"
+        return "NotFall"
+
+
+def fall_v2_available():
+    return os.path.exists(FALL_V2_MODEL_PATH) and os.path.exists(FALL_V2_META_PATH)
+
+
+@st.cache_resource
+def load_fall_v2():
+    return FallV2Model() if fall_v2_available() else None
+
+
 def build_hand_model():
     return tf.keras.models.load_model(HAND_MODEL_PATH)
 
@@ -171,8 +280,13 @@ def warm_up_models(fall_model, hand_model, signal_model):
     chậm rõ ở vài giây đầu, kể cả khi model đã cache qua @st.cache_resource
     -- cache chỉ tránh load lại file, không tránh được chi phí lần predict
     đầu tiên)."""
-    dummy_fall = [[0.0] * 99 for _ in range(FALL_TIMESTEPS)]
-    predict_fall(fall_model, dummy_fall)
+    if isinstance(fall_model, FallV2Model):
+        import fall_v2
+
+        fall_model.prob([[0.0] * fall_v2.N_FEATURES] * fall_model.window)
+    else:
+        dummy_fall = [[0.0] * 99 for _ in range(FALL_TIMESTEPS)]
+        predict_fall(fall_model, dummy_fall)
 
     dummy_hand = [0.0] * 63
     predict_hand(hand_model, dummy_hand, confidence_threshold=1.1)  # threshold>1 -> luôn "Uncertain", không quan trọng
