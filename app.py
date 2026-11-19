@@ -1,3 +1,10 @@
+# BẢN CŨ — không dùng để demo/nộp: thiếu các cải tiến theo yêu cầu BTC
+# (trạng thái mất hình, chuỗi cảnh báo, model ngã v2). Chạy: streamlit run main.py
+import streamlit as st
+
+st.error("app.py là bản demo cũ, không có các cải tiến theo yêu cầu BTC. Hãy chạy: streamlit run main.py")
+st.stop()
+
 import os
 import threading
 import time
