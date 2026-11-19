@@ -29,24 +29,40 @@ def init_db():
             )
             """
         )
+        # DB tạo từ bản cũ chưa có cột này — thêm vào thay vì bắt xoá DB.
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(contacts)")}
+        if "telegram_chat_id" not in columns:
+            conn.execute("ALTER TABLE contacts ADD COLUMN telegram_chat_id TEXT")
 
 
-def add_contact(name, relationship, phone, email, priority):
+def add_contact(name, relationship, phone, email, priority, telegram_chat_id=None):
     with _get_connection() as conn:
         conn.execute(
-            "INSERT INTO contacts (name, relationship, phone, email, priority, notify_enabled) "
-            "VALUES (?, ?, ?, ?, ?, 1)",
-            (name, relationship, phone, email, priority),
+            "INSERT INTO contacts (name, relationship, phone, email, priority, notify_enabled, telegram_chat_id) "
+            "VALUES (?, ?, ?, ?, ?, 1, ?)",
+            (name, relationship, phone, email, priority, telegram_chat_id or None),
         )
 
 
 def get_contacts():
     with _get_connection() as conn:
         cursor = conn.execute(
-            "SELECT id, name, relationship, phone, email, priority, notify_enabled "
+            "SELECT id, name, relationship, phone, email, priority, notify_enabled, telegram_chat_id "
             "FROM contacts ORDER BY priority ASC, id ASC"
         )
         return cursor.fetchall()
+
+
+def get_alert_recipients():
+    """Người liên hệ đang bật nhận cảnh báo, theo thứ tự ưu tiên (1 = cao nhất)
+    — thứ tự này quyết định ai được chuyển tiếp trước (xem notifier.py)."""
+    keys = ["id", "name", "relationship", "phone", "email", "priority", "notify_enabled", "telegram_chat_id"]
+    return [dict(zip(keys, row)) for row in get_contacts() if row[6]]
+
+
+def set_telegram_chat_id(contact_id, chat_id):
+    with _get_connection() as conn:
+        conn.execute("UPDATE contacts SET telegram_chat_id = ? WHERE id = ?", (chat_id or None, contact_id))
 
 
 def delete_contact(contact_id):

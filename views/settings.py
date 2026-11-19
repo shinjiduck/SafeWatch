@@ -80,10 +80,15 @@ with tab_camera:
     st.caption("Nguồn camera: hiện chỉ hỗ trợ 1 webcam local (index 0). Nhiều camera cần bản mở rộng sau.")
 
 with tab_alert:
-    st.markdown("**Kênh gửi cảnh báo** *(giao diện minh hoạ — chưa có backend gửi thật trong demo này)*")
-    st.session_state["notify_email"] = st.checkbox("Gửi email khi có cảnh báo", value=st.session_state["notify_email"])
-    st.session_state["notify_sms"] = st.checkbox("Gửi SMS khi có cảnh báo", value=st.session_state["notify_sms"])
-    st.session_state["notify_push"] = st.checkbox("Push notification", value=st.session_state["notify_push"])
+    import notifier
+
+    active = sorted(notifier.RUNNING.channels) if notifier.RUNNING else []
+    st.markdown("**Kênh gửi cảnh báo**")
+    st.markdown(f"- Telegram: {'✅ đang bật' if 'telegram' in active else '⚪ chưa cấu hình (TELEGRAM_BOT_TOKEN)'}")
+    st.markdown(f"- Email: {'✅ đang bật' if 'email' in active else '⚪ chưa cấu hình (SMTP_HOST/USER/PASSWORD)'}")
+    st.markdown("- SMS / Push: chưa hỗ trợ")
+    st.caption("Kênh cấu hình trong `.streamlit/secrets.toml`, khởi động lại app để áp dụng.")
+    st.page_link("views/alerts.py", label="Cảnh báo & xác nhận (giả lập, bảng thời gian) →", icon="🔔")
     st.page_link("views/emergency_contacts.py", label="Quản lý người liên hệ khẩn cấp →", icon="📞")
     st.markdown("---")
     st.session_state["sound_alert"] = st.checkbox(

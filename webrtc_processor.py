@@ -26,6 +26,7 @@ from streamlit_webrtc import VideoProcessorBase
 
 import detection_engine as engine
 import event_log
+import notifier
 from hand_features import SIGNAL_SEQUENCE_LENGTH
 
 
@@ -87,6 +88,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.camera_lost = False
 
         event_log.init_db()
+        notifier.init_db()
 
     def get_state(self):
         with self.lock:
@@ -269,15 +271,19 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     note = " — camera mất tín hiệu trong lúc theo dõi"
                 elif self.observation_lost:
                     note = " — không còn thấy người trong khung hình"
-                event_log.log_event(
-                    "Ngã (không đứng lên lại)", f"Sau {cfg['fall_grace_seconds']:.0f}s theo dõi{note}"
-                )
+                details = f"Sau {cfg['fall_grace_seconds']:.0f}s theo dõi{note}"
+                event_log.log_event("Ngã (không đứng lên lại)", details)
+                # detected_at = lúc model thấy ngã lần đầu, để bảng thời gian
+                # tách được đoạn "chờ xác minh" khỏi đoạn gửi/nhận.
+                notifier.raise_alert("Ngã (không đứng lên lại)", details, detected_at=self.fall_down_since, now=now)
             elif cfg["enable_hand"] and self.hand_label in engine.SOS_HAND_LABELS:
-                event_log.log_event(self.hand_label, f"Độ tin cậy {self.hand_confidence * 100:.0f}%")
+                details = f"Độ tin cậy {self.hand_confidence * 100:.0f}%"
+                event_log.log_event(self.hand_label, details)
+                notifier.raise_alert(f"Cử chỉ SOS: {self.hand_label}", details, now=now)
             elif cfg["enable_hand"] and cfg["enable_signal"] and self.signal_detected:
-                event_log.log_event(
-                    "Signal for Help (chuỗi động tác)", f"Xác suất {self.signal_probability * 100:.0f}%"
-                )
+                details = f"Xác suất {self.signal_probability * 100:.0f}%"
+                event_log.log_event("Signal for Help (chuỗi động tác)", details)
+                notifier.raise_alert("Signal for Help (chuỗi động tác)", details, now=now)
         self.was_alerting = sos_alert
 
         with self.lock:

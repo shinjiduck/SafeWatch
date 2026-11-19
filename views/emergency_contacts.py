@@ -1,5 +1,7 @@
 """Trang Người liên hệ khẩn cấp — CRUD thật (lưu SQLite qua contacts.py).
-Không gửi thông báo thật (chưa có backend SMS/email trong demo)."""
+Thứ tự ưu tiên quyết định ai nhận cảnh báo trước và ai được chuyển tiếp khi
+người trước chưa xác nhận (xem notifier.py). Kênh gửi thật: Telegram (cần
+Chat ID) và Email."""
 
 import streamlit as st
 
@@ -8,6 +10,10 @@ import contacts
 contacts.init_db()
 
 st.title("Người liên hệ khẩn cấp")
+st.caption(
+    "Cảnh báo gửi tới người ưu tiên 1 trước. Chưa ai xác nhận thì hệ thống gửi lại và chuyển tiếp lần lượt "
+    "cho người kế tiếp. Để nhận qua Telegram: người nhận nhắn /start cho bot của hệ thống để lấy Chat ID."
+)
 
 with st.expander("➕ Thêm người liên hệ mới"):
     with st.form("add_contact_form", clear_on_submit=True):
@@ -15,6 +21,7 @@ with st.expander("➕ Thêm người liên hệ mới"):
         with c1:
             name = st.text_input("Họ và tên")
             relationship = st.selectbox("Quan hệ", ["Người thân chính", "Người giám hộ", "Cơ sở y tế", "Khác"])
+            telegram_chat_id = st.text_input("Telegram Chat ID", help="Nhắn /start cho bot để nhận Chat ID.")
         with c2:
             phone = st.text_input("Số điện thoại")
             email = st.text_input("Email")
@@ -24,7 +31,7 @@ with st.expander("➕ Thêm người liên hệ mới"):
             if not name or not phone:
                 st.error("Cần ít nhất Họ tên và Số điện thoại.")
             else:
-                contacts.add_contact(name, relationship, phone, email, priority)
+                contacts.add_contact(name, relationship, phone, email, priority, telegram_chat_id.strip())
                 st.success(f"Đã thêm {name}.")
                 st.rerun()
 
@@ -34,7 +41,7 @@ rows = contacts.get_contacts()
 if not rows:
     st.info("Chưa có người liên hệ khẩn cấp nào. Thêm ít nhất 1 người ở trên.")
 else:
-    for contact_id, name, relationship, phone, email, priority, notify_enabled in rows:
+    for contact_id, name, relationship, phone, email, priority, notify_enabled, telegram_chat_id in rows:
         with st.container(border=True):
             col1, col2, col3 = st.columns([3, 2, 1])
             with col1:
@@ -43,6 +50,13 @@ else:
             with col2:
                 st.caption(f"📞 {phone or '—'}")
                 st.caption(f"✉️ {email or '—'}")
+                new_chat_id = st.text_input(
+                    "Telegram Chat ID", value=telegram_chat_id or "", key=f"tg_{contact_id}", label_visibility="collapsed",
+                    placeholder="Telegram Chat ID",
+                )
+                if new_chat_id.strip() != (telegram_chat_id or ""):
+                    contacts.set_telegram_chat_id(contact_id, new_chat_id.strip())
+                    st.rerun()
             with col3:
                 new_enabled = st.checkbox("Nhận cảnh báo", value=bool(notify_enabled), key=f"notify_{contact_id}")
                 if new_enabled != bool(notify_enabled):
