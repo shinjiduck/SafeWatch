@@ -57,10 +57,13 @@ def _video_fps(path):
 # Ngưỡng tin cậy MediaPipe: phải trùng với app (detection_engine.load_mediapipe).
 # Đặt POSE_MIN_CONF=0.3 để thử ngưỡng thấp hơn (giữ dấu người tốt hơn lúc ngã nhanh / thiếu sáng).
 POSE_MIN_CONF = float(os.environ.get("POSE_MIN_CONF", "0.5"))
+# Độ phức tạp model tư thế: 1 = full (mặc định app), 2 = heavy (giữ khung xương tốt hơn khi tối / che khuất)
+POSE_COMPLEXITY = int(os.environ.get("POSE_COMPLEXITY", "1"))
 
 
 def extract(frames, max_width=640):
-    pose = mp_solutions.pose.Pose(min_detection_confidence=POSE_MIN_CONF, min_tracking_confidence=POSE_MIN_CONF)
+    pose = mp_solutions.pose.Pose(model_complexity=POSE_COMPLEXITY, min_detection_confidence=POSE_MIN_CONF,
+                                  min_tracking_confidence=POSE_MIN_CONF)
     out = []
     try:
         for img in frames:
