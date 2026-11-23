@@ -54,8 +54,13 @@ def _video_fps(path):
     return float(fps) if fps > 1 else 30.0
 
 
+# Ngưỡng tin cậy MediaPipe: phải trùng với app (detection_engine.load_mediapipe).
+# Đặt POSE_MIN_CONF=0.3 để thử ngưỡng thấp hơn (giữ dấu người tốt hơn lúc ngã nhanh / thiếu sáng).
+POSE_MIN_CONF = float(os.environ.get("POSE_MIN_CONF", "0.5"))
+
+
 def extract(frames, max_width=640):
-    pose = mp_solutions.pose.Pose()
+    pose = mp_solutions.pose.Pose(min_detection_confidence=POSE_MIN_CONF, min_tracking_confidence=POSE_MIN_CONF)
     out = []
     try:
         for img in frames:
@@ -74,11 +79,16 @@ def extract(frames, max_width=640):
 
 def main(src_dir, out_dir, shard=0, shards=1):
     os.makedirs(out_dir, exist_ok=True)
-    items = sorted(os.listdir(src_dir))
-    for i, name in enumerate(items, 1):
+    # Duyệt cả thư mục con (CAUCAFall: Subject.N/<hành động>/<video>.avi); tên file phải khác nhau
+    items = sorted(
+        os.path.relpath(os.path.join(d, n), src_dir) for d, _, files in os.walk(src_dir) for n in files
+        if os.path.splitext(n)[1].lower() in VIDEO_EXTS | {".zip"}
+    )
+    for i, rel in enumerate(items, 1):
         if (i - 1) % shards != shard:  # chạy nhiều tiến trình song song, mỗi tiến trình 1 phần
             continue
-        path = os.path.join(src_dir, name)
+        path = os.path.join(src_dir, rel)
+        name = os.path.basename(rel)
         stem, ext = os.path.splitext(name)
         ext = ext.lower()
         if ext == ".zip":

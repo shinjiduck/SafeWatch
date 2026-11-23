@@ -10,6 +10,10 @@ Lệnh:
       Train model cuối trên toàn bộ URFD, lưu vào models/ của app.
   python -I train_eval.py test    <recorded_pose_dir> <labels.csv> <out_dir>
       Chấm model cuối + model cũ trên bộ video tự quay (người mới hoàn toàn).
+  python -I train_eval.py test_cauca <cauca_pose_dir> <cauca_root> <out_dir>
+      Chấm model đang lưu (chỉ train URFD) trên CAUCAFall = test chéo bộ dữ liệu.
+  cv / final thêm 2 tham số <cauca_pose_dir> <cauca_root> để train cùng CAUCAFall
+  (CAUCAFall chia theo người: không người nào vừa ở train vừa ở test).
 """
 
 import json
@@ -60,7 +64,7 @@ def old_model():
     return tf.function(lambda x: m(x, training=False))
 
 
-def old_pipeline_events(fn, seq, landmarks_sampled):
+def old_pipeline_events(fn, seq, landmarks_sampled, trace=None):
     """Mô phỏng ĐÚNG app hiện tại: cửa sổ 10 lần xử lý (x,y,z thô), xoá khi mất
     người, bỏ phiếu đa số 5 lần dự đoán gần nhất."""
     window, votes, voted = [], [], []
@@ -74,6 +78,8 @@ def old_pipeline_events(fn, seq, landmarks_sampled):
             p = float(fn(np.asarray([window], np.float32)).numpy()[0, 0])
             votes = (votes + [p > 0.5])[-5:]
         voted.append(1.0 if votes and sum(votes) > len(votes) / 2 else 0.0)
+    if trace is not None:
+        trace["old_voted"] = voted
     return fv.detect_events(voted, seq.sample_times, 0.5, consecutive=1)
 
 
@@ -156,18 +162,34 @@ def stratified_folds(seqs, k=5):
     groups = {}
     for s in seqs:
         groups.setdefault(s.group, []).append(s)
-    falls = [g for g, ss in groups.items() if any(s.is_fall for s in ss)]
-    adls = [g for g in groups if g not in falls]
-    rng.shuffle(falls)
-    rng.shuffle(adls)
-    fold_of = {g: i % k for i, g in enumerate(falls)}
-    fold_of.update({g: i % k for i, g in enumerate(adls)})
+    # Chia đều theo từng (bộ dữ liệu, có ngã / không) — 10 người CAUCAFall rải đều các fold.
+    # Thứ tự xáo giữ nguyên như bản chỉ có URFD để kết quả cũ tái lập được.
+    fold_of = {}
+    for source in ("urfd", "cauca"):
+        mine = [g for g in groups if g.startswith("cauca-") == (source == "cauca")]
+        falls = [g for g in mine if any(s.is_fall for s in groups[g])]
+        adls = [g for g in mine if g not in falls]
+        rng.shuffle(falls)
+        rng.shuffle(adls)
+        fold_of.update({g: i % k for i, g in enumerate(falls)})
+        fold_of.update({g: i % k for i, g in enumerate(adls)})
     return [[s for s in seqs if fold_of[s.group] == f] for f in range(k)]
 
 
-def raw_landmarks_for(seq_name, pose_dir):
-    data = np.load(os.path.join(pose_dir, f"{seq_name}.npz"))
+def raw_landmarks_for(seq):
+    data = np.load(seq.npz)
     return landmarks_sampled(data["landmarks"], float(data["fps"]))
+
+
+def load_all(urfd_pose, urfd_labels, cauca_pose=None, cauca_root=None):
+    seqs = fv.load_urfd(urfd_pose, urfd_labels)
+    print(f"{len(seqs)} chuỗi URFD ({sum(s.is_fall for s in seqs)} ngã)")
+    if cauca_pose:
+        cauca = fv.load_caucafall(cauca_pose, cauca_root)
+        people = sorted({s.group for s in cauca})
+        print(f"{len(cauca)} chuỗi CAUCAFall ({sum(s.is_fall for s in cauca)} ngã, {len(people)} người)")
+        seqs += cauca
+    return seqs
 
 
 # ---------------------------------------------------------------- báo cáo
@@ -203,13 +225,49 @@ def write_report(out_dir, title, rows_by_model, per_seq):
 # ---------------------------------------------------------------- lệnh
 
 
-def cmd_cv(pose_dir, labels_dir, out_dir):
-    seqs = fv.load_urfd(pose_dir, labels_dir)
-    print(f"{len(seqs)} chuỗi URFD ({sum(s.is_fall for s in seqs)} ngã)")
+def score_both(seqs, model, mean, std, threshold, old_fn, new_results, old_results, per_seq, traces=None):
+    for s in seqs:
+        probs = predict_seq(model, mean, std, s)
+        events = fv.detect_events(probs, s.sample_times, threshold)
+        r = fv.score_sequence(s, events)
+        new_results.append((s, *r))
+        per_seq.append(("moi", s, *r))
+        trace = {}
+        events_old = old_pipeline_events(old_fn, s, raw_landmarks_for(s), trace)
+        r_old = fv.score_sequence(s, events_old)
+        if traces is not None:  # để dựng video phân tích ca khó (make_case_videos.py)
+            traces[s.name] = {
+                "npz": s.npz, "is_fall": s.is_fall, "times": s.sample_times.tolist(),
+                "fall_start_s": None if s.fall_start_s is None else float(s.fall_start_s),
+                "fall_end_s": None if s.fall_end_s is None else float(s.fall_end_s), "threshold": float(threshold),
+                "probs": [float(p) for p in probs], "events": [float(t) for t in events], "detected": bool(r[0]),
+                "n_false": int(r[1]), "old_voted": [float(v) for v in trace["old_voted"]],
+                "old_events": [float(t) for t in events_old], "old_detected": bool(r_old[0]),
+                "old_n_false": int(r_old[1]),
+            }
+        old_results.append((s, *r_old))
+        per_seq.append(("cu", s, *r_old))
+
+
+def by_source(results_by_model):
+    """Thêm cột tách riêng URFD / CAUCAFall nếu có cả hai."""
+    out = {}
+    for name, res in results_by_model.items():
+        out[name] = fv.summarize(res)
+        parts = {"URFD": [r for r in res if not r[0].group.startswith("cauca-")],
+                 "CAUCAFall": [r for r in res if r[0].group.startswith("cauca-")]}
+        if all(parts.values()):
+            for src, rr in parts.items():
+                out[f"{name} — {src}"] = fv.summarize(rr)
+    return out
+
+
+def cmd_cv(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None):
+    seqs = load_all(urfd_pose, urfd_labels, cauca_pose, cauca_root)
     negatives = excel_negatives()
     folds = stratified_folds(seqs)
     old_fn = old_model()
-    new_results, old_results, per_seq, chosen = [], [], [], []
+    new_results, old_results, per_seq, chosen, traces = [], [], [], [], {}
     for f, test in enumerate(folds):
         rest = [s for g, fold in enumerate(folds) if g != f for s in fold]
         inner = stratified_folds(rest, k=4)
@@ -217,60 +275,74 @@ def cmd_cv(pose_dir, labels_dir, out_dir):
         model, mean, std, best_epoch = fit(train, val, extra_negatives=negatives)
         th = choose_threshold(model, mean, std, val)
         chosen.append((best_epoch, th))
-        for s in test:
-            ev = fv.detect_events(predict_seq(model, mean, std, s), s.sample_times, th)
-            r = fv.score_sequence(s, ev)
-            new_results.append((s, *r))
-            per_seq.append(("moi", s, *r))
-            r_old = fv.score_sequence(s, old_pipeline_events(old_fn, s, raw_landmarks_for(s.name, pose_dir)))
-            old_results.append((s, *r_old))
-            per_seq.append(("cu", s, *r_old))
+        score_both(test, model, mean, std, th, old_fn, new_results, old_results, per_seq, traces)
         print(f"fold {f + 1}/5: epoch={best_epoch}, ngưỡng={th}", flush=True)
+    data = "URFD + CAUCAFall (CAUCAFall chia THEO NGƯỜI)" if cauca_pose else "URFD"
     write_report(
         out_dir,
-        "URFD — kiểm định chéo 5 phần theo chuỗi quay (mỗi chuỗi được chấm đúng 1 lần, bởi model không thấy nó lúc train)",
-        {"Model cũ (LSTM 10 frame)": fv.summarize(old_results), "Model mới (v2)": fv.summarize(new_results)},
+        f"{data} — kiểm định chéo 5 phần (mỗi chuỗi được chấm đúng 1 lần, bởi model không thấy nó lúc train)",
+        by_source({"Model cũ (LSTM 10 frame)": old_results, "Model mới (v2)": new_results}),
         per_seq,
     )
     with open(os.path.join(out_dir, "cv_choices.json"), "w") as f:
-        json.dump({"epoch_threshold_per_fold": chosen}, f)
+        json.dump({"epoch_threshold_per_fold": chosen, "data": data}, f)
+    with open(os.path.join(out_dir, "traces.json"), "w", encoding="utf-8") as f:
+        json.dump(traces, f)
 
 
-def cmd_final(pose_dir, labels_dir, out_dir):
-    seqs = fv.load_urfd(pose_dir, labels_dir)
+def cmd_final(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None):
+    seqs = load_all(urfd_pose, urfd_labels, cauca_pose, cauca_root)
     with open(os.path.join(out_dir, "cv_choices.json")) as f:
         chosen = json.load(f)["epoch_threshold_per_fold"]
     epochs = int(np.median([c[0] for c in chosen]))
     threshold = float(np.median([c[1] for c in chosen]))
     model, mean, std, _ = fit(seqs, None, epochs=epochs, extra_negatives=excel_negatives())
     model.save(NEW_MODEL)
+    trained_on = "URFD (70 chuỗi) + NotFall tự quay"
+    if cauca_pose:
+        trained_on += f" + CAUCAFall ({sum(s.group.startswith('cauca-') for s in seqs)} chuỗi, 10 người)"
     with open(NEW_META, "w") as f:
         json.dump({"window": fv.WINDOW, "process_hz": fv.PROCESS_HZ, "threshold": threshold, "epochs": epochs,
-                   "mean": mean.tolist(), "std": std.tolist(), "trained_on": "URFD (70 chuỗi) + NotFall tự quay"}, f)
+                   "mean": mean.tolist(), "std": std.tolist(), "trained_on": trained_on}, f, ensure_ascii=False)
     print(f"Đã lưu {NEW_MODEL} (epoch={epochs}, ngưỡng={threshold})")
+
+
+def load_saved():
+    model = tf.keras.models.load_model(NEW_MODEL)
+    with open(NEW_META, encoding="utf-8") as f:
+        meta = json.load(f)
+    return model, np.asarray(meta["mean"], np.float32), np.asarray(meta["std"], np.float32), meta
 
 
 def cmd_test(pose_dir, labels_csv, out_dir):
     seqs = fv.load_recorded(pose_dir, labels_csv)
-    model = tf.keras.models.load_model(NEW_MODEL)
-    with open(NEW_META) as f:
-        meta = json.load(f)
-    mean, std = np.asarray(meta["mean"], np.float32), np.asarray(meta["std"], np.float32)
-    old_fn = old_model()
-    new_results, old_results, per_seq = [], [], []
-    for s in seqs:
-        r = fv.score_sequence(s, fv.detect_events(predict_seq(model, mean, std, s), s.sample_times, meta["threshold"]))
-        new_results.append((s, *r))
-        per_seq.append(("moi", s, *r))
-        r_old = fv.score_sequence(s, old_pipeline_events(old_fn, s, raw_landmarks_for(s.name, pose_dir)))
-        old_results.append((s, *r_old))
-        per_seq.append(("cu", s, *r_old))
+    model, mean, std, meta = load_saved()
+    new_results, old_results, per_seq, traces = [], [], [], {}
+    score_both(seqs, model, mean, std, meta["threshold"], old_model(), new_results, old_results, per_seq, traces)
     write_report(out_dir, "Bộ video tự quay — người không có trong dữ liệu train",
+                 {"Model cũ (LSTM 10 frame)": fv.summarize(old_results), "Model mới (v2)": fv.summarize(new_results)},
+                 per_seq)
+    with open(os.path.join(out_dir, "traces.json"), "w", encoding="utf-8") as f:
+        json.dump(traces, f)
+
+
+def cmd_test_cauca(cauca_pose, cauca_root, out_dir):
+    """Chấm model ĐANG LƯU trên CAUCAFall — chỉ là test độc lập khi model chưa train trên CAUCAFall."""
+    model, mean, std, meta = load_saved()
+    if "CAUCAFall" in meta.get("trained_on", ""):
+        sys.exit("Model đang lưu đã train trên CAUCAFall — kết quả sẽ không còn là test độc lập.")
+    seqs = fv.load_caucafall(cauca_pose, cauca_root)
+    new_results, old_results, per_seq = [], [], []
+    score_both(seqs, model, mean, std, meta["threshold"], old_model(), new_results, old_results, per_seq)
+    write_report(out_dir, "CAUCAFall — 10 người, phòng, ánh sáng, che khuất KHÁC HẲN URFD; model chỉ train trên URFD",
                  {"Model cũ (LSTM 10 frame)": fv.summarize(old_results), "Model mới (v2)": fv.summarize(new_results)},
                  per_seq)
 
 
+COMMANDS = {"cv": (cmd_cv, (3, 5)), "final": (cmd_final, (3, 5)), "test": (cmd_test, (3,)),
+            "test_cauca": (cmd_test_cauca, (3,))}
+
 if __name__ == "__main__":
-    if len(sys.argv) != 5 or sys.argv[1] not in {"cv", "final", "test"}:
+    if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS or len(sys.argv) - 2 not in COMMANDS[sys.argv[1]][1]:
         sys.exit(__doc__)
-    {"cv": cmd_cv, "final": cmd_final, "test": cmd_test}[sys.argv[1]](*sys.argv[2:])
+    COMMANDS[sys.argv[1]][0](*sys.argv[2:])

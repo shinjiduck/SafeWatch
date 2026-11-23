@@ -64,7 +64,9 @@ def is_upright(feature):
     return feature[66] < math.radians(35) and feature[67] > 1.2
 
 
-MAX_BRIDGE = 2  # khoảng trống <= 2 lần xử lý (0.2 s) được nối; dài hơn thì xoá cửa sổ
+# Khoảng trống <= 4 lần xử lý (0.4 s) được nối; dài hơn thì xoá cửa sổ. Chọn bằng kiểm định chéo
+# URFD+CAUCAFall: 0.2 s -> 58/80 ca ngã, 0.4 s -> 63/80, 0.6 s -> 57/80 (báo nhầm 5 / 6 / 5).
+MAX_BRIDGE = 4
 
 
 def bridge_feature(last):
@@ -171,7 +173,67 @@ def load_urfd(pose_dir, labels_dir):
         is_fall = seq.startswith("fall")
         # Chuỗi sinh hoạt (adl) cũng có nhãn 0 cho đoạn CHỦ ĐỘNG nằm xuống — đó
         # chính là ca khó không được báo, nên bỏ nhãn 0 của adl.
-        seqs.append(Sequence(seq, lm, float(data["fps"]), is_fall, frame_labels=lab if is_fall else None))
+        s = Sequence(seq, lm, float(data["fps"]), is_fall, frame_labels=lab if is_fall else None)
+        s.npz = os.path.join(pose_dir, name)
+        seqs.append(s)
+    return seqs
+
+
+# Nhãn 1 của CAUCAFall bắt đầu lúc người CHẠM SÀN: hông rơi nhanh nhất sớm hơn trung vị 0.45 s
+# (đo trên 50 video ngã, IQR 0.2–0.9 s) -> pha "đang ngã" = [t1 - 1.0 s, t1 + 0.2 s].
+CAUCA_FALL_BEFORE_S = 1.0
+CAUCA_FALL_AFTER_S = 0.2
+
+
+def _cauca_label_series(folder):
+    """Nhãn YOLO mỗi frame (cfs<người><frame 5 số>.txt, dòng đầu = lớp: 0 không ngã, 1 ngã)
+    -> dict {frame (đánh số từ 1): lớp}."""
+    out = {}
+    for n in os.listdir(folder):
+        if not n.lower().endswith(".txt") or n.lower() == "classes.txt":
+            continue
+        digits = "".join(ch for ch in n[:-4] if ch.isdigit())
+        if len(digits) < 5:
+            continue
+        with open(os.path.join(folder, n)) as f:
+            first = f.readline().split()
+        if first:
+            out[int(digits[-5:])] = int(float(first[0]))
+    return out
+
+
+def load_caucafall(pose_dir, root):
+    """CAUCAFall: 10 người x (5 kiểu ngã + 5 sinh hoạt), nhãn từng frame.
+    Nhãn 1 gồm cả đoạn NẰM sau ngã — nếu lấy hết làm dương tính, model sẽ học tư thế nằm
+    (đúng điều BTC chê), nên chỉ lấy pha chuyển quanh frame đầu tiên có nhãn 1.
+    group = người -> chia train/test theo người."""
+    folder_of = {}
+    for d, _, files in os.walk(root):
+        for n in files:
+            if n.lower().endswith(".avi"):
+                folder_of[os.path.splitext(n)[0]] = d
+    seqs = []
+    for stem, folder in sorted(folder_of.items()):
+        path = os.path.join(pose_dir, f"{stem}.npz")
+        if not os.path.exists(path):
+            continue
+        data = np.load(path)
+        fps = float(data["fps"])
+        subject = os.path.basename(os.path.dirname(folder)).replace("Subject.", "S")
+        is_fall = os.path.basename(folder).lower().startswith("fall")
+        start = end = None
+        if is_fall:
+            labels = _cauca_label_series(folder)
+            fall_frames = sorted(f for f, c in labels.items() if c == 1)
+            if not fall_frames:
+                print(f"{stem}: không có frame nhãn ngã — bỏ")
+                continue
+            t1 = (fall_frames[0] - 1) / fps
+            start, end = max(0.0, t1 - CAUCA_FALL_BEFORE_S), t1 + CAUCA_FALL_AFTER_S
+        s = Sequence(f"cauca-{stem}", data["landmarks"], fps, is_fall, fall_start_s=start, fall_end_s=end,
+                     group=f"cauca-{subject}")
+        s.npz = path
+        seqs.append(s)
     return seqs
 
 
@@ -188,14 +250,14 @@ def load_recorded(pose_dir, labels_csv):
                 continue
             data = np.load(path)
             is_fall = row["loai"].strip().lower() == "fall"
-            seqs.append(
-                Sequence(
-                    stem, data["landmarks"], float(data["fps"]), is_fall,
-                    fall_start_s=float(row["fall_start_s"]) if is_fall else None,
-                    fall_end_s=float(row["fall_end_s"]) if is_fall else None,
-                    group=row.get("nguoi") or stem,
-                )
+            s = Sequence(
+                stem, data["landmarks"], float(data["fps"]), is_fall,
+                fall_start_s=float(row["fall_start_s"]) if is_fall else None,
+                fall_end_s=float(row["fall_end_s"]) if is_fall else None,
+                group=row.get("nguoi") or stem,
             )
+            s.npz = path
+            seqs.append(s)
     return seqs
 
 
