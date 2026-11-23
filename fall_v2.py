@@ -101,9 +101,14 @@ def sequence_features(landmarks):
 
 
 def resample(landmarks, fps):
-    """Lấy mẫu chuỗi gốc (fps bất kỳ) về PROCESS_HZ. Trả (chuỗi, chỉ số frame gốc)."""
-    step = max(1, int(round(fps / PROCESS_HZ)))
-    idx = np.arange(0, len(landmarks), step)
+    """Lấy mẫu chuỗi gốc (fps bất kỳ) về PROCESS_HZ THEO THỜI GIAN. Trả (chuỗi, chỉ số frame gốc).
+    fps chia hết (30, 20 -> bước 3, 2) cho kết quả y như lấy mỗi n frame; fps lẻ (15, 29) không bị
+    lệch nhịp (trước đây 15 fps bị lấy bước 2 = 7.5 Hz, cú ngã trông chậm hơn thực tế)."""
+    n = len(landmarks)
+    if n == 0:
+        return landmarks[:0], np.zeros(0, int)
+    idx = np.floor(np.arange(0, n / fps, 1.0 / PROCESS_HZ) * fps + 1e-6).astype(int)
+    idx = np.unique(idx[idx < n])
     return landmarks[idx], idx
 
 

@@ -14,6 +14,9 @@ Lệnh:
       Chấm model đang lưu (chỉ train URFD) trên CAUCAFall = test chéo bộ dữ liệu.
   cv / final thêm 2 tham số <cauca_pose_dir> <cauca_root> để train cùng CAUCAFall
   (CAUCAFall chia theo người: không người nào vừa ở train vừa ở test).
+  python -I train_eval.py holdout <urfd_pose> <urfd_labels> <cauca_pose> <cauca_root> <rec_pose> <rec_labels.csv> <out_dir>
+      Để riêng từng người của bộ có nhãn (GMDCSA-24 / tự quay), train trên phần còn lại, chấm người đó.
+  final thêm tiếp <rec_pose> <rec_labels.csv> để train cả bộ đó.
 """
 
 import json
@@ -165,8 +168,8 @@ def stratified_folds(seqs, k=5):
     # Chia đều theo từng (bộ dữ liệu, có ngã / không) — 10 người CAUCAFall rải đều các fold.
     # Thứ tự xáo giữ nguyên như bản chỉ có URFD để kết quả cũ tái lập được.
     fold_of = {}
-    for source in ("urfd", "cauca"):
-        mine = [g for g in groups if g.startswith("cauca-") == (source == "cauca")]
+    for source in ("urfd", "cauca", "gmd"):  # thêm nguồn mới ở CUỐI để thứ tự xáo của nguồn cũ không đổi
+        mine = [g for g in groups if source_of(g) == source]
         falls = [g for g in mine if any(s.is_fall for s in groups[g])]
         adls = [g for g in mine if g not in falls]
         rng.shuffle(falls)
@@ -181,7 +184,7 @@ def raw_landmarks_for(seq):
     return landmarks_sampled(data["landmarks"], float(data["fps"]))
 
 
-def load_all(urfd_pose, urfd_labels, cauca_pose=None, cauca_root=None):
+def load_all(urfd_pose, urfd_labels, cauca_pose=None, cauca_root=None, rec_pose=None, rec_labels=None):
     seqs = fv.load_urfd(urfd_pose, urfd_labels)
     print(f"{len(seqs)} chuỗi URFD ({sum(s.is_fall for s in seqs)} ngã)")
     if cauca_pose:
@@ -189,7 +192,16 @@ def load_all(urfd_pose, urfd_labels, cauca_pose=None, cauca_root=None):
         people = sorted({s.group for s in cauca})
         print(f"{len(cauca)} chuỗi CAUCAFall ({sum(s.is_fall for s in cauca)} ngã, {len(people)} người)")
         seqs += cauca
+    if rec_pose:
+        rec = fv.load_recorded(rec_pose, rec_labels)
+        people = sorted({s.group for s in rec})
+        print(f"{len(rec)} chuỗi có nhãn từ {rec_labels} ({sum(s.is_fall for s in rec)} ngã, {len(people)} người)")
+        seqs += rec
     return seqs
+
+
+def source_of(group):
+    return "cauca" if group.startswith("cauca-") else "gmd" if group.startswith("gmd-") else "urfd"
 
 
 # ---------------------------------------------------------------- báo cáo
@@ -254,16 +266,17 @@ def by_source(results_by_model):
     out = {}
     for name, res in results_by_model.items():
         out[name] = fv.summarize(res)
-        parts = {"URFD": [r for r in res if not r[0].group.startswith("cauca-")],
-                 "CAUCAFall": [r for r in res if r[0].group.startswith("cauca-")]}
-        if all(parts.values()):
+        names = {"urfd": "URFD", "cauca": "CAUCAFall", "gmd": "GMDCSA-24"}
+        parts = {names[k]: [r for r in res if source_of(r[0].group) == k] for k in names}
+        parts = {k: v for k, v in parts.items() if v}
+        if len(parts) > 1:
             for src, rr in parts.items():
                 out[f"{name} — {src}"] = fv.summarize(rr)
     return out
 
 
-def cmd_cv(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None):
-    seqs = load_all(urfd_pose, urfd_labels, cauca_pose, cauca_root)
+def cmd_cv(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None, rec_pose=None, rec_labels=None):
+    seqs = load_all(urfd_pose, urfd_labels, cauca_pose, cauca_root, rec_pose, rec_labels)
     negatives = excel_negatives()
     folds = stratified_folds(seqs)
     old_fn = old_model()
@@ -278,6 +291,8 @@ def cmd_cv(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None):
         score_both(test, model, mean, std, th, old_fn, new_results, old_results, per_seq, traces)
         print(f"fold {f + 1}/5: epoch={best_epoch}, ngưỡng={th}", flush=True)
     data = "URFD + CAUCAFall (CAUCAFall chia THEO NGƯỜI)" if cauca_pose else "URFD"
+    if rec_pose:
+        data += " + GMDCSA-24 (chia THEO NGƯỜI)"
     write_report(
         out_dir,
         f"{data} — kiểm định chéo 5 phần (mỗi chuỗi được chấm đúng 1 lần, bởi model không thấy nó lúc train)",
@@ -290,8 +305,43 @@ def cmd_cv(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None):
         json.dump(traces, f)
 
 
-def cmd_final(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None):
-    seqs = load_all(urfd_pose, urfd_labels, cauca_pose, cauca_root)
+def cmd_holdout(urfd_pose, urfd_labels, cauca_pose, cauca_root, rec_pose, rec_labels, out_dir):
+    """Để riêng TỪNG NGƯỜI của bộ video có nhãn (GMDCSA-24 / tự quay): train trên mọi dữ liệu còn lại
+    (URFD + CAUCAFall + các người khác), chấm trên người để riêng. Ngưỡng + epoch chọn trên validation
+    tách từ phần train — người để riêng không tham gia chọn gì."""
+    base = load_all(urfd_pose, urfd_labels, cauca_pose, cauca_root)
+    rec = fv.load_recorded(rec_pose, rec_labels)
+    people = sorted({s.group for s in rec})
+    print(f"{len(rec)} chuỗi, {len(people)} người: {people}")
+    negatives = excel_negatives()
+    old_fn = old_model()
+    new_results, old_results, per_seq, chosen, traces = [], [], [], [], {}
+    for person in people:
+        test = [s for s in rec if s.group == person]
+        rest = base + [s for s in rec if s.group != person]
+        inner = stratified_folds(rest, k=4)
+        val, train = inner[0], [s for fold in inner[1:] for s in fold]
+        model, mean, std, best_epoch = fit(train, val, extra_negatives=negatives)
+        th = choose_threshold(model, mean, std, val)
+        chosen.append((best_epoch, th))
+        score_both(test, model, mean, std, th, old_fn, new_results, old_results, per_seq, traces)
+        r = fv.summarize([x for x in new_results if x[0].group == person])
+        print(f"{person}: epoch={best_epoch}, ngưỡng={th}, bắt {r['bat_duoc']}/{r['so_ca_nga']}, "
+              f"sinh hoạt báo nhầm {r['chuoi_sinh_hoat_bi_bao_nham']}/{r['so_chuoi_sinh_hoat']}", flush=True)
+    write_report(
+        out_dir,
+        "Để riêng từng người (người chấm KHÔNG có trong dữ liệu train, không dùng để chọn ngưỡng)",
+        {"Model cũ (LSTM 10 frame)": fv.summarize(old_results), "Model mới (v2)": fv.summarize(new_results)},
+        per_seq,
+    )
+    with open(os.path.join(out_dir, "cv_choices.json"), "w") as f:
+        json.dump({"epoch_threshold_per_fold": chosen, "data": "holdout theo người"}, f)
+    with open(os.path.join(out_dir, "traces.json"), "w", encoding="utf-8") as f:
+        json.dump(traces, f)
+
+
+def cmd_final(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None, rec_pose=None, rec_labels=None):
+    seqs = load_all(urfd_pose, urfd_labels, cauca_pose, cauca_root, rec_pose, rec_labels)
     with open(os.path.join(out_dir, "cv_choices.json")) as f:
         chosen = json.load(f)["epoch_threshold_per_fold"]
     epochs = int(np.median([c[0] for c in chosen]))
@@ -301,6 +351,9 @@ def cmd_final(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None)
     trained_on = "URFD (70 chuỗi) + NotFall tự quay"
     if cauca_pose:
         trained_on += f" + CAUCAFall ({sum(s.group.startswith('cauca-') for s in seqs)} chuỗi, 10 người)"
+    if rec_pose:
+        rec = [s for s in seqs if source_of(s.group) == "gmd"]
+        trained_on += f" + GMDCSA-24 ({len(rec)} chuỗi, {len({s.group for s in rec})} người)"
     with open(NEW_META, "w") as f:
         json.dump({"window": fv.WINDOW, "process_hz": fv.PROCESS_HZ, "threshold": threshold, "epochs": epochs,
                    "mean": mean.tolist(), "std": std.tolist(), "trained_on": trained_on}, f, ensure_ascii=False)
@@ -339,8 +392,8 @@ def cmd_test_cauca(cauca_pose, cauca_root, out_dir):
                  per_seq)
 
 
-COMMANDS = {"cv": (cmd_cv, (3, 5)), "final": (cmd_final, (3, 5)), "test": (cmd_test, (3,)),
-            "test_cauca": (cmd_test_cauca, (3,))}
+COMMANDS = {"cv": (cmd_cv, (3, 5, 7)), "final": (cmd_final, (3, 5, 7)), "test": (cmd_test, (3,)),
+            "test_cauca": (cmd_test_cauca, (3,)), "holdout": (cmd_holdout, (7,))}
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS or len(sys.argv) - 2 not in COMMANDS[sys.argv[1]][1]:

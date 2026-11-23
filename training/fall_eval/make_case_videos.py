@@ -164,7 +164,25 @@ def draw_skeleton(img, lm, box):
 # ------------------------------------------------------------------ phân tích
 
 
+DESCRIPTIONS = {}  # tên chuỗi -> mô tả động tác (cột mo_ta của labels.csv nếu có)
+
+
+def load_descriptions(dirs):
+    for root in dirs:
+        for path in (os.path.join(root, "labels.csv"), os.path.join(os.path.dirname(root.rstrip("/\\")), "labels.csv")):
+            if os.path.exists(path):
+                with open(path, newline="", encoding="utf-8-sig") as f:
+                    for row in csv.DictReader(f):
+                        if row.get("mo_ta"):
+                            DESCRIPTIONS[os.path.splitext(row["video"])[0]] = row["mo_ta"]
+
+
 def describe(name, src_path):
+    if name.startswith("gmd_"):
+        _, subject, kind, _num = name.split("_", 3)
+        desc = DESCRIPTIONS.get(name, "")
+        return (f"GMDCSA-24 · người {subject[1:]} · {'ngã' if kind == 'Fall' else 'sinh hoạt'}"
+                + (f" · {desc[:38]}…" if len(desc) > 38 else f" · {desc}" if desc else "")), desc or kind
     if name.startswith("cauca-"):
         action = os.path.basename(os.path.dirname(src_path)) if src_path else ""
         subject = os.path.basename(os.path.dirname(os.path.dirname(src_path))).replace("Subject.", "") if src_path else "?"
@@ -404,6 +422,7 @@ def main(traces_path, out_dir, *video_dirs):
         traces = json.load(f)
     os.makedirs(out_dir, exist_ok=True)
     idx = index_sources(video_dirs)
+    load_descriptions(video_dirs)
     cases = pick_cases(traces)
     ALL_FPS = 20.0
     writer_all = open_writer(os.path.join(out_dir, "00_tong_hop.mp4"), ALL_FPS)
