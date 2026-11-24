@@ -214,6 +214,12 @@ class FallV2Tracker:
         self.hits = 0
         self.missing_run = 0
 
+    def mark_down(self):
+        """Nghi ngã mà model không kịp thấy (VD ngã khuất sau vật cản, framing.vanished_after_drop): coi như
+        đã ngã -> người quay lại khung hình vẫn phải đứng thẳng đủ lâu mới được tính là đã dậy."""
+        self.down = True
+        self.upright_since = None
+
     def missing(self, now):
         """Lần xử lý không thấy người. Thiếu <= fall_v2.MAX_BRIDGE lần liên tiếp
         (0.2 s — MediaPipe hay mất người đúng lúc đang ngã) thì nối bằng giá trị

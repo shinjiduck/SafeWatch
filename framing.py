@@ -26,6 +26,12 @@ NO_HIPS_SHOULDER_W = 0.25  # không thấy hông (thường là ngồi / đứng
 NO_HIPS_EAR_W = 0.12
 EDGE_ZONE = 0.15  # người biến mất khi đang ở trong 15% sát mép trái/phải -> coi là đi ra khỏi khung
 
+# Ngã khuất sau vật cản (giường, sofa, bàn): người mất dấu GIỮA khung hình ngay sau khi hông tụt nhanh
+# -> nghi ngã, chạy quy trình xác minh như ngã thường. Đo trên GMDCSA-24 che dải dưới 40%: cứu thêm 16/49 ca
+# bỏ sót; Charades 5 giờ sinh hoạt: gửi nhầm thêm 1.8/giờ (training/fall_eval/results_che_goc_tong_hop.md).
+VANISH_HIP_DROP = 0.10  # tỉ lệ chiều cao khung hình
+VANISH_WINDOW_SECONDS = 1.0
+
 HOLD_SECONDS = 2.0  # tình trạng phải kéo dài bấy nhiêu mới báo
 CLEAR_SECONDS = 1.0  # đứng đúng lại bấy nhiêu mới tắt báo
 VOICE_REPEAT_SECONDS = 20.0
@@ -67,6 +73,21 @@ def assess(lm):
     if not all(_seen(lm[i]) for i in TORSO):
         return PARTIAL
     return OK
+
+
+def hip_y(lm):
+    return (lm[23][1] + lm[24][1]) / 2
+
+
+def hip_drop(samples, last_t, window=VANISH_WINDOW_SECONDS):
+    """samples: [(t, hip_y)] các lần thấy người. Hông tụt xuống bao nhiêu trong `window` s trước last_t."""
+    ys = [y for t, y in samples if last_t - window <= t <= last_t]
+    return ys[-1] - min(ys) if len(ys) >= 2 else 0.0
+
+
+def vanished_after_drop(samples, last_t, last_lm):
+    """Mất dấu giữa khung hình (không phải đi ra mép) ngay sau khi hông tụt nhanh."""
+    return exit_side(last_lm) is None and hip_drop(samples, last_t) >= VANISH_HIP_DROP
 
 
 def exit_side(lm):

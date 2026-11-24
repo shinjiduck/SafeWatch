@@ -91,6 +91,8 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.framing = framing.FramingMonitor()
         self.last_landmarks = None
         self.exit_side = None  # "left" / "right" / "middle" lúc mất người; None = chưa từng thấy ai
+        self.hip_history = deque(maxlen=30)  # (t, độ cao hông) ~3 s gần nhất, cho luật ngã khuất sau vật cản
+        self.vanish_suspected = False
 
         # Model ngã v2 (app truyền vào FallV2Model) dùng bộ theo dõi 3 bước riêng;
         # không có thì giữ nguyên đường cũ (LSTM 10 frame + bỏ phiếu đa số).
@@ -184,6 +186,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 landmarks = [[lm.x, lm.y, lm.z, lm.visibility] for lm in pose_results.pose_landmarks.landmark]
                 self.last_landmarks = landmarks
                 self.exit_side = None
+                self.hip_history.append((now, framing.hip_y(landmarks)))
                 # Đang theo dõi sau ngã / đang báo động: không nhắc "đứng lại cho đúng".
                 self.framing.observe(framing.assess(landmarks), now, quiet=self._busy(now))
                 if self.fall_tracker is not None:
@@ -209,6 +212,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     self.fall_label = engine.NO_DATA_LABEL
                     if self.last_landmarks is not None:
                         self.exit_side = framing.exit_side(self.last_landmarks) or "middle"
+                        self._check_vanished_fall()
                         self.framing.person_lost(now, quiet=self._busy(now))
                     event_log.log_status(
                         "Mất quan sát người",
@@ -257,6 +261,20 @@ class DetectionVideoProcessor(VideoProcessorBase):
 
         return img
 
+    def _check_vanished_fall(self):
+        """Hông tụt nhanh rồi mất dấu giữa khung hình -> nghi ngã khuất sau vật cản: bắt đầu đếm giờ xác
+        minh từ lúc mất dấu (chỉ với model v2 — cần bộ theo dõi để biết khi nào người đứng dậy lại)."""
+        if self.fall_tracker is None or self.fall_tracker.down or self.fall_down_since is not None:
+            return
+        if not framing.vanished_after_drop(list(self.hip_history), self.pose_last_seen, self.last_landmarks):
+            return
+        self.fall_tracker.mark_down()
+        self.vanish_suspected = True
+        self.fall_down_since = self.pose_last_seen
+        self.was_fall_monitoring = True
+        self.episode_escalated = False
+        event_log.log_event("Nghi ngã khuất sau vật cản", "Hông tụt nhanh rồi mất dấu giữa khung hình — đang xác minh")
+
     def _busy(self, now):
         return self.fall_down_since is not None or now < self.alert_until
 
@@ -280,6 +298,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     self.recovered_message_until = now + 4.0
                 self.was_fall_monitoring = False
                 self.fall_down_since = None
+                self.vanish_suspected = False
             self.fall_escalated = self.fall_down_since is not None and (now - self.fall_down_since) >= cfg[
                 "fall_grace_seconds"
             ]
@@ -301,7 +320,9 @@ class DetectionVideoProcessor(VideoProcessorBase):
         if sos_alert and not self.was_alerting:
             if cfg["enable_fall"] and self.fall_escalated:
                 note = ""
-                if self.camera_lost:
+                if self.vanish_suspected:
+                    note = " — nghi ngã khuất sau vật cản (hông tụt nhanh rồi mất dấu giữa khung hình)"
+                elif self.camera_lost:
                     note = " — camera mất tín hiệu trong lúc theo dõi"
                 elif self.observation_lost:
                     note = " — không còn thấy người trong khung hình"
@@ -339,5 +360,6 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     "voice_cue": self.framing.cue,
                     "voice_seq": self.framing.cue_seq,
                     "exit_side": self.exit_side,
+                    "vanish_suspected": self.vanish_suspected,
                 }
             )

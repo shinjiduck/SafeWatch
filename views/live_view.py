@@ -270,7 +270,9 @@ while webrtc_ctx.state.playing:
     elif fall_monitoring:
         remaining = max(0, config["fall_grace_seconds"] - (now - fall_down_since))
         progress = min(1.0, (now - fall_down_since) / config["fall_grace_seconds"])
-        if camera_lost:
+        if state.get("vanish_suspected") and observation_lost:
+            sub = "Người tụt xuống nhanh rồi khuất giữa khung hình — nghi ngã sau vật cản, đang đếm giờ."
+        elif camera_lost:
             sub = "Mất tín hiệu camera sau khi phát hiện ngã — vẫn tiếp tục đếm giờ."
         elif observation_lost:
             sub = "Không còn thấy người sau khi phát hiện ngã — vẫn tiếp tục đếm giờ."

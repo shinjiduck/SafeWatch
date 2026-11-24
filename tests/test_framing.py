@@ -104,6 +104,16 @@ def test_roi_khung_nhac_mot_lan():
     assert m.cue_seq == 2
 
 
+def test_hong_tut_nhanh_roi_mat_giua_khung():
+    samples = [(i * 0.1, 0.55) for i in range(20)] + [(2.0 + i * 0.1, 0.55 + 0.04 * i) for i in range(1, 5)]
+    last_t = samples[-1][0]
+    assert abs(framing.hip_drop(samples, last_t) - 0.16) < 1e-6
+    assert framing.vanished_after_drop(samples, last_t, body(cx=0.5))
+    assert not framing.vanished_after_drop(samples, last_t, body(cx=0.05))  # đi ra mép, không phải ngã
+    flat = [(i * 0.1, 0.55) for i in range(24)]
+    assert not framing.vanished_after_drop(flat, 2.3, body(cx=0.5))  # đi khuất sau tủ, hông không tụt
+
+
 def test_file_giong_noi_co_du():
     for name in framing.VOICE_FILES.values():
         path = os.path.join(ROOT, "assets", "voice", name)

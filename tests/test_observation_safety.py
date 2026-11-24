@@ -143,6 +143,93 @@ def test_dang_theo_doi_sau_nga_thi_khong_nhac_giong_noi():
     assert h.s["observation_lost"] and h.s["voice_seq"] == 0
 
 
+class ScriptedPose:
+    """Detector tư thế trả đúng 33 điểm do kịch bản đặt (self.lm), None = không thấy người."""
+
+    def __init__(self):
+        self.lm = None
+
+    def process(self, _img):
+        if self.lm is None:
+            return types.SimpleNamespace(pose_landmarks=None)
+        pts = [types.SimpleNamespace(x=p[0], y=p[1], z=0.0, visibility=p[3]) for p in self.lm]
+        return types.SimpleNamespace(pose_landmarks=types.SimpleNamespace(landmark=pts))
+
+
+def standing(top=0.3, cx=0.5):
+    lm = [[cx, top - 0.08, 0.0, 0.99] for _ in range(33)]
+    lm[11], lm[12] = [cx + 0.07, top, 0, 0.99], [cx - 0.07, top, 0, 0.99]
+    lm[23], lm[24] = [cx + 0.05, top + 0.25, 0, 0.99], [cx - 0.05, top + 0.25, 0, 0.99]
+    for i in range(25, 33):
+        lm[i] = [cx, top + 0.6, 0, 0.99]
+    return lm
+
+
+def lying(y=0.8, cx=0.5):
+    lm = [[cx - 0.3, y, 0.0, 0.99] for _ in range(33)]
+    lm[11], lm[12] = [cx - 0.2, y - 0.02, 0, 0.99], [cx - 0.2, y + 0.02, 0, 0.99]
+    lm[23], lm[24] = [cx + 0.05, y - 0.02, 0, 0.99], [cx + 0.05, y + 0.02, 0, 0.99]
+    for i in range(25, 33):
+        lm[i] = [cx + 0.3, y, 0, 0.99]
+    return lm
+
+
+def v2_harness(grace=5.0):
+    """Harness dùng bộ theo dõi v2 thật với model giả KHÔNG BAO GIỜ tự phát hiện ngã."""
+    h = Harness(grace=grace)
+    model = engine.FallV2Model.__new__(engine.FallV2Model)
+    model.window, model.threshold, model.consecutive = 15, 0.95, 2
+    model.prob = lambda _f: 0.0
+    h.p.fall_tracker = engine.FallV2Tracker(model)
+    h.pose = h.p.pose_detector = ScriptedPose()
+    h.pose.lm = standing()
+    h.run(3)
+    return h
+
+
+def drop_and_vanish(h):
+    for i in range(1, 6):  # 0.5 s: hông tụt 0.15 khung hình (ngã xuống sau giường)
+        h.pose.lm = standing(top=0.3 + 0.03 * i)
+        h.run(0.1)
+    h.pose.lm = None
+    h.run(2.0)
+
+
+def test_nga_khuat_sau_vat_can_van_bao_dong():
+    fresh_db()
+    h = v2_harness(grace=5.0)
+    assert h.s["fall_down_since"] is None
+    drop_and_vanish(h)
+    assert h.s["observation_lost"] and h.s["vanish_suspected"] and h.s["fall_down_since"] is not None
+    assert ("Nghi ngã khuất sau vật cản" in [k for k, _ in events()])
+    assert h.s["voice_seq"] == 0  # đang theo dõi sau ngã -> không nói
+    h.run(4.0)
+    assert h.s["fall_escalated"] and h.s["sos_alert"]
+    kinds = dict(events())
+    assert "vật cản" in kinds["Ngã (không đứng lên lại)"]
+
+
+def test_di_khuat_sau_tu_khong_tut_hong_thi_khong_nghi_nga():
+    fresh_db()
+    h = v2_harness()
+    h.pose.lm = None
+    h.run(8.0)
+    assert h.s["observation_lost"] and h.s["fall_down_since"] is None and not h.s["sos_alert"]
+
+
+def test_hien_lai_van_nam_thi_chua_phuc_hoi_dung_day_thi_huy():
+    fresh_db()
+    h = v2_harness(grace=30.0)
+    drop_and_vanish(h)
+    h.pose.lm = lying()
+    h.run(3.0)
+    assert h.s["fall_down_since"] is not None and h.s["fall_label"] == "Fall"
+    h.pose.lm = standing()
+    h.run(3.0)
+    assert h.s["fall_down_since"] is None and not h.s["sos_alert"]
+    assert "Ngã - đã phục hồi" in [k for k, _ in events()]
+
+
 def test_mat_landmark_thi_xoa_cua_so_va_bao_khong_du_du_lieu():
     fresh_db()
     h = Harness()

@@ -29,7 +29,7 @@ giống như có tủ / bàn / cánh cửa che. Model `urfd_cauca` (chưa từng
 
 Khi người khuất hẳn, app hiện "Không có người — mất dấu giữa khung hình" nhưng **không báo động**.
 
-## Thử luật "mất dấu giữa khung hình" (chưa đưa vào app)
+## Luật "mất dấu giữa khung hình" — ĐÃ ĐƯA VÀO APP với điều kiện hông tụt >= 10%
 
 Người mất dấu >= 1.5 s, lần cuối thấy ở giữa khung hình (không phải sát mép) và thoả điều kiện dưới -> coi như
 nghi ngã, chạy đúng quy trình xác minh (không đứng thẳng lại 2 s trong 30 s -> gửi). Số ca cứu thêm / số cảnh
@@ -42,7 +42,10 @@ báo GỬI THÊM mỗi giờ sinh hoạt:
 | Hông tụt >= 5% | +21 | +8 | +3.2/giờ | +9.2/giờ |
 | Không điều kiện | +32 | +12 | +18.5/giờ | +23.1/giờ |
 
-(v2 hiện gửi 9/giờ trên Charades, 14/giờ trên CV 3 bộ.) Lưu ý: ngưỡng được xem trên chính các bộ thử này, nên
+(v2 hiện gửi 9/giờ trên Charades, 14/giờ trên CV 3 bộ.) App dùng dòng "hông tụt >= 10%"
+(`framing.VANISH_HIP_DROP`, chỉ với model v2): che dải dưới 29 -> **45/78**, Charades gửi 9 -> ~11/giờ.
+Chấm lại đúng bằng hàm của app: `python -X utf8 -I vanish_rule_eval.py 30 <traces.json...>`
+(kết quả: `results_vanish_rule_30s.txt`). Lưu ý: ngưỡng được xem trên chính các bộ thử này, nên
 cần thử lại trên dữ liệu khác trước khi tin hẳn.
 
 Tạo lại: `OCCLUDE=bl:0.4 python -X utf8 -I extract_pose.py <videos> <pose_che_bl>` rồi

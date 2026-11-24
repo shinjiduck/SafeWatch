@@ -1,0 +1,8 @@
+results_che_day_duoi/traces.json: ngã model bỏ sót 49/78 -> luật cứu thêm 16 (gửi được 16) | sinh hoạt 0.21 giờ: thêm 0.0/giờ nghi, 0.0/giờ GỬI
+results_che_goc_bl/traces.json: ngã model bỏ sót 24/78 -> luật cứu thêm 8 (gửi được 8) | sinh hoạt 0.21 giờ: thêm 9.6/giờ nghi, 9.6/giờ GỬI
+results_che_goc_br/traces.json: ngã model bỏ sót 16/78 -> luật cứu thêm 1 (gửi được 1) | sinh hoạt 0.21 giờ: thêm 0.0/giờ nghi, 0.0/giờ GỬI
+results_che_goc_tl/traces.json: ngã model bỏ sót 12/78 -> luật cứu thêm 1 (gửi được 1) | sinh hoạt 0.21 giờ: thêm 14.5/giờ nghi, 9.6/giờ GỬI
+results_che_goc_tr/traces.json: ngã model bỏ sót 11/78 -> luật cứu thêm 0 (gửi được 0) | sinh hoạt 0.21 giờ: thêm 4.8/giờ nghi, 4.8/giờ GỬI
+results_test_gmdcsa24/traces.json: ngã model bỏ sót 14/78 -> luật cứu thêm 0 (gửi được 0) | sinh hoạt 0.21 giờ: thêm 0.0/giờ nghi, 0.0/giờ GỬI
+results_cv_all3_k/traces.json: ngã model bỏ sót 36/158 -> luật cứu thêm 0 (gửi được 0) | sinh hoạt 0.43 giờ: thêm 4.6/giờ nghi, 4.6/giờ GỬI
+results_test_charades/traces.json: ngã model bỏ sót 0/0 -> luật cứu thêm 0 (gửi được 0) | sinh hoạt 5.03 giờ: thêm 4.8/giờ nghi, 1.8/giờ GỬI

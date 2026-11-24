@@ -57,6 +57,9 @@ Trình duyệt sẽ tự mở `http://localhost:8501`. Vào trang **Xem trực t
 - **Đứng sai chỗ** (`framing.py`): đứng quá gần camera, chỉ thấy một phần cơ thể, hoặc rời khung hình → hiện
   thông báo + nhắc bằng giọng nói ("Xin mời quý vị rời xa camera một chút."). Không thấy ai → trạng thái
   "Không có người trong khung hình" (không bao giờ hiện là an toàn). File giọng nói: `assets/voice/`.
+- **Ngã khuất sau vật cản** (giường, sofa): hông tụt nhanh rồi mất dấu giữa khung hình → coi như nghi ngã,
+  đếm giờ xác minh như ngã thường; quay lại mà vẫn nằm thì chưa tính là đã dậy. Số đo:
+  `training/fall_eval/results_che_goc_tong_hop.md`.
 
 **Kênh gửi cảnh báo** (`notifier.py`, khai báo trong `.streamlit/secrets.toml`, không commit file này):
 
