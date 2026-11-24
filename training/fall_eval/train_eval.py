@@ -362,7 +362,7 @@ def cmd_final(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None,
         trained_on += f" + GMDCSA-24 ({len(rec)} chuỗi, {len({s.group for s in rec})} người)"
     with open(NEW_META, "w") as f:
         json.dump({"window": fv.WINDOW, "process_hz": fv.PROCESS_HZ, "threshold": threshold,
-                   "consecutive": consecutive, "epochs": epochs,
+                   "consecutive": consecutive, "gate_vis": fv.GATE_VIS, "epochs": epochs,
                    "mean": mean.tolist(), "std": std.tolist(), "trained_on": trained_on}, f, ensure_ascii=False)
     print(f"Đã lưu {NEW_MODEL} (epoch={epochs}, ngưỡng={threshold}, liên tiếp={consecutive})")
 

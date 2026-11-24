@@ -171,6 +171,10 @@ class FallV2Model:
         self.threshold = float(meta["threshold"])
         # số lần xử lý liên tiếp vượt ngưỡng — chọn trên validation cùng ngưỡng (model cũ không ghi -> 2)
         self.consecutive = int(meta.get("consecutive", FALL_V2_CONSECUTIVE))
+        # Cổng "thấy rõ vai + hông": bật đúng như lúc train model này (meta không ghi -> tắt)
+        import fall_v2
+
+        fall_v2.GATE_VIS = meta.get("gate_vis")
         self.mean = np.asarray(meta["mean"], dtype=np.float32)
         self.std = np.asarray(meta["std"], dtype=np.float32)
         self._fn = tf.function(lambda x: self.model(x, training=False), reduce_retracing=True)

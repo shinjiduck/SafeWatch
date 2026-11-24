@@ -21,6 +21,23 @@ L_SH, R_SH, L_HIP, R_HIP, NOSE = 11, 12, 23, 24, 0
 N_STATIC = 66 + 4
 N_FEATURES = N_STATIC + 4
 
+# Chỉ dùng frame khi THẤY RÕ VAI + HÔNG (visibility >= GATE_VIS và nằm trong khung hình);
+# không thì coi như không thấy người (khoảng ngắn vẫn được nối bằng MAX_BRIDGE). Tránh đoán bừa
+# khi người đứng sát camera / bị cắt nửa người. None = tắt. Model nào train với cổng này thì
+# meta ghi "gate_vis" và app bật đúng giá trị đó (FallV2Model). Lúc train: biến môi trường FALL_GATE_VIS.
+GATE_VIS = float(os.environ["FALL_GATE_VIS"]) if os.environ.get("FALL_GATE_VIS") else None
+TORSO = (L_SH, R_SH, L_HIP, R_HIP)
+
+
+def torso_visible(lm):
+    arr = np.asarray(lm, dtype=np.float32)
+    xy = arr[list(TORSO), :2]
+    if np.isnan(xy).any() or (xy < -0.02).any() or (xy > 1.02).any():
+        return False
+    if arr.shape[1] >= 4 and (arr[list(TORSO), 3] < GATE_VIS).any():
+        return False
+    return True
+
 
 # ------------------------------------------------------------------ đặc trưng
 
@@ -29,6 +46,8 @@ def frame_static(lm):
     """lm: (33, >=2) toạ độ chuẩn hoá ảnh [0..1]. Trả (vector 70, scale, valid)."""
     pts = np.asarray(lm, dtype=np.float32)[:, :2]
     if np.isnan(pts).any():
+        return None
+    if GATE_VIS is not None and not torso_visible(lm):
         return None
     hip = (pts[L_HIP] + pts[R_HIP]) / 2
     sh = (pts[L_SH] + pts[R_SH]) / 2

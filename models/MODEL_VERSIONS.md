@@ -31,3 +31,4 @@ Model cũ của app (`LSTM_model.h5`, 10 frame) trên cùng các bộ: CV 3 bộ
 | Ngưỡng tin cậy MediaPipe 0.3 | kém hơn 0.5 | `results_cv_c03_bridge2`, `results_cv_c03_bridge4` |
 | Nối khoảng mất người 0.6 s | 57/80 so với 63/80 của 0.4 s | `results_cv_bridge6` |
 | MediaPipe bản nặng (complexity 2) | ngã 60/80, SH nhầm 12/90 (bản thường: 63/80, 6/90) | `results_cv_c2_bridge4` |
+| Cổng "thấy rõ vai + hông" (`FALL_GATE_VIS=0.5`), train + chạy | CV 3 bộ: ngã 119/158, SH nhầm 23/171 (all3: 122/158, 11/171) — kém hơn, không dùng | `results_cv_all3_gate` |
