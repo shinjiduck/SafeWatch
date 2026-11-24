@@ -1,0 +1,6 @@
+== results_cv_all3_k/traces.json  (chờ 30 s, 0.43 giờ sinh hoạt, 158 ca ngã)
+  Model cũ: phát hiện 201/giờ -> GỬI cảnh báo 113/giờ; ca ngã gửi được cảnh báo 112/158
+  Model mới: phát hiện 25/giờ -> GỬI cảnh báo 14/giờ; ca ngã gửi được cảnh báo 114/158
+== results_test_charades/traces.json  (chờ 30 s, 5.03 giờ sinh hoạt, 0 ca ngã)
+  Model cũ: phát hiện 165/giờ -> GỬI cảnh báo 61/giờ
+  Model mới: phát hiện 32/giờ -> GỬI cảnh báo 9/giờ
