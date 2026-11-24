@@ -38,6 +38,7 @@ class FakeClock:
 
 class FakeLandmark:
     x = y = z = 0.5
+    visibility = 0.99
 
 
 class FakeDetector:
@@ -118,6 +119,28 @@ def fresh_db():
 
 
 # ---------------------------------------------------------------- các ca thử
+
+
+def test_nguoi_roi_khung_thi_bao_khong_co_nguoi_va_nhac_giong_noi():
+    fresh_db()
+    h = Harness()
+    h.run(3)
+    assert h.s["framing_status"] == "ok" and h.s["voice_seq"] == 0
+    h.pose.visible = False
+    h.run(2.0)
+    assert h.s["observation_lost"] and h.s["exit_side"] == "middle"
+    assert h.s["voice_cue"] == "gone" and h.s["voice_seq"] == 1
+
+
+def test_dang_theo_doi_sau_nga_thi_khong_nhac_giong_noi():
+    fresh_db()
+    h = Harness(grace=60.0)
+    h.fall_result = "Fall"
+    h.run(3)
+    assert h.s["fall_down_since"] is not None
+    h.pose.visible = False
+    h.run(2.0)
+    assert h.s["observation_lost"] and h.s["voice_seq"] == 0
 
 
 def test_mat_landmark_thi_xoa_cua_so_va_bao_khong_du_du_lieu():

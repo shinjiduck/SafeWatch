@@ -126,6 +126,42 @@ def test_xac_nhan_khi_dang_mat_mang_thi_huy_lan_gui_con_treo():
     assert all(x["status"] == "cancelled" for x in notifier.get_deliveries(aid))
 
 
+def test_sms_so_dien_thoai_va_noi_dung_khong_dau():
+    assert notifier.to_e164("0912 345 678") == "+84912345678"
+    assert notifier.to_e164("+84 912.345.678") == "+84912345678"
+    assert notifier.to_e164("0084912345678") == "+84912345678"
+    assert notifier.to_e164("") is None
+    alert = {"kind": "Ngã (không đứng lên lại)", "details": "Sau 120s theo dõi", "detected_at": 1_000_000.0}
+    text = notifier.sms_text(alert, "https://x.example/?ack=abc")
+    assert text.isascii() and "Nga (khong dung len lai)" in text and "Xac nhan: https://x.example/?ack=abc" in text
+
+
+def test_sms_gui_qua_dien_thoai_android(monkeypatch=None):
+    sent = []
+
+    def fake_post(url, body, headers, timeout):
+        sent.append((url, body, headers))
+        return (404, b"") if url.endswith("/message") else (202, b"{}")  # điện thoại chỉ có /messages
+
+    original, notifier._post = notifier._post, fake_post
+    try:
+        ch = notifier.build_channels({"SMS_GATEWAY_URL": "http://192.168.1.5:8080", "SMS_GATEWAY_USER": "u",
+                                      "SMS_GATEWAY_PASSWORD": "p"})[0]
+        assert ch.name == "sms" and ch.target_for({"phone": "0912345678"}) == "+84912345678"
+        ch.send("+84912345678", {"kind": "SOS", "details": "", "detected_at": 1_000_000.0})
+        assert [u for u, _, _ in sent] == ["http://192.168.1.5:8080/message", "http://192.168.1.5:8080/messages"]
+        body = __import__("json").loads(sent[-1][1])
+        assert body["phoneNumbers"] == ["+84912345678"] and body["textMessage"]["text"].startswith("SafeWatch: SOS")
+        notifier._post = lambda *a: (500, b"loi")
+        try:
+            ch.send("+84912345678", {"kind": "SOS", "details": "", "detected_at": 1_000_000.0})
+            raise AssertionError("lỗi HTTP phải ném ra để Dispatcher thử lại")
+        except RuntimeError:
+            pass
+    finally:
+        notifier._post = original
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0

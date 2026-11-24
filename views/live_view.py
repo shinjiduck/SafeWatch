@@ -12,6 +12,7 @@ Vòng lặp while ở cuối file CHỈ để polling + cập nhật hiển th�
 card, FPS), không xử lý frame nào cả.
 """
 
+import os
 import time
 
 import streamlit as st
@@ -24,6 +25,7 @@ from streamlit_webrtc import (
 
 import detection_engine as engine
 import event_log
+import framing
 from theme import sidebar_status_html, status_banner_html
 from webrtc_processor import DetectionVideoProcessor
 
@@ -138,6 +140,7 @@ with action_col:
     fall_line_placeholder = st.empty()
     hand_line_placeholder = st.empty()
     advanced_placeholder = st.empty()
+    voice_placeholder = st.empty()
 
 st.markdown("")
 card_col1, card_col2, card_col3 = st.columns(3)
@@ -154,6 +157,23 @@ def render_kpi_card(placeholder, label, value, sub):
         st.markdown(f'<div class="sw-kpi-label">{label}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="sw-kpi-value">{value}</div>', unsafe_allow_html=True)
         st.caption(sub)
+
+
+VOICE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "voice")
+
+
+@st.cache_data
+def voice_bytes(cue):
+    with open(os.path.join(VOICE_DIR, framing.VOICE_FILES[cue]), "rb") as f:
+        return f.read()
+
+
+EXIT_TEXT = {
+    None: "Chưa thấy người nào trong khung hình.",
+    "left": "Người đã đi ra khỏi khung hình (phía trái).",
+    "right": "Người đã đi ra khỏi khung hình (phía phải).",
+    "middle": "Mất dấu người ngay giữa khung hình — có thể bị vật che khuất.",
+}
 
 
 def count_today_incidents():
@@ -192,7 +212,16 @@ st.session_state["camera_online"] = True
 if st.session_state.get("sidebar_status_placeholder") is not None:
     st.session_state["sidebar_status_placeholder"].markdown(sidebar_status_html(True), unsafe_allow_html=True)
 
+pending_voice = None
 while webrtc_ctx.state.playing:
+    # Lời nhắc giọng nói: vòng trước đã xoá player cũ, giờ mới tạo player mới -> trình duyệt
+    # coi là phần tử mới và tự phát (autoplay được vì người dùng đã bấm START trên trang).
+    if pending_voice:
+        with voice_placeholder.container():
+            st.caption(f"🔊 {framing.VOICE_TEXT[pending_voice]}")
+            st.audio(voice_bytes(pending_voice), format="audio/mpeg", autoplay=True)
+        pending_voice = None
+
     processor = webrtc_ctx.video_processor
     if processor is None:
         time.sleep(0.2)
@@ -213,6 +242,14 @@ while webrtc_ctx.state.playing:
     camera_lost = state.get("camera_lost", False)
     observation_lost = config["enable_fall"] and state.get("observation_lost", False)
     fall_monitoring = config["enable_fall"] and fall_down_since is not None and not fall_escalated
+    framing_status = state.get("framing_status", framing.OK) if config["enable_fall"] else framing.OK
+
+    voice_seq = state.get("voice_seq", 0)
+    if voice_seq != st.session_state.get("_voice_seq_played"):
+        st.session_state["_voice_seq_played"] = voice_seq
+        if state.get("voice_cue") and s.get("voice_prompts", True):
+            voice_placeholder.empty()
+            pending_voice = state["voice_cue"]
 
     # Thứ tự ưu tiên: khẩn cấp > đang theo dõi sau ngã > không đủ dữ liệu >
     # an toàn. Mất tín hiệu KHÔNG bao giờ được hiển thị là "an toàn".
@@ -220,7 +257,7 @@ while webrtc_ctx.state.playing:
         st.session_state["last_status"] = "emergency"
     elif fall_monitoring:
         st.session_state["last_status"] = "monitoring"
-    elif camera_lost or observation_lost:
+    elif camera_lost or observation_lost or framing_status != framing.OK:
         st.session_state["last_status"] = "nodata"
     else:
         st.session_state["last_status"] = "safe"
@@ -258,8 +295,26 @@ while webrtc_ctx.state.playing:
         status_banner_placeholder.markdown(
             status_banner_html(
                 "nodata",
-                "⚠️ KHÔNG ĐỦ DỮ LIỆU",
-                "Không thấy người trong khung hình — chưa thể đánh giá an toàn.",
+                "👤 KHÔNG CÓ NGƯỜI TRONG KHUNG HÌNH",
+                f"{EXIT_TEXT[state.get('exit_side')]} Chưa thể đánh giá an toàn.",
+            ),
+            unsafe_allow_html=True,
+        )
+    elif framing_status == framing.TOO_CLOSE:
+        status_banner_placeholder.markdown(
+            status_banner_html(
+                "nodata",
+                "📏 ĐỨNG QUÁ GẦN CAMERA",
+                "Camera không thấy đủ cơ thể nên phát hiện ngã kém chính xác. Xin lùi ra xa (khoảng 2–3 m).",
+            ),
+            unsafe_allow_html=True,
+        )
+    elif framing_status == framing.PARTIAL:
+        status_banner_placeholder.markdown(
+            status_banner_html(
+                "nodata",
+                "🧍 CHỈ THẤY MỘT PHẦN CƠ THỂ",
+                "Người ở sát mép hoặc bị che một phần (vai/hông). Xin di chuyển vào giữa khung hình.",
             ),
             unsafe_allow_html=True,
         )

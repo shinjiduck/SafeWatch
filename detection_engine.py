@@ -75,7 +75,7 @@ FALL_LABEL_DISPLAY = {
     "Warmup...": "Đang khởi động...",
     "NotFall": "Không phát hiện ngã",
     "Fall": "Đã phát hiện ngã",
-    NO_DATA_LABEL: "Không đủ dữ liệu (không thấy người)",
+    NO_DATA_LABEL: "Không có người trong khung hình",
 }
 HAND_LABEL_DISPLAY = {
     "Warmup...": "Đang khởi động...",
@@ -111,6 +111,7 @@ SETTINGS_DEFAULTS = {
     "mirror_camera": False,
     "camera_resolution": "640x480",
     "sound_alert": True,
+    "voice_prompts": True,
     "silent_monitoring": True,
     "notify_email": False,
     "notify_sms": False,

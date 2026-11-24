@@ -37,8 +37,10 @@ import tensorflow as tf  # noqa: E402
 
 MODELS_DIR = os.path.join(APP_DIR, "models")
 OLD_MODEL = os.path.join(MODELS_DIR, "LSTM_model.h5")
-NEW_MODEL = os.path.join(MODELS_DIR, "fall_v2.keras")
-NEW_META = os.path.join(MODELS_DIR, "fall_v2_meta.json")
+# FALL_MODEL=<tên> -> lệnh test chấm phiên bản fall_v2_<tên> (xem models/MODEL_VERSIONS.md) thay vì bản app đang dùng.
+_VERSION = f"_{os.environ['FALL_MODEL']}" if os.environ.get("FALL_MODEL") else ""
+NEW_MODEL = os.path.join(MODELS_DIR, f"fall_v2{_VERSION}.keras")
+NEW_META = os.path.join(MODELS_DIR, f"fall_v2{_VERSION}_meta.json")
 EXCEL_NOTFALL = os.path.join(os.path.dirname(APP_DIR), "NgaQuy", "Code", "Data_0_NotFall.xlsx")
 SEED = 42
 THRESHOLDS = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98]

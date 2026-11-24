@@ -54,6 +54,21 @@ Trình duyệt sẽ tự mở `http://localhost:8501`. Vào trang **Xem trực t
 - 3 cử chỉ tay SOS (Need Ambulance/Need Help/Signal For Help) → báo động ngay.
 - Ngã → theo dõi im lặng (không báo ngay) trong khoảng thời gian cấu hình được (mặc định 120s). Đứng lên lại trong thời gian đó → huỷ, ghi log "đã phục hồi". Hết giờ vẫn chưa đứng lên → báo động thật + ghi log.
 - Mọi cảnh báo được ghi vào `data/events.db`, xem lại ở trang Lịch sử sự cố / Dashboard.
+- **Đứng sai chỗ** (`framing.py`): đứng quá gần camera, chỉ thấy một phần cơ thể, hoặc rời khung hình → hiện
+  thông báo + nhắc bằng giọng nói ("Xin mời quý vị rời xa camera một chút."). Không thấy ai → trạng thái
+  "Không có người trong khung hình" (không bao giờ hiện là an toàn). File giọng nói: `assets/voice/`.
+
+**Kênh gửi cảnh báo** (`notifier.py`, khai báo trong `.streamlit/secrets.toml`, không commit file này):
+
+| Kênh | Khoá cần có |
+|---|---|
+| Telegram | `TELEGRAM_BOT_TOKEN` |
+| Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` |
+| SMS qua điện thoại Android (miễn phí, tính cước SIM) | `SMS_GATEWAY_USER`, `SMS_GATEWAY_PASSWORD`, `SMS_GATEWAY_URL` (cloud: `https://api.sms-gate.app/3rdparty/v1`, cùng wifi: `http://<IP điện thoại>:8080`) |
+| SMS qua Twilio | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` |
+
+SMS gửi tới số điện thoại của người liên hệ khẩn cấp, không dấu để vừa 1 tin. Xác nhận "đã nhận" qua link
+(cần `PUBLIC_BASE_URL`).
 
 ## Model (không đổi so với các bản trước)
 
@@ -69,13 +84,13 @@ Trình duyệt sẽ tự mở `http://localhost:8501`. Vào trang **Xem trực t
 
 - **Không có auth/nhiều tài khoản thật** — trang Tài khoản chỉ là 1 hồ sơ tĩnh lưu JSON.
 - **Chỉ hỗ trợ 1 webcam local** — trang Quản lý camera không thêm/xoá camera được, chỉ hiển thị 1 card.
-- **Email/SMS/Push notification chưa có backend gửi thật** — các toggle ở Cấu hình > Cảnh báo chỉ là giao diện minh hoạ.
+- **Push notification chưa có** — Telegram, Email, SMS đã gửi thật (xem Kênh gửi cảnh báo).
 - **Lưu snapshot/video sự cố chưa hỗ trợ** — cần luồng ghi riêng, disable trong Cấu hình > Lưu trữ.
 - **Dashboard không "live" thật song song với Live View** — Streamlit chỉ chạy 1 trang/lúc trong 1 session, nên khối trạng thái lớn ở Dashboard hiện đúng trạng thái ghi nhận lần cuối từ trang Xem trực tiếp, không phải cập nhật real-time khi đang ở trang khác.
 
 ## Chưa làm
 
 - Đa tín hiệu thật (âm thanh phát hiện tiếng kêu cứu qua mic).
-- Gửi thông báo thật (email/SMS/push).
+- Push notification.
 - Ghi snapshot/video lúc xảy ra sự cố.
 - Đa camera, đa người dùng thật (auth, phân quyền thật).

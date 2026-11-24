@@ -1,7 +1,7 @@
 """Chuỗi cảnh báo tới người chăm sóc (yêu cầu cải tiến số 1).
 
 Luồng:  phát hiện  ->  raise_alert()  ->  Dispatcher (thread nền)  ->  kênh
-gửi (Telegram / Email)  ->  người chăm sóc bấm "Đã nhận"  ->  ack().
+gửi (Telegram / Email / SMS)  ->  người chăm sóc bấm "Đã nhận"  ->  ack().
 
 - Mỗi cảnh báo và MỖI lần gửi đều lưu SQLite (bảng alerts, deliveries) kèm
   mốc thời gian, nên đo được: phát hiện -> phát cảnh báo -> gửi thành công
@@ -20,13 +20,16 @@ Logic trong Dispatcher.tick() không phụ thuộc thời gian thật hay mạng
 xem tests/test_notifier.py.
 """
 
+import base64
 import json
 import os
+import re
 import secrets as _secrets
 import smtplib
 import ssl
 import threading
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -403,10 +406,103 @@ class EmailChannel:
                 smtp.send_message(msg)
 
 
+def to_e164(phone, country_code="84"):
+    """'0912 345 678' -> '+84912345678'. Số đã có '+' giữ nguyên (chỉ bỏ khoảng trắng / dấu chấm)."""
+    digits = re.sub(r"[^\d+]", "", phone or "")
+    if not digits:
+        return None
+    if digits.startswith("+"):
+        return digits
+    if digits.startswith("00"):
+        return "+" + digits[2:]
+    if digits.startswith("0"):
+        return f"+{country_code}{digits[1:]}"
+    return f"+{country_code}{digits}" if not digits.startswith(country_code) else "+" + digits
+
+
+def strip_accents(text):
+    """Bỏ dấu tiếng Việt: SMS không dấu được 160 ký tự / tin, có dấu chỉ 70 -> rẻ hơn, ít bị cắt."""
+    text = text.replace("đ", "d").replace("Đ", "D").replace("–", "-")
+    text = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in text if not unicodedata.combining(c) and ord(c) < 128)
+
+
+def sms_text(alert, ack_url=None):
+    detected = datetime.fromtimestamp(alert["detected_at"]).strftime("%H:%M %d/%m")
+    parts = [f"SafeWatch: {alert['kind']}", alert.get("details") or "", f"Luc {detected}"]
+    if alert.get("source") == "simulated":
+        parts.append("(GIA LAP de kiem thu)")
+    if ack_url:
+        parts.append(f"Xac nhan: {ack_url}")
+    return strip_accents(". ".join(p for p in parts if p))
+
+
+def _post(url, body, headers, timeout):
+    request = urllib.request.Request(url, data=body, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.status, response.read()
+    except urllib.error.HTTPError as exc:
+        return exc.code, exc.read()
+
+
+def _basic(user, password):
+    return "Basic " + base64.b64encode(f"{user}:{password}".encode()).decode()
+
+
+class SmsChannel:
+    """Gửi SMS tới số điện thoại của người liên hệ. 2 cách:
+
+    - "android" (mặc định, miễn phí): app "SMS Gateway for Android" (sms-gate.app) trên 1 điện thoại
+      Android có SIM -> điện thoại đó nhắn tin như bình thường, tính cước SIM. Cloud:
+      SMS_GATEWAY_URL = https://api.sms-gate.app/3rdparty/v1 ; mạng LAN: http://<IP điện thoại>:8080.
+      SMS_GATEWAY_USER / SMS_GATEWAY_PASSWORD lấy trong app.
+    - "twilio": TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM (tài khoản dùng thử chỉ gửi được
+      tới số đã xác minh).
+
+    SMS không có nút bấm -> xác nhận qua link (cần PUBLIC_BASE_URL), giống email. "Đã gửi" = cổng
+    SMS đã nhận lệnh gửi, chưa chắc máy người nhận đã nhận.
+    """
+
+    name = "sms"
+
+    def __init__(self, provider, url=None, user=None, password=None, sender=None, timeout=15):
+        self.provider = provider
+        self.url = (url or "https://api.sms-gate.app/3rdparty/v1").rstrip("/")
+        self.user, self.password, self.sender = user, password, sender
+        self.timeout = timeout
+
+    def target_for(self, contact):
+        return to_e164(contact.get("phone"))
+
+    def send(self, target, alert, ack_url=None):
+        text = sms_text(alert, ack_url)
+        if self.provider == "twilio":
+            status, body = _post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{self.user}/Messages.json",
+                urllib.parse.urlencode({"To": target, "From": self.sender, "Body": text}).encode(),
+                {"Authorization": _basic(self.user, self.password),
+                 "Content-Type": "application/x-www-form-urlencoded"},
+                self.timeout,
+            )
+        else:
+            payload = json.dumps({"textMessage": {"text": text}, "phoneNumbers": [target]}).encode()
+            headers = {"Authorization": _basic(self.user, self.password), "Content-Type": "application/json"}
+            # Cloud dùng /messages, server trong điện thoại (mạng LAN) dùng /message: thử đúng loại trước.
+            paths = ["/messages", "/message"] if "sms-gate.app" in self.url else ["/message", "/messages"]
+            for path in paths:
+                status, body = _post(self.url + path, payload, headers, self.timeout)
+                if status != 404:
+                    break
+        if not 200 <= status < 300:
+            raise RuntimeError(f"SMS ({self.provider}) HTTP {status}: {body[:200].decode(errors='replace')}")
+
+
 # ------------------------------------------------------------------ Cấu hình
 
 CONFIG_KEYS = ["TELEGRAM_BOT_TOKEN", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM",
-               "PUBLIC_BASE_URL"]
+               "PUBLIC_BASE_URL", "SMS_GATEWAY_URL", "SMS_GATEWAY_USER", "SMS_GATEWAY_PASSWORD",
+               "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM"]
 
 
 def load_config(secrets_mapping=None):
@@ -433,4 +529,10 @@ def build_channels(config):
             EmailChannel(config["SMTP_HOST"], config.get("SMTP_PORT") or 465, config["SMTP_USER"],
                          config["SMTP_PASSWORD"], config.get("SMTP_FROM"))
         )
+    if config.get("SMS_GATEWAY_USER") and config.get("SMS_GATEWAY_PASSWORD"):
+        channels.append(SmsChannel("android", config.get("SMS_GATEWAY_URL"), config["SMS_GATEWAY_USER"],
+                                   config["SMS_GATEWAY_PASSWORD"]))
+    elif config.get("TWILIO_ACCOUNT_SID") and config.get("TWILIO_AUTH_TOKEN") and config.get("TWILIO_FROM"):
+        channels.append(SmsChannel("twilio", user=config["TWILIO_ACCOUNT_SID"], password=config["TWILIO_AUTH_TOKEN"],
+                                   sender=config["TWILIO_FROM"]))
     return channels

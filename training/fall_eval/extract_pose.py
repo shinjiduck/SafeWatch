@@ -59,6 +59,22 @@ def _video_fps(path):
 POSE_MIN_CONF = float(os.environ.get("POSE_MIN_CONF", "0.5"))
 # Độ phức tạp model tư thế: 1 = full (mặc định app), 2 = heavy (giữ khung xương tốt hơn khi tối / che khuất)
 POSE_COMPLEXITY = int(os.environ.get("POSE_COMPLEXITY", "1"))
+# Thử che khuất: OCCLUDE=br:0.4 -> tô đen góc dưới-phải, rộng 40% chiều ngang x 40% chiều dọc khung hình
+# (góc: tl, tr, bl, br). Mặc định không che.
+OCCLUDE = os.environ.get("OCCLUDE")
+
+
+def occlude(img):
+    if not OCCLUDE:
+        return img
+    corner, frac = OCCLUDE.split(":")
+    h, w = img.shape[:2]
+    ch, cw = int(h * float(frac)), int(w * float(frac))
+    y0 = 0 if corner[0] == "t" else h - ch
+    x0 = 0 if corner[1] == "l" else w - cw
+    img = img.copy()
+    img[y0:y0 + ch, x0:x0 + cw] = 0
+    return img
 
 
 def extract(frames, max_width=640):
@@ -70,7 +86,7 @@ def extract(frames, max_width=640):
             h, w = img.shape[:2]
             if w > max_width:  # app nhận ~640x480; ảnh lớn hơn thì thu nhỏ cho giống
                 img = cv2.resize(img, (max_width, int(h * max_width / w)))
-            result = pose.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            result = pose.process(cv2.cvtColor(occlude(img), cv2.COLOR_BGR2RGB))
             if result.pose_landmarks:
                 out.append([[lm.x, lm.y, lm.z, lm.visibility] for lm in result.pose_landmarks.landmark])
             else:

@@ -26,6 +26,7 @@ from streamlit_webrtc import VideoProcessorBase
 
 import detection_engine as engine
 import event_log
+import framing
 import notifier
 from hand_features import SIGNAL_SEQUENCE_LENGTH
 
@@ -86,6 +87,10 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.pose_last_seen = time.time()
         self.observation_lost = False
         self.camera_lost = False
+        # Đứng quá gần / bị khuất / rời khung hình -> nhắc bằng chữ + giọng nói (framing.py).
+        self.framing = framing.FramingMonitor()
+        self.last_landmarks = None
+        self.exit_side = None  # "left" / "right" / "middle" lúc mất người; None = chưa từng thấy ai
 
         # Model ngã v2 (app truyền vào FallV2Model) dùng bộ theo dõi 3 bước riêng;
         # không có thì giữ nguyên đường cũ (LSTM 10 frame + bỏ phiếu đa số).
@@ -176,10 +181,13 @@ class DetectionVideoProcessor(VideoProcessorBase):
             if pose_results.pose_landmarks:
                 self.fall_lm_window.append(engine.pose_landmarks_to_vector(pose_results))
                 self.pose_last_seen = now
+                landmarks = [[lm.x, lm.y, lm.z, lm.visibility] for lm in pose_results.pose_landmarks.landmark]
+                self.last_landmarks = landmarks
+                self.exit_side = None
+                # Đang theo dõi sau ngã / đang báo động: không nhắc "đứng lại cho đúng".
+                self.framing.observe(framing.assess(landmarks), now, quiet=self._busy(now))
                 if self.fall_tracker is not None:
-                    label = self.fall_tracker.update(
-                        [[lm.x, lm.y, lm.z, lm.visibility] for lm in pose_results.pose_landmarks.landmark], now
-                    )
+                    label = self.fall_tracker.update(landmarks, now)
                     if label is not None:
                         self.fall_label = label
                 if self.observation_lost:
@@ -199,9 +207,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     self.observation_lost = True
                     self.fall_votes.clear()
                     self.fall_label = engine.NO_DATA_LABEL
+                    if self.last_landmarks is not None:
+                        self.exit_side = framing.exit_side(self.last_landmarks) or "middle"
+                        self.framing.person_lost(now, quiet=self._busy(now))
                     event_log.log_status(
                         "Mất quan sát người",
-                        f"Không thấy landmark tư thế trong {engine.POSE_LOST_SECONDS:.1f}s",
+                        f"Không thấy landmark tư thế trong {engine.POSE_LOST_SECONDS:.1f}s"
+                        + {None: "", "left": " — đi ra mép trái", "right": " — đi ra mép phải",
+                           "middle": " — mất dấu giữa khung hình (có thể bị che)"}[self.exit_side],
                     )
 
         raw_vector = None
@@ -243,6 +256,9 @@ class DetectionVideoProcessor(VideoProcessorBase):
             self.signal_detected = self.signal_consecutive_count >= engine.SIGNAL_CONSECUTIVE_REQUIRED
 
         return img
+
+    def _busy(self, now):
+        return self.fall_down_since is not None or now < self.alert_until
 
     def _update_alerts(self, now):
         cfg = self.config
@@ -319,5 +335,9 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     "observation_lost": self.observation_lost,
                     "camera_lost": self.camera_lost,
                     "last_frame_time": self.last_frame_time,
+                    "framing_status": self.framing.status,
+                    "voice_cue": self.framing.cue,
+                    "voice_seq": self.framing.cue_seq,
+                    "exit_side": self.exit_side,
                 }
             )

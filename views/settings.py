@@ -95,13 +95,21 @@ with tab_alert:
     st.markdown("**Kênh gửi cảnh báo**")
     st.markdown(f"- Telegram: {'✅ đang bật' if 'telegram' in active else '⚪ chưa cấu hình (TELEGRAM_BOT_TOKEN)'}")
     st.markdown(f"- Email: {'✅ đang bật' if 'email' in active else '⚪ chưa cấu hình (SMTP_HOST/USER/PASSWORD)'}")
-    st.markdown("- SMS / Push: chưa hỗ trợ")
+    st.markdown(
+        f"- SMS: {'✅ đang bật' if 'sms' in active else '⚪ chưa cấu hình (SMS_GATEWAY_USER/PASSWORD hoặc TWILIO_*)'}"
+    )
+    st.markdown("- Push: chưa hỗ trợ")
     st.caption("Kênh cấu hình trong `.streamlit/secrets.toml`, khởi động lại app để áp dụng.")
     st.page_link("views/alerts.py", label="Cảnh báo & xác nhận (giả lập, bảng thời gian) →", icon="🔔")
     st.page_link("views/emergency_contacts.py", label="Quản lý người liên hệ khẩn cấp →", icon="📞")
     st.markdown("---")
     st.session_state["sound_alert"] = st.checkbox(
         "Phát âm thanh khi báo động khẩn cấp", value=st.session_state["sound_alert"]
+    )
+    st.session_state["voice_prompts"] = st.checkbox(
+        "Nhắc bằng giọng nói khi đứng quá gần / bị khuất / rời khung hình",
+        value=st.session_state["voice_prompts"],
+        help='VD: "Xin mời quý vị rời xa camera một chút." Không nhắc trong lúc đang theo dõi sau ngã.',
     )
     st.session_state["silent_monitoring"] = st.checkbox(
         "Theo dõi im lặng sau Ngã (không phát âm thanh trong lúc xác minh)",
