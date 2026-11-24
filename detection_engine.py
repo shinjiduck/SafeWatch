@@ -169,6 +169,8 @@ class FallV2Model:
             meta = json.load(f)
         self.window = int(meta["window"])
         self.threshold = float(meta["threshold"])
+        # số lần xử lý liên tiếp vượt ngưỡng — chọn trên validation cùng ngưỡng (model cũ không ghi -> 2)
+        self.consecutive = int(meta.get("consecutive", FALL_V2_CONSECUTIVE))
         self.mean = np.asarray(meta["mean"], dtype=np.float32)
         self.std = np.asarray(meta["std"], dtype=np.float32)
         self._fn = tf.function(lambda x: self.model(x, training=False), reduce_retracing=True)
@@ -243,7 +245,7 @@ class FallV2Tracker:
             return None
         self.last_prob = self.model.prob(list(self.features))
         self.hits = self.hits + 1 if self.last_prob >= self.model.threshold else 0
-        if self.hits >= FALL_V2_CONSECUTIVE:
+        if self.hits >= getattr(self.model, "consecutive", FALL_V2_CONSECUTIVE):
             self.down = True
             self.upright_since = None
             return "Fall"

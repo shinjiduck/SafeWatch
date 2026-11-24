@@ -223,8 +223,9 @@ def analyse(tr, landmarks, fps):
     if tr["is_fall"] and not tr["detected"]:
         if info["lost"] >= 0.2:
             reasons.append(f"mất khung xương {info['lost']:.0%} thời gian ngã")
-        if info["max_p"] >= th:
-            reasons.append(f"xác suất vượt ngưỡng {th:g} chỉ {info['above_run']} lần, cần 2 lần liên tiếp")
+        if info["max_p"] >= th and info["above_run"] < tr.get("consecutive", 2):
+            reasons.append(f"xác suất vượt ngưỡng {th:g} chỉ {info['above_run']} lần liên tiếp, "
+                           f"cần {tr.get('consecutive', 2)}")
         else:
             digits = 3 if round(info["max_p"], 2) >= th else 2
             reasons.append(f"xác suất cao nhất {info['max_p']:.{digits}f} < ngưỡng {th:g}")

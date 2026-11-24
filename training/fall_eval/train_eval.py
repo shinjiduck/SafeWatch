@@ -42,6 +42,7 @@ NEW_META = os.path.join(MODELS_DIR, "fall_v2_meta.json")
 EXCEL_NOTFALL = os.path.join(os.path.dirname(APP_DIR), "NgaQuy", "Code", "Data_0_NotFall.xlsx")
 SEED = 42
 THRESHOLDS = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98]
+CONSECUTIVE = [1, 2, 3]  # số lần xử lý liên tiếp vượt ngưỡng mới báo — chọn cùng ngưỡng trên validation
 
 
 def set_seed():
@@ -134,14 +135,16 @@ def predict_seq(model, mean, std, seq):
 
 
 def choose_threshold(model, mean, std, val_seqs):
-    """Chọn ngưỡng trên VALIDATION: tối đa (số ca ngã bắt được - số báo nhầm)."""
-    best, best_score = 0.5, -1e9
+    """Chọn (ngưỡng, số lần liên tiếp) trên VALIDATION: tối đa (số ca ngã bắt được - số báo nhầm).
+    Hoà điểm thì lấy cấu hình chặt hơn (ngưỡng cao hơn, rồi nhiều lần liên tiếp hơn)."""
+    best, best_score = (0.5, 2), -1e9
     preds = [(s, predict_seq(model, mean, std, s)) for s in val_seqs]
     for th in THRESHOLDS:
-        res = [fv.score_sequence(s, fv.detect_events(p, s.sample_times, th)) for s, p in preds]
-        score = sum(r[0] for r in res) - sum(r[1] for r in res)
-        if score >= best_score:
-            best, best_score = th, score
+        for k in CONSECUTIVE:
+            res = [fv.score_sequence(s, fv.detect_events(p, s.sample_times, th, k)) for s, p in preds]
+            score = sum(r[0] for r in res) - sum(r[1] for r in res)
+            if score >= best_score:
+                best, best_score = (th, k), score
     return best
 
 
@@ -237,10 +240,11 @@ def write_report(out_dir, title, rows_by_model, per_seq):
 # ---------------------------------------------------------------- lệnh
 
 
-def score_both(seqs, model, mean, std, threshold, old_fn, new_results, old_results, per_seq, traces=None):
+def score_both(seqs, model, mean, std, threshold, old_fn, new_results, old_results, per_seq, traces=None,
+               consecutive=2):
     for s in seqs:
         probs = predict_seq(model, mean, std, s)
-        events = fv.detect_events(probs, s.sample_times, threshold)
+        events = fv.detect_events(probs, s.sample_times, threshold, consecutive)
         r = fv.score_sequence(s, events)
         new_results.append((s, *r))
         per_seq.append(("moi", s, *r))
@@ -252,6 +256,7 @@ def score_both(seqs, model, mean, std, threshold, old_fn, new_results, old_resul
                 "npz": s.npz, "is_fall": s.is_fall, "times": s.sample_times.tolist(),
                 "fall_start_s": None if s.fall_start_s is None else float(s.fall_start_s),
                 "fall_end_s": None if s.fall_end_s is None else float(s.fall_end_s), "threshold": float(threshold),
+                "consecutive": int(consecutive),
                 "probs": [float(p) for p in probs], "events": [float(t) for t in events], "detected": bool(r[0]),
                 "n_false": int(r[1]), "old_voted": [float(v) for v in trace["old_voted"]],
                 "old_events": [float(t) for t in events_old], "old_detected": bool(r_old[0]),
@@ -286,10 +291,10 @@ def cmd_cv(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None, re
         inner = stratified_folds(rest, k=4)
         val, train = inner[0], [s for fold in inner[1:] for s in fold]
         model, mean, std, best_epoch = fit(train, val, extra_negatives=negatives)
-        th = choose_threshold(model, mean, std, val)
-        chosen.append((best_epoch, th))
-        score_both(test, model, mean, std, th, old_fn, new_results, old_results, per_seq, traces)
-        print(f"fold {f + 1}/5: epoch={best_epoch}, ngưỡng={th}", flush=True)
+        th, k = choose_threshold(model, mean, std, val)
+        chosen.append((best_epoch, th, k))
+        score_both(test, model, mean, std, th, old_fn, new_results, old_results, per_seq, traces, k)
+        print(f"fold {f + 1}/5: epoch={best_epoch}, ngưỡng={th}, liên tiếp={k}", flush=True)
     data = "URFD + CAUCAFall (CAUCAFall chia THEO NGƯỜI)" if cauca_pose else "URFD"
     if rec_pose:
         data += " + GMDCSA-24 (chia THEO NGƯỜI)"
@@ -322,11 +327,11 @@ def cmd_holdout(urfd_pose, urfd_labels, cauca_pose, cauca_root, rec_pose, rec_la
         inner = stratified_folds(rest, k=4)
         val, train = inner[0], [s for fold in inner[1:] for s in fold]
         model, mean, std, best_epoch = fit(train, val, extra_negatives=negatives)
-        th = choose_threshold(model, mean, std, val)
-        chosen.append((best_epoch, th))
-        score_both(test, model, mean, std, th, old_fn, new_results, old_results, per_seq, traces)
+        th, k = choose_threshold(model, mean, std, val)
+        chosen.append((best_epoch, th, k))
+        score_both(test, model, mean, std, th, old_fn, new_results, old_results, per_seq, traces, k)
         r = fv.summarize([x for x in new_results if x[0].group == person])
-        print(f"{person}: epoch={best_epoch}, ngưỡng={th}, bắt {r['bat_duoc']}/{r['so_ca_nga']}, "
+        print(f"{person}: epoch={best_epoch}, ngưỡng={th}, liên tiếp={k}, bắt {r['bat_duoc']}/{r['so_ca_nga']}, "
               f"sinh hoạt báo nhầm {r['chuoi_sinh_hoat_bi_bao_nham']}/{r['so_chuoi_sinh_hoat']}", flush=True)
     write_report(
         out_dir,
@@ -346,6 +351,7 @@ def cmd_final(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None,
         chosen = json.load(f)["epoch_threshold_per_fold"]
     epochs = int(np.median([c[0] for c in chosen]))
     threshold = float(np.median([c[1] for c in chosen]))
+    consecutive = int(np.median([c[2] if len(c) > 2 else 2 for c in chosen]))
     model, mean, std, _ = fit(seqs, None, epochs=epochs, extra_negatives=excel_negatives())
     model.save(NEW_MODEL)
     trained_on = "URFD (70 chuỗi) + NotFall tự quay"
@@ -355,9 +361,10 @@ def cmd_final(urfd_pose, urfd_labels, out_dir, cauca_pose=None, cauca_root=None,
         rec = [s for s in seqs if source_of(s.group) == "gmd"]
         trained_on += f" + GMDCSA-24 ({len(rec)} chuỗi, {len({s.group for s in rec})} người)"
     with open(NEW_META, "w") as f:
-        json.dump({"window": fv.WINDOW, "process_hz": fv.PROCESS_HZ, "threshold": threshold, "epochs": epochs,
+        json.dump({"window": fv.WINDOW, "process_hz": fv.PROCESS_HZ, "threshold": threshold,
+                   "consecutive": consecutive, "epochs": epochs,
                    "mean": mean.tolist(), "std": std.tolist(), "trained_on": trained_on}, f, ensure_ascii=False)
-    print(f"Đã lưu {NEW_MODEL} (epoch={epochs}, ngưỡng={threshold})")
+    print(f"Đã lưu {NEW_MODEL} (epoch={epochs}, ngưỡng={threshold}, liên tiếp={consecutive})")
 
 
 def load_saved():
@@ -371,7 +378,8 @@ def cmd_test(pose_dir, labels_csv, out_dir):
     seqs = fv.load_recorded(pose_dir, labels_csv)
     model, mean, std, meta = load_saved()
     new_results, old_results, per_seq, traces = [], [], [], {}
-    score_both(seqs, model, mean, std, meta["threshold"], old_model(), new_results, old_results, per_seq, traces)
+    score_both(seqs, model, mean, std, meta["threshold"], old_model(), new_results, old_results, per_seq, traces,
+               meta.get("consecutive", 2))
     write_report(out_dir, "Bộ video tự quay — người không có trong dữ liệu train",
                  {"Model cũ (LSTM 10 frame)": fv.summarize(old_results), "Model mới (v2)": fv.summarize(new_results)},
                  per_seq)
@@ -386,7 +394,8 @@ def cmd_test_cauca(cauca_pose, cauca_root, out_dir):
         sys.exit("Model đang lưu đã train trên CAUCAFall — kết quả sẽ không còn là test độc lập.")
     seqs = fv.load_caucafall(cauca_pose, cauca_root)
     new_results, old_results, per_seq = [], [], []
-    score_both(seqs, model, mean, std, meta["threshold"], old_model(), new_results, old_results, per_seq)
+    score_both(seqs, model, mean, std, meta["threshold"], old_model(), new_results, old_results, per_seq,
+               consecutive=meta.get("consecutive", 2))
     write_report(out_dir, "CAUCAFall — 10 người, phòng, ánh sáng, che khuất KHÁC HẲN URFD; model chỉ train trên URFD",
                  {"Model cũ (LSTM 10 frame)": fv.summarize(old_results), "Model mới (v2)": fv.summarize(new_results)},
                  per_seq)
