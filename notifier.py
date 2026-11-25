@@ -499,7 +499,7 @@ class SmsChannel:
 
 
 ESMS_SEND_URL = "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/"
-ESMS_BALANCE_URL = "https://rest.esms.vn/MainService.svc/json/GetBalance_json"
+ESMS_BALANCE_URL = "https://rest.esms.vn/MainService.svc/json/GetBalance_json/"  # thiếu "/" cuối -> eSMS trả 307
 # Mã lỗi eSMS hay gặp (developers.esms.vn/esms-api/bang-ma-loi) -> lời giải thích cho người cài đặt
 ESMS_ERRORS = {
     "99": "yêu cầu không hợp lệ hoặc số điện thoại bị chặn",
