@@ -65,7 +65,25 @@ trên Le2i để nó còn là bài thử sạch.
   >= 1 s trước cú ngã. Sinh hoạt: 9.569 clip (ngồi, đứng, đi, **nằm xuống chủ động**, nằm...).
 - Hạn chế: video do AI tạo, chỉ là bài thử bổ trợ cho dữ liệu thật.
 
-(kết quả: điền sau khi chạy)
+| Độ cao camera | Ngã bắt được | Clip sinh hoạt bị nghi ngã |
+|---|---|---|
+| Ngang mắt | 36/57 (63%) | 5.9% |
+| Cao, chếch xuống | 31/49 (63%) | 5.5% |
+| Thấp | 22/39 (56%) | 5.2% |
+| **Thẳng từ trên xuống** | **17/48 (35%)** | 3.6% |
+| **Tổng** | **106/193 (55%)** | 483/9.569 (5.0%) |
+
+Theo hướng camera: trước 34/60, sau 33/57, trái 25/42, **phải 14/34**. Xa / vừa, trong nhà / ngoài trời: gần như
+nhau. Theo nhóm tuổi: người già 13/31 ca ngã, 2.9% clip sinh hoạt bị nghi.
+
+Theo loại sinh hoạt (clip bị nghi ngã): **nằm xuống chủ động 27%** (321/1.189), "khác" 8%, ngồi xuống 3.6%, còn
+lại < 1% (đứng, đi, ngồi, nằm yên, đứng dậy).
+
+**Kết luận thẳng:** 2 điểm yếu là **camera đặt thẳng từ trên xuống** và **nằm xuống nhanh**. Trên dữ liệu thật
+(Le2i 94% ca ngã; Charades / GMDCSA-24 có cảnh nằm giường) con số tốt hơn nhiều — chuyển động do AI tạo có thể
+nhanh / lạ hơn ngoài đời và clip chỉ 5 s — nhưng đây vẫn là hướng cần cải thiện tiếp (thêm dữ liệu nằm xuống và
+góc nhìn từ trên vào train). Hướng dẫn lắp đặt khuyên "cao, chếch xuống" — đúng nhóm "high" (63%), không phải
+"thẳng từ trên xuống".
 
 ## 5. Dữ liệu thật cần tải tay (trang chặn tải tự động)
 
