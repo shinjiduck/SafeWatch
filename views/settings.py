@@ -45,6 +45,13 @@ with tab_detect:
     )
     section("Cử chỉ cầu cứu")
     st.session_state["enable_hand"] = st.toggle("Bật phát hiện cử chỉ tay", value=st.session_state["enable_hand"])
+    st.session_state["sos_filter"] = st.toggle(
+        "Chống báo SOS nhầm: chỉ nhận cử chỉ khi giơ tay cao hơn vai và giữ 2 giây",
+        value=st.session_state["sos_filter"],
+        disabled=not st.session_state["enable_hand"],
+        help="Đo trên 3,2 giờ sinh hoạt (Charades): báo SOS nhầm 132 -> 1,9 lần / giờ. Cần bật phát hiện ngã (để biết "
+        "vai ở đâu). Số đo: training/hand_eval/KIEM_DINH_TAY_XA.md.",
+    )
     st.session_state["hand_roi"] = st.toggle(
         "Nhận cử chỉ khi đứng xa camera (thử nghiệm)",
         value=st.session_state["hand_roi"],

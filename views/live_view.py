@@ -80,6 +80,7 @@ config = {
     "show_overlay": s["show_overlay"],
     "multi_person": s.get("multi_person", False),
     "hand_roi": s.get("hand_roi", False),
+    "sos_filter": s.get("sos_filter", False),
 }
 
 fall_model, hand_model, signal_model = engine.load_models()
@@ -310,6 +311,8 @@ while webrtc_ctx.state.playing:
         ("Khung hình", "—" if not config["enable_fall"] or observation_lost else FRAMING_TEXT[framing_status]),
         ("Cử chỉ tay", engine.friendly_hand_label(hand_label) if config["enable_hand"] else "Đã tắt"),
     ]
+    if state.get("hand_sos_hold") and not sos_alert:
+        rows.append(("Cử chỉ cầu cứu", f"Giữ tay thêm {state['hand_sos_hold']:.1f} s để gửi"))
     if state.get("multi_person"):
         down = ", ".join(f"#{pid}" for pid, _x in state.get("people_down", [])) or "không ai"
         rows.append(("Số người / đang ngã", f"{state.get('people_count', 0)} / {down}"))

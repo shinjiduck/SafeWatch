@@ -114,6 +114,9 @@ class DetectionVideoProcessor(VideoProcessorBase):
         # riêng chạy trên ô quanh bàn tay (tạo khi cần).
         self._pose_for_hands = None
         self._hands_roi = None
+        # Lọc cử chỉ SOS (cấu hình "sos_filter"): chỉ nhận khi bàn tay giơ cao hơn vai và nhãn SOS giữ liên tục
+        # SOS_HOLD_SECONDS. Đo trên Charades: báo SOS nhầm 132 -> 1.9 / giờ (training/hand_eval/KIEM_DINH_TAY_XA.md).
+        self._hand_sos_since = None
 
         event_log.init_db()
         notifier.init_db()
@@ -273,8 +276,15 @@ class DetectionVideoProcessor(VideoProcessorBase):
             raw_label, self.hand_confidence = engine.predict_hand(
                 self.hand_model, raw_vector, cfg["hand_confidence_threshold"]
             )
+            if (cfg.get("sos_filter") and raw_label in engine.SOS_HAND_LABELS
+                    and not hand_roi.hand_above_shoulders(hand_results, self._pose_for_hands)):
+                raw_label = engine.UNCERTAIN_LABEL  # tay không giơ cao -> không tính là ra hiệu cầu cứu
             self.hand_votes.append(raw_label)
             self.hand_label = engine.majority_label(self.hand_votes, self.hand_label)
+        if self.hand_label in engine.SOS_HAND_LABELS:
+            self._hand_sos_since = now if self._hand_sos_since is None else self._hand_sos_since
+        else:
+            self._hand_sos_since = None
 
         if (
             cfg["enable_hand"]
@@ -367,6 +377,13 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.episode_escalated = False
         event_log.log_event("Nghi ngã khuất sau vật cản", "Hông tụt nhanh rồi mất dấu giữa khung hình — đang xác minh")
 
+    SOS_HOLD_SECONDS = 2.0
+
+    def _hand_sos_active(self, now):
+        if self.hand_label not in engine.SOS_HAND_LABELS or self._hand_sos_since is None:
+            return False
+        return not self.config.get("sos_filter") or now - self._hand_sos_since >= self.SOS_HOLD_SECONDS
+
     def _busy(self, now):
         return self.fall_down_since is not None or now < self.alert_until
 
@@ -402,7 +419,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
 
         raw_sos = (
             (cfg["enable_fall"] and self.fall_escalated)
-            or (cfg["enable_hand"] and self.hand_label in engine.SOS_HAND_LABELS)
+            or (cfg["enable_hand"] and self._hand_sos_active(now))
             or (cfg["enable_hand"] and cfg["enable_signal"] and self.signal_detected)
         )
         if raw_sos:
@@ -425,7 +442,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 # detected_at = lúc model thấy ngã lần đầu, để bảng thời gian
                 # tách được đoạn "chờ xác minh" khỏi đoạn gửi/nhận.
                 notifier.raise_alert("Ngã (không đứng lên lại)", details, detected_at=self.fall_down_since, now=now)
-            elif cfg["enable_hand"] and self.hand_label in engine.SOS_HAND_LABELS:
+            elif cfg["enable_hand"] and self._hand_sos_active(now):
                 details = f"Độ tin cậy {self.hand_confidence * 100:.0f}%"
                 event_log.log_event(self.hand_label, details)
                 notifier.raise_alert(f"Cử chỉ SOS: {self.hand_label}", details, now=now)
@@ -457,6 +474,8 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     "vanish_suspected": self.vanish_suspected,
                     "multi_person": self.people is not None,
                     "people_count": len(self.people.visible()) if self.people is not None else None,
+                    "hand_sos_hold": (None if self._hand_sos_since is None or not self.config.get("sos_filter")
+                                      else max(0.0, self.SOS_HOLD_SECONDS - (now - self._hand_sos_since))),
                     "people_down": [(p.id, round(p.center[0], 3)) for p in self.people.down()]
                     if self.people is not None else [],
                 }

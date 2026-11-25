@@ -38,6 +38,17 @@ def hand_raised(pose_lm):
     return any(_seen(pose_lm[w]) and pose_lm[w][1] < top for w, *_ in HAND_POINTS)
 
 
+def hand_above_shoulders(hand_results, pose_lm):
+    """Cổ tay của bàn tay Hands vừa thấy có cao hơn 2 vai (theo Pose) không. Không có Pose / không thấy vai -> False
+    (không xác nhận được là đang giơ tay)."""
+    if pose_lm is None or not hand_results or not hand_results.multi_hand_landmarks:
+        return False
+    shoulder_ys = [pose_lm[i][1] for i in SHOULDERS if pose_lm[i][3] >= VISIBLE]
+    if len(shoulder_ys) < 2:
+        return False
+    return hand_results.multi_hand_landmarks[0].landmark[0].y < min(shoulder_ys)
+
+
 def candidate_rois(pose_lm, width, height):
     """Các ô vuông (x0, y0, cạnh) theo pixel quanh từng bàn tay thấy được, tay giơ cao hơn xếp trước."""
     shoulder_w = 0.0

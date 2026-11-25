@@ -36,3 +36,19 @@ sinh hoạt KHÔNG có cử chỉ cầu cứu (video quay thử + 200 clip Chara
 - Chọn luật giảm báo nhầm nhiều nhất trên clip 0-199 mà vẫn hợp lý cho người ra hiệu thật (tay giơ, giữ vài giây).
 - Đạt nếu trên clip 200-399 báo nhầm giảm >= 80% so với hiện tại. Nhận đúng cử chỉ thật phải kiểm bằng video cử
   chỉ do nhóm quay (>= 90% lần ra hiệu được nhận) trước khi đưa vào app.
+
+## Kết quả lọc cử chỉ SOS
+
+Dữ liệu: `sos_frames.py` lưu từng frame của 400 clip Charades; `sos_rules.py` thử luật (đúng logic tay của app).
+Kiểm tra chéo: số "hiện tại" trên clip 0-199 = 132.0 / giờ, trùng với `roi_eval.py` (2 cách đo khớp nhau).
+
+Chọn trên clip 0-199 (1.62 giờ): **giơ tay cao hơn vai + nhãn SOS giữ liên tục 2 s**, ngưỡng tin cậy giữ 0.8 (nâng
+ngưỡng không giảm thêm). Một vài luật khác trên clip 0-199: chỉ giữ 2 s (không cần giơ tay) 5.6 / giờ; chỉ giơ tay
+36.4 / giờ; giơ tay + giữ 1.5 s 3.7 / giờ.
+
+**Chấm 1 lần trên clip 200-399 (1.58 giờ, chưa dùng để chọn): 209 -> 3 lần (132.0 -> 1.9 / giờ), giảm 99%** —
+đạt tiêu chí (>= 80%).
+
+Đã đưa vào app: Cấu hình → "Chống báo SOS nhầm" (`sos_filter`), trang Trực tiếp hiện "Giữ tay thêm x s để gửi".
+Để TẮT mặc định cho tới khi kiểm bằng video cử chỉ thật của nhóm (>= 90% lần ra hiệu được nhận). Cần bật phát hiện
+ngã (Pose) để biết vai ở đâu.

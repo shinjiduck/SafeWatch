@@ -90,6 +90,50 @@ def test_dung_gan_nhung_dang_gio_tay_thi_khong_nhac_lui_ra():
     assert h.s["voice_cue"] == "too_close" and h.s["voice_seq"] >= 1
 
 
+class _HandsAt:
+    """Detector tay giả: 21 điểm, cổ tay ở độ cao y."""
+
+    def __init__(self, y):
+        self.y = y
+
+    def process(self, _img):
+        import types
+
+        pts = [types.SimpleNamespace(x=0.5, y=self.y, z=0.0) for _ in range(21)]
+        return types.SimpleNamespace(multi_hand_landmarks=[types.SimpleNamespace(landmark=pts)])
+
+
+def _sos_harness(hand_y, sos_filter=True):
+    fresh_db()
+    h = Harness()
+    h.p.config["sos_filter"] = sos_filter
+    h.hand_result = ("Need Help", 0.99)
+    h.pose = h.p.pose_detector = _ScriptedPose(body())  # vai ở y = 0.3
+    h.hands = h.p.hand_detector = _HandsAt(hand_y)
+    return h
+
+
+def test_loc_sos_tay_thap_khong_bao():
+    h = _sos_harness(hand_y=0.6)
+    h.run(5)
+    assert not h.s["sos_alert"] and h.s["hand_label"] == "Uncertain"
+
+
+def test_loc_sos_gio_tay_phai_giu_du_2_giay():
+    h = _sos_harness(hand_y=0.15)
+    h.run(1.4 + 1.5)  # 40 frame khởi động (~1.3 s) + chưa đủ 2 s giữ cử chỉ
+    assert h.s["hand_label"] == "Need Help" and not h.s["sos_alert"]
+    assert h.s["hand_sos_hold"] is not None and h.s["hand_sos_hold"] > 0
+    h.run(1.0)
+    assert h.s["sos_alert"]
+
+
+def test_tat_loc_thi_giu_hanh_vi_cu():
+    h = _sos_harness(hand_y=0.6, sos_filter=False)
+    h.run(2.0)
+    assert h.s["sos_alert"]
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0
