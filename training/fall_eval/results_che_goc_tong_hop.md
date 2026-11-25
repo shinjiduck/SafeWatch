@@ -64,6 +64,19 @@ Hệ thống như đang chạy: model v2, luật khuất sau vật cản 10%. Ch
 | **Le2i không che** (`all3`, bài thử sạch) | **121/129** | 0 | 13 |
 | **Le2i che dải dưới 40%** (bài thử sạch) | **74/129** | **28** | 5 |
 
+**Le2i — che càng nhiều, bắt được càng ít** (bài thử sạch, tô đen dải dưới khung hình):
+
+| Che dải dưới | Ngã bắt được | Trong đó nhờ luật khuất vật cản | Gửi nhầm / giờ (0.38 giờ, mẫu nhỏ) |
+|---|---|---|---|
+| 0% | 121/129 (94%) | 0 | 13 |
+| 20% | 115/129 (89%) | 4 | 16 |
+| 30% | 105/129 (81%) | 14 | 3 |
+| 40% | 74/129 (57%) | 28 | 5 |
+
+Che tới 30% chiều cao (bàn, ghế, thành giường thấp) chỉ mất 16 ca; từ 30% lên 40% tụt mạnh vì người nằm trên sàn
+bị khuất hẳn. Phòng Lecture room nhạy nhất (14 -> 13 -> 6 -> 2 ca). Luật khuất vật cản đỡ phần lớn hơn khi che
+nhiều hơn (4 -> 14 -> 28 ca).
+
 - GMDCSA-24 không còn là bài thử sạch cho luật khuất vật cản (ngưỡng 10% chọn khi đã xem bộ này). **Le2i là bài
   thử sạch**: che dải dưới làm rơi 121 -> 74 ca; luật khuất vật cản cứu 28 ca trong số đó (không có luật: 46/129).
 - Le2i che dải dưới theo phòng: Coffee room 1 29/47, Coffee room 2 10/14, Home 1 15/30, Home 2 4/7,

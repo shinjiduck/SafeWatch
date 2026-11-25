@@ -54,8 +54,8 @@ và ánh sáng riêng.
 | Office | 15/17 | 3/16 |
 | **Tổng** | **121/129 (94%)** | 10/60 — 13 cảnh báo gửi / giờ sinh hoạt (0.38 giờ) |
 
-**Le2i có vật cản** (tô đen 40% phía dưới khung hình, như giường / sofa chắn trước): **74/129** ca ngã (luật
-khuất sau vật cản cứu 28 ca); gửi nhầm 5 / giờ. Chi tiết: `results_che_goc_tong_hop.md`.
+**Le2i có vật cản** (tô đen dải dưới khung hình): che 20% → **115/129**, 30% → **105/129**, 40% (như giường /
+sofa chắn trước) → **74/129** ca ngã; luật khuất sau vật cản cứu 4 / 14 / 28 ca. Chi tiết: `results_che_goc_tong_hop.md`.
 
 Theo người (9 người): bắt được 87–100% ca ngã mỗi người. 18 ca bắt được nhưng không gửi vì người đó tự đứng
 dậy trong 30 s (đúng thiết kế). Điểm yếu: báo nhầm ở Lecture room / Office — ghi nhận, KHÔNG chỉnh hệ thống dựa
