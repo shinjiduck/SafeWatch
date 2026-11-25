@@ -34,13 +34,25 @@ FORGET_SECONDS = 3.0  # người đã mất dấu (không bị nghi ngã) quá l
 MIN_TRACK_SECONDS = float(os.environ.get("MULTI_MIN_TRACK_SECONDS", "2.0"))
 
 
+_MODEL_CACHE = {}
+
+
+def _model_bytes(path):
+    if path not in _MODEL_CACHE:
+        with open(path, "rb") as f:
+            _MODEL_CACHE[path] = f.read()
+    return _MODEL_CACHE[path]
+
+
 class MultiPoseDetector:
     def __init__(self, max_people=MAX_PEOPLE, model_path=MODEL_PATH):
         from mediapipe.tasks import python as mp_tasks
         from mediapipe.tasks.python import vision
 
         options = vision.PoseLandmarkerOptions(
-            base_options=mp_tasks.BaseOptions(model_asset_path=model_path),
+            # Đưa NỘI DUNG file thay vì đường dẫn: MediaPipe trên Windows hiểu sai đường dẫn tuyệt đối có ổ đĩa viết
+            # thường ("d:\...") -> ghép vào sau thư mục site-packages của nó và báo không mở được file.
+            base_options=mp_tasks.BaseOptions(model_asset_buffer=_model_bytes(model_path)),
             running_mode=vision.RunningMode.VIDEO,
             num_poses=max_people,
             min_pose_detection_confidence=DETECTION_CONF,
