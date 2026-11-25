@@ -141,6 +141,31 @@ st.caption(
     f"{notifier.MAX_ROUNDS} vòng. Gửi lỗi → thử lại sau {', '.join(map(str, notifier.RETRY_BACKOFF_SECONDS))} s."
 )
 
+with st.expander("📱 Gửi SMS thử", expanded="sms" in channel_names and not notifier.get_alerts(limit=1)):
+    if "sms" not in channel_names:
+        st.info(
+            "Chưa bật SMS. Cài app **SMS Gateway for Android** (sms-gate.app) lên 1 điện thoại có SIM, bật chế độ "
+            "Cloud, rồi điền Username / Password của app vào `SMS_GATEWAY_USER` / `SMS_GATEWAY_PASSWORD` trong "
+            "`.streamlit/secrets.toml` và khởi động lại app.",
+            icon="ℹ️",
+        )
+    else:
+        with_phone = [r for r in recipients if r["phone"]]
+        if not with_phone:
+            st.warning("Chưa có người liên hệ nào có số điện thoại.", icon="⚠️")
+        else:
+            who = st.selectbox("Gửi tới", with_phone, format_func=lambda r: f"{r['name']} · {r['phone']}")
+            if st.button("Gửi SMS thử"):
+                channel = dispatcher.channels["sms"]
+                target = channel.target_for(who)
+                test_alert = {"kind": "Tin nhắn thử", "details": "Kiểm tra kênh SMS", "detected_at": time.time(),
+                              "source": "simulated", "ack_token": "test"}
+                try:
+                    channel.send(target, test_alert)
+                    st.success(f"Cổng SMS đã nhận lệnh gửi tới {target}. Tin tới máy sau vài giây.", icon="✅")
+                except Exception as exc:  # noqa: BLE001 — hiện lỗi cho người cài đặt
+                    st.error(f"Gửi không được: {exc}", icon="❌")
+
 with st.expander("🧪 Kiểm thử chuỗi cảnh báo & bảng thời gian (minh chứng yêu cầu cải tiến số 1)"):
     if st.button("Giả lập sự kiện ngã"):
         alert_id = notifier.raise_alert("Ngã (giả lập)", "Kiểm thử chuỗi cảnh báo", source="simulated")
