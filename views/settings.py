@@ -29,6 +29,14 @@ with tab_detect:
         horizontal=True,
         help="v2 cần models/fall_v2.keras (train bằng training/fall_eval/train_eval.py); thiếu thì tự dùng v1.",
     )
+    st.session_state["multi_person"] = st.checkbox(
+        "Theo dõi nhiều người cùng lúc (tối đa 3)",
+        value=st.session_state["multi_person"],
+        disabled=st.session_state["fall_model_version"] != "v2",
+        help="Mỗi người có bộ theo dõi ngã riêng; ai ngã mà không dậy thì báo. Cần model v2. Tốn CPU hơn "
+        "(mỗi người thêm ~1 lần chạy model khung xương). Tắt = đúng bản theo dõi 1 người trước đây. "
+        "Số đo: training/fall_eval/KIEM_DINH_NHIEU_NGUOI.md.",
+    )
     st.session_state["fall_grace_seconds"] = st.slider(
         "Thời gian xác minh sau khi Ngã (giây)",
         min_value=5,

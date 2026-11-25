@@ -100,6 +100,7 @@ CAMERA_RESOLUTIONS = {
 
 SETTINGS_DEFAULTS = {
     "fall_model_version": "v2",
+    "multi_person": False,
     "enable_fall": DEFAULT_ENABLE_FALL,
     "enable_hand": DEFAULT_ENABLE_HAND,
     "enable_signal": DEFAULT_ENABLE_SIGNAL,

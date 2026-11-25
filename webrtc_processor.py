@@ -27,12 +27,14 @@ from streamlit_webrtc import VideoProcessorBase
 import detection_engine as engine
 import event_log
 import framing
+import multi_person
 import notifier
 from hand_features import SIGNAL_SEQUENCE_LENGTH
 
 
 class DetectionVideoProcessor(VideoProcessorBase):
-    def __init__(self, fall_model, hand_model, signal_model, pose_detector, hand_detector, config):
+    def __init__(self, fall_model, hand_model, signal_model, pose_detector, hand_detector, config,
+                 multi_detector=None):
         self.fall_model = fall_model
         self.hand_model = hand_model
         self.signal_model = signal_model
@@ -99,6 +101,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.fall_tracker = (
             engine.FallV2Tracker(fall_model) if isinstance(fall_model, engine.FallV2Model) else None
         )
+
+        # Chế độ nhiều người (multi_person.py): chỉ chạy với model v2 (cần bộ theo dõi từng người).
+        # Không có multi_detector -> đúng đường xử lý 1 người như bản app-1nguoi-v1.
+        self.multi = multi_detector if self.fall_tracker is not None else None
+        self.people = (
+            multi_person.PeopleTracker(lambda: engine.FallV2Tracker(fall_model)) if self.multi is not None else None
+        )
+        self.others_present = 0
 
         event_log.init_db()
         notifier.init_db()
@@ -176,10 +186,13 @@ class DetectionVideoProcessor(VideoProcessorBase):
     def _process_frame(self, img, now):
         cfg = self.config
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        pose_results = self.pose_detector.process(img_rgb) if cfg["enable_fall"] else None
+        multi = cfg["enable_fall"] and self.multi is not None
+        pose_results = self.pose_detector.process(img_rgb) if cfg["enable_fall"] and not multi else None
         hand_results = self.hand_detector.process(img_rgb) if cfg["enable_hand"] else None
 
-        if cfg["enable_fall"]:
+        if multi:
+            img = self._process_people(img, img_rgb, now)
+        elif cfg["enable_fall"]:
             if pose_results.pose_landmarks:
                 self.fall_lm_window.append(engine.pose_landmarks_to_vector(pose_results))
                 self.pose_last_seen = now
@@ -261,6 +274,66 @@ class DetectionVideoProcessor(VideoProcessorBase):
 
         return img
 
+    def _process_people(self, img, img_rgb, now):
+        """Chế độ nhiều người: mỗi người 1 bộ theo dõi ngã v2 + luật khuất sau vật cản riêng. Đồng hồ xác
+        minh sau ngã chạy từ lúc người SỚM NHẤT trong số đang ngã bắt đầu ngã; ai ngã mà không dậy -> báo."""
+        visible = self.people.update(self.multi.detect(img_rgb, now), now)
+        for person in list(self.people.people.values()):
+            if person.seen_now:
+                person.hips.append((now, framing.hip_y(person.lm)))
+                label = person.fall.update(person.lm, now)
+            else:
+                label = person.fall.missing(now)
+            if label == "Fall" and person.down_since is None:
+                person.down_since = now
+            elif label == "NotFall" and person.down_since is not None:
+                person.down_since, person.vanish_suspected = None, False
+            if not person.seen_now and not person.lost and now - person.last_seen >= engine.POSE_LOST_SECONDS:
+                person.lost = True
+                if (person.down_since is None and not person.fall.down
+                        and framing.vanished_after_drop(list(person.hips), person.last_seen, person.lm)):
+                    person.fall.mark_down()
+                    person.down_since, person.vanish_suspected = person.last_seen, True
+                    event_log.log_event(
+                        "Nghi ngã khuất sau vật cản",
+                        f"Người #{person.id}: hông tụt nhanh rồi mất dấu giữa khung hình — đang xác minh",
+                    )
+
+        if visible:
+            self.pose_last_seen = now
+            self.last_landmarks = visible[0].lm
+            self.exit_side = None
+            statuses = [framing.assess(p.lm) for p in visible]
+            status = (framing.TOO_CLOSE if framing.TOO_CLOSE in statuses
+                      else framing.OK if framing.OK in statuses else framing.PARTIAL)
+            self.framing.observe(status, now, quiet=self._busy(now))
+            if self.observation_lost:
+                self.observation_lost = False
+                event_log.log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")
+            if self.config["show_overlay"]:
+                img = multi_person.draw_people(img, visible)
+        elif not self.observation_lost and now - self.pose_last_seen >= engine.POSE_LOST_SECONDS:
+            self.observation_lost = True
+            if self.last_landmarks is not None:
+                self.exit_side = framing.exit_side(self.last_landmarks) or "middle"
+                self.framing.person_lost(now, quiet=self._busy(now))
+            event_log.log_status("Mất quan sát người", f"Không thấy ai trong {engine.POSE_LOST_SECONDS:.1f}s")
+
+        down = self.people.down()
+        if down:
+            self.fall_label = "Fall"
+            if self.fall_down_since is None:
+                self.was_fall_monitoring = True
+                self.episode_escalated = False
+            self.fall_down_since = min(p.down_since for p in down)
+            self.vanish_suspected = all(p.vanish_suspected for p in down)
+        elif visible:
+            self.fall_label = "NotFall"
+        elif self.observation_lost:
+            self.fall_label = engine.NO_DATA_LABEL
+        self.others_present = sum(1 for p in visible if p.down_since is None)
+        return img
+
     def _check_vanished_fall(self):
         """Hông tụt nhanh rồi mất dấu giữa khung hình -> nghi ngã khuất sau vật cản: bắt đầu đếm giờ xác
         minh từ lúc mất dấu (chỉ với model v2 — cần bộ theo dõi để biết khi nào người đứng dậy lại)."""
@@ -326,6 +399,8 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     note = " — camera mất tín hiệu trong lúc theo dõi"
                 elif self.observation_lost:
                     note = " — không còn thấy người trong khung hình"
+                if self.people is not None and self.others_present:
+                    note += f" — có {self.others_present} người khác trong khung hình"
                 details = f"Sau {cfg['fall_grace_seconds']:.0f}s theo dõi{note}"
                 event_log.log_event("Ngã (không đứng lên lại)", details)
                 # detected_at = lúc model thấy ngã lần đầu, để bảng thời gian
@@ -361,5 +436,9 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     "voice_seq": self.framing.cue_seq,
                     "exit_side": self.exit_side,
                     "vanish_suspected": self.vanish_suspected,
+                    "multi_person": self.people is not None,
+                    "people_count": len(self.people.visible()) if self.people is not None else None,
+                    "people_down": [(p.id, round(p.center[0], 3)) for p in self.people.down()]
+                    if self.people is not None else [],
                 }
             )

@@ -26,6 +26,7 @@ from streamlit_webrtc import (
 import detection_engine as engine
 import event_log
 import framing
+import multi_person
 from theme import sidebar_status_html, status_banner_html
 from webrtc_processor import DetectionVideoProcessor
 
@@ -78,6 +79,7 @@ config = {
     "mirror_camera": s["mirror_camera"],
     "alert_hold_seconds": s["alert_hold_seconds"],
     "show_overlay": s["show_overlay"],
+    "multi_person": s.get("multi_person", False),
 }
 
 control_col1, control_col2 = st.columns([2, 3])
@@ -109,7 +111,15 @@ engine.warm_up_models(fall_model, hand_model, signal_model)
 
 
 def processor_factory():
-    return DetectionVideoProcessor(fall_model, hand_model, signal_model, pose_detector, hand_detector, config)
+    # Mỗi lần bắt đầu stream tạo 1 bộ nhận diện nhiều người riêng (chế độ VIDEO giữ trạng thái theo dõi).
+    multi_detector = (
+        multi_person.MultiPoseDetector()
+        if config["multi_person"] and isinstance(fall_model, engine.FallV2Model)
+        else None
+    )
+    return DetectionVideoProcessor(
+        fall_model, hand_model, signal_model, pose_detector, hand_detector, config, multi_detector=multi_detector
+    )
 
 
 cam_width, cam_height = engine.CAMERA_RESOLUTIONS.get(s["camera_resolution"], (640, 480))
@@ -349,6 +359,9 @@ while webrtc_ctx.state.playing:
                     f"({state['signal_probability'] * 100:.0f}%)"
                 )
             st.caption(f"FPS xử lý: {state['fps']:.1f}")
+            if state.get("multi_person"):
+                down = ", ".join(f"#{pid}" for pid, _x in state.get("people_down", [])) or "không"
+                st.caption(f"Theo dõi nhiều người: thấy {state.get('people_count', 0)} người · đang ngã: {down}")
             st.caption(f"Model ngã: {fall_model_name} · DNN+LSTM 14 nhãn (tay) · LSTM nhị phân (signal, thử nghiệm)")
 
     elapsed = now - st.session_state["monitor_start_time"]
