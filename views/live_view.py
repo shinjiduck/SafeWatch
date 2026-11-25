@@ -146,6 +146,12 @@ def voice_bytes(cue):
         return f.read()
 
 
+def id3_tag(n):
+    """Thẻ ID3v1 (128 byte, chuẩn metadata cuối file mp3) mang số thứ tự lần phát."""
+    title = f"SafeWatch {n}".encode()[:30].ljust(30, b"\x00")
+    return b"TAG" + title + bytes(30 + 30 + 4 + 30) + bytes([255])  # nghệ sĩ, album, năm, ghi chú trống; thể loại 255
+
+
 EXIT_TEXT = {
     None: "Chưa thấy người nào trong khung hình.",
     "left": "Người đã đi ra khỏi khung hình (phía trái).",
@@ -222,7 +228,11 @@ while webrtc_ctx.state.playing:
     if pending_voice:
         with voice_placeholder.container():
             st.caption(f"🔊 {framing.VOICE_TEXT[pending_voice]}")
-            st.audio(voice_bytes(pending_voice), format="audio/mpeg", autoplay=True)
+            # Cùng 1 câu nhắc phát lần 2 trong cùng lần chạy -> Streamlit báo trùng ID (ID tính từ nội dung; st.audio
+            # bản này không nhận key). Gắn thẻ ID3v1 có số thứ tự vào cuối mp3 -> nội dung khác, máy phát bỏ qua thẻ.
+            st.session_state["_voice_play_count"] = st.session_state.get("_voice_play_count", 0) + 1
+            st.audio(voice_bytes(pending_voice) + id3_tag(st.session_state["_voice_play_count"]),
+                     format="audio/mpeg", autoplay=True)
         pending_voice = None
 
     processor = webrtc_ctx.video_processor
