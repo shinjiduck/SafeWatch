@@ -1,11 +1,14 @@
 """Design tokens + CSS + thành phần giao diện dùng chung cho toàn app SafeWatch — 1 nơi duy nhất định nghĩa
 màu / chữ / thẻ để các trang không lệch nhau. Trang nào cũng dựng bằng các hàm ở đây (page_header, kpi_card,
-status_banner_html...), không tự viết HTML riêng.
+card, status_banner_html...), không tự viết HTML riêng. Màu nền / nút / thanh bên: .streamlit/config.toml.
 
 Màu trạng thái có nghĩa cố định trong toàn app:
   xanh lá = an toàn · cam = đang theo dõi sau ngã · đỏ = khẩn cấp · xám = chưa đủ dữ liệu / chưa giám sát
 (xám KHÔNG BAO GIỜ được dùng cho "an toàn" — yêu cầu BTC: mất hình không được hiện là an toàn).
+Màu thương hiệu (nút, điểm nhấn) là CHÀM — không dùng đỏ cho nút vì đỏ nghĩa là khẩn cấp.
 """
+
+import re
 
 import streamlit as st
 
@@ -14,10 +17,12 @@ COLOR_MONITORING = "#EA580C"
 COLOR_EMERGENCY = "#DC2626"
 COLOR_NODATA = "#475569"
 COLOR_NAVY = "#0F172A"
+COLOR_BRAND = "#4F46E5"
+COLOR_BRAND_2 = "#7C3AED"
 COLOR_BLUE = "#2563EB"
-COLOR_BG = "#F6F7F9"
+COLOR_BG = "#F5F7FB"
 COLOR_CARD = "#FFFFFF"
-COLOR_BORDER = "#E5E7EB"
+COLOR_BORDER = "#E6EAF2"
 COLOR_TEXT_MUTED = "#64748B"
 
 APP_NAME = "SafeWatch"
@@ -30,8 +35,21 @@ LEVELS = {
     "emergency": ("sw-lv-emergency", COLOR_EMERGENCY, "#FEE2E2", "#991B1B"),
     "nodata": ("sw-lv-nodata", COLOR_NODATA, "#E2E8F0", "#334155"),
     "idle": ("sw-lv-idle", "#94A3B8", "#F1F5F9", "#475569"),
-    "info": ("sw-lv-info", COLOR_BLUE, "#DBEAFE", "#1E40AF"),
+    "info": ("sw-lv-info", COLOR_BRAND, "#E0E7FF", "#3730A3"),
 }
+
+# Tông màu cho ô biểu tượng của thẻ chỉ số (nền nhạt, chữ đậm)
+TONES = {
+    "indigo": ("#EEF2FF", "#4338CA"),
+    "violet": ("#F5F3FF", "#6D28D9"),
+    "emerald": ("#ECFDF5", "#047857"),
+    "amber": ("#FFFBEB", "#B45309"),
+    "rose": ("#FFF1F2", "#BE123C"),
+    "sky": ("#F0F9FF", "#0369A1"),
+    "slate": ("#F1F5F9", "#334155"),
+}
+
+_SHADOW = "0 1px 2px rgba(16,24,40,.04), 0 10px 28px -14px rgba(16,24,40,.18)"
 
 _CSS = f"""
 <style>
@@ -39,91 +57,161 @@ _CSS = f"""
 
 /* Font chỉ đặt ở gốc (kế thừa xuống), không dùng selector rộng — tránh đè font icon của Streamlit. */
 html, body, .stApp {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 16px; }}
-.stApp {{ background-color: {COLOR_BG}; }}
-.block-container {{ padding-top: 5.5rem; padding-bottom: 3rem; max-width: 1280px; }}
+.stApp {{
+    background:
+        radial-gradient(1200px 500px at 100% -10%, rgba(124,58,237,.06), transparent 60%),
+        radial-gradient(900px 400px at -10% -10%, rgba(79,70,229,.07), transparent 60%),
+        {COLOR_BG};
+}}
+[data-testid="stHeader"] {{ background: rgba(245,247,251,.72); backdrop-filter: blur(8px); }}
+.block-container {{ padding-top: 4.6rem; padding-bottom: 3rem; max-width: 1280px; }}
 
-/* ---------- Sidebar ---------- */
-[data-testid="stSidebar"] {{ background: #FFFFFF; border-right: 1px solid {COLOR_BORDER}; }}
-[data-testid="stSidebarNav"] a span, [data-testid="stSidebarNavItems"] a span {{ font-size: 0.98rem !important; }}
-[data-testid="stSidebarNav"] [data-testid="stNavSectionHeader"] {{
-    font-size: 0.72rem !important; letter-spacing: 0.06em; text-transform: uppercase; color: {COLOR_TEXT_MUTED};
+/* ---------- Thanh bên tối ---------- */
+[data-testid="stSidebar"] {{ border-right: none; box-shadow: 4px 0 24px -12px rgba(15,23,42,.5); }}
+[data-testid="stSidebarNavLink"] {{ border-radius: 10px; margin: 1px 0; transition: background .15s ease; }}
+[data-testid="stSidebarNavLink"] span {{ font-size: 0.96rem !important; }}
+[data-testid="stSidebarNavLink"]:hover {{ background: rgba(148,163,184,.12) !important; }}
+[data-testid="stSidebarNavLink"][aria-current="page"] {{
+    background: linear-gradient(90deg, rgba(129,140,248,.28), rgba(129,140,248,.06)) !important;
+    box-shadow: inset 3px 0 0 #818CF8;
 }}
-.sw-brand {{ display: flex; align-items: center; gap: 0.6rem; padding: 0.25rem 0 0.5rem 0; }}
-.sw-brand-mark {{
-    width: 36px; height: 36px; border-radius: 10px; background: {COLOR_NAVY}; color: white;
-    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;
+[data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: #FFFFFF; font-weight: 700; }}
+[data-testid="stNavSectionHeader"] p {{
+    font-size: 0.7rem !important; letter-spacing: .08em; text-transform: uppercase; color: #64748B !important;
+    font-weight: 700;
 }}
-.sw-brand-name {{ font-weight: 800; font-size: 1.1rem; color: {COLOR_NAVY}; line-height: 1.1; }}
-.sw-brand-tagline {{ font-size: 0.74rem; color: {COLOR_TEXT_MUTED}; }}
+[data-testid="stSidebar"] hr {{ border-color: rgba(148,163,184,.18); }}
 .sw-side-status {{
-    display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.75rem; border-radius: 10px;
-    font-size: 0.86rem; font-weight: 600;
+    display: flex; align-items: center; gap: .55rem; padding: .6rem .8rem; border-radius: 12px;
+    font-size: .86rem; font-weight: 600; border: 1px solid rgba(148,163,184,.18);
 }}
 .sw-dot {{ width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }}
-.sw-profile {{ display: flex; align-items: center; gap: 0.6rem; }}
+.sw-dot-live {{ animation: sw-glow 1.8s infinite; }}
+@keyframes sw-glow {{ 0%, 100% {{ box-shadow: 0 0 0 0 rgba(34,197,94,.55); }} 50% {{ box-shadow: 0 0 0 6px rgba(34,197,94,0); }} }}
+.sw-profile {{ display: flex; align-items: center; gap: .65rem; }}
 .sw-avatar {{
-    width: 36px; height: 36px; border-radius: 50%; background: {COLOR_BLUE}; color: white; flex: none;
-    display: flex; align-items: center; justify-content: center; font-weight: 700;
+    width: 38px; height: 38px; border-radius: 12px; flex: none; color: white; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, {COLOR_BRAND}, {COLOR_BRAND_2});
+}}
+.sw-profile-name {{ font-weight: 700; font-size: .93rem; color: #F1F5F9; }}
+.sw-profile-role {{ font-size: .78rem; color: #94A3B8; }}
+
+/* ---------- Tiêu đề trang (băng màu) ---------- */
+.sw-hero {{
+    display: flex; gap: 1rem; align-items: center; padding: 1.15rem 1.4rem; margin: 0 0 1.4rem 0;
+    border-radius: 20px; border: 1px solid {COLOR_BORDER}; box-shadow: {_SHADOW};
+    background:
+        radial-gradient(500px 160px at 0% 0%, rgba(79,70,229,.10), transparent 70%),
+        radial-gradient(420px 160px at 100% 0%, rgba(124,58,237,.10), transparent 70%),
+        #FFFFFF;
+}}
+.sw-hero-icon {{
+    width: 52px; height: 52px; border-radius: 16px; flex: none; font-size: 1.6rem;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #EEF2FF, #F5F3FF); border: 1px solid #E0E7FF;
+}}
+.sw-hero-title {{ font-size: 1.6rem; font-weight: 800; color: {COLOR_NAVY}; line-height: 1.2; letter-spacing: -.01em; }}
+.sw-hero-sub {{ color: {COLOR_TEXT_MUTED}; font-size: .93rem; margin-top: .25rem; }}
+.sw-section {{
+    font-size: 1.02rem; font-weight: 750; color: {COLOR_NAVY}; margin: 1.5rem 0 .65rem 0;
+    display: flex; align-items: center; gap: .5rem;
+}}
+.sw-section::before {{
+    content: ""; width: 4px; height: 1.05rem; border-radius: 4px;
+    background: linear-gradient(180deg, {COLOR_BRAND}, {COLOR_BRAND_2});
 }}
 
-/* ---------- Tiêu đề trang ---------- */
-.sw-page-head {{ margin: 0 0 1.25rem 0; }}
-.sw-page-title {{ font-size: 1.75rem; font-weight: 800; color: {COLOR_NAVY}; line-height: 1.2; margin: 0; }}
-.sw-page-sub {{ color: {COLOR_TEXT_MUTED}; font-size: 0.95rem; margin-top: 0.3rem; }}
-.sw-section {{ font-size: 1.05rem; font-weight: 700; color: {COLOR_NAVY}; margin: 1.4rem 0 0.6rem 0; }}
-
 /* ---------- Thẻ chỉ số ---------- */
-.sw-kpi-label {{ font-size: 0.8rem; color: {COLOR_TEXT_MUTED}; font-weight: 600; }}
-.sw-kpi-value {{ font-size: 1.6rem; font-weight: 800; color: {COLOR_NAVY}; line-height: 1.25; }}
-.sw-kpi-sub {{ font-size: 0.8rem; color: {COLOR_TEXT_MUTED}; }}
-[data-testid="stVerticalBlockBorderWrapper"] {{ background: {COLOR_CARD}; border-radius: 14px; }}
+.sw-kpi {{
+    display: flex; gap: .9rem; align-items: center; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER};
+    border-radius: 16px; padding: .95rem 1.1rem; box-shadow: {_SHADOW}; min-height: 104px;
+    transition: transform .15s ease, box-shadow .15s ease;
+}}
+.sw-kpi:hover {{ transform: translateY(-2px); box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 16px 32px -14px rgba(16,24,40,.25); }}
+.sw-kpi-icon {{
+    width: 46px; height: 46px; border-radius: 14px; flex: none; font-size: 1.35rem;
+    display: flex; align-items: center; justify-content: center;
+}}
+.sw-kpi-label {{ font-size: .8rem; color: {COLOR_TEXT_MUTED}; font-weight: 600; }}
+.sw-kpi-value {{ font-size: 1.55rem; font-weight: 800; color: {COLOR_NAVY}; line-height: 1.2; letter-spacing: -.01em; }}
+.sw-kpi-sub {{ font-size: .77rem; color: {COLOR_TEXT_MUTED}; }}
+
+/* ---------- Thẻ nội dung (st.container(key="swbox_...")) ---------- */
+[class*="st-key-swbox"] {{
+    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER} !important; border-radius: 16px !important;
+    box-shadow: {_SHADOW}; padding: 1rem 1.1rem !important;
+}}
+.sw-card {{
+    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 16px; padding: .4rem 1.1rem;
+    box-shadow: {_SHADOW};
+}}
 
 /* ---------- Banner trạng thái lớn ---------- */
 .sw-banner {{
-    border-radius: 16px; padding: 1.25rem 1.4rem; color: white; display: flex; gap: 1rem; align-items: flex-start;
+    border-radius: 20px; padding: 1.25rem 1.4rem; color: white; display: flex; gap: 1rem; align-items: center;
+    box-shadow: 0 18px 36px -18px rgba(15,23,42,.45);
 }}
-.sw-banner-icon {{ font-size: 2rem; line-height: 1; }}
-.sw-banner-title {{ font-size: 1.35rem; font-weight: 800; letter-spacing: 0.01em; }}
-.sw-banner-sub {{ font-size: 0.92rem; opacity: 0.95; margin-top: 0.25rem; }}
-.sw-lv-safe {{ background: linear-gradient(135deg, #16A34A, #15803D); }}
-.sw-lv-monitoring {{ background: linear-gradient(135deg, #F97316, #C2410C); }}
-.sw-lv-emergency {{ background: linear-gradient(135deg, #DC2626, #991B1B); animation: sw-pulse 1.4s infinite; }}
+.sw-banner-icon {{
+    width: 54px; height: 54px; border-radius: 16px; flex: none; font-size: 1.7rem;
+    display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.25);
+}}
+.sw-banner-title {{ font-size: 1.35rem; font-weight: 800; letter-spacing: .005em; }}
+.sw-banner-sub {{ font-size: .92rem; opacity: .95; margin-top: .2rem; }}
+.sw-lv-safe {{ background: linear-gradient(135deg, #22C55E, #15803D); }}
+.sw-lv-monitoring {{ background: linear-gradient(135deg, #FB923C, #C2410C); }}
+.sw-lv-emergency {{ background: linear-gradient(135deg, #EF4444, #991B1B); animation: sw-pulse 1.4s infinite; }}
 .sw-lv-nodata {{ background: linear-gradient(135deg, #64748B, #334155); }}
-.sw-lv-idle {{ background: #FFFFFF; color: {COLOR_NAVY}; border: 1px dashed #CBD5E1; }}
-.sw-lv-info {{ background: linear-gradient(135deg, #2563EB, #1D4ED8); }}
-@keyframes sw-pulse {{ 0%, 100% {{ box-shadow: 0 0 0 0 rgba(220,38,38,0.45); }} 50% {{ box-shadow: 0 0 0 10px rgba(220,38,38,0); }} }}
+.sw-lv-idle {{ background: #FFFFFF; color: {COLOR_NAVY}; border: 1.5px dashed #CBD5E1; box-shadow: none; }}
+.sw-lv-idle .sw-banner-icon {{ background: #F1F5F9; border-color: #E2E8F0; }}
+.sw-lv-idle .sw-banner-sub {{ color: {COLOR_TEXT_MUTED}; }}
+.sw-lv-info {{ background: linear-gradient(135deg, {COLOR_BRAND}, {COLOR_BRAND_2}); }}
+@keyframes sw-pulse {{ 0%, 100% {{ box-shadow: 0 0 0 0 rgba(220,38,38,.5); }} 50% {{ box-shadow: 0 0 0 12px rgba(220,38,38,0); }} }}
 
 /* ---------- Dòng chi tiết (nhãn: giá trị) ---------- */
 .sw-row {{
-    display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0;
-    border-bottom: 1px solid #F1F5F9; font-size: 0.92rem;
+    display: flex; justify-content: space-between; gap: 1rem; padding: .62rem 0;
+    border-bottom: 1px dashed #EDF0F6; font-size: .92rem;
 }}
 .sw-row:last-child {{ border-bottom: none; }}
 .sw-row-label {{ color: {COLOR_TEXT_MUTED}; }}
-.sw-row-value {{ color: {COLOR_NAVY}; font-weight: 600; text-align: right; }}
+.sw-row-value {{ color: {COLOR_NAVY}; font-weight: 650; text-align: right; }}
 
 /* ---------- Huy hiệu ---------- */
 .sw-badge {{
-    display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.18rem 0.6rem; border-radius: 999px;
-    font-size: 0.76rem; font-weight: 700; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .65rem; border-radius: 999px;
+    font-size: .75rem; font-weight: 700; white-space: nowrap;
 }}
 
 /* ---------- Các bước hướng dẫn ---------- */
-.sw-step {{ display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.45rem 0; }}
+.sw-step {{ display: flex; gap: .8rem; align-items: flex-start; padding: .5rem 0; }}
 .sw-step-num {{
-    width: 26px; height: 26px; border-radius: 50%; background: {COLOR_NAVY}; color: white; flex: none;
-    display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;
+    width: 28px; height: 28px; border-radius: 9px; color: white; flex: none; font-size: .82rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, {COLOR_BRAND}, {COLOR_BRAND_2});
 }}
-.sw-step-text {{ font-size: 0.92rem; color: {COLOR_NAVY}; }}
-.sw-step-text small {{ color: {COLOR_TEXT_MUTED}; display: block; }}
+.sw-step-text {{ font-size: .93rem; color: {COLOR_NAVY}; font-weight: 600; }}
+.sw-step-text small {{ color: {COLOR_TEXT_MUTED}; display: block; font-weight: 400; margin-top: .1rem; }}
 
-hr {{ margin: 0.75rem 0; }}
+/* ---------- Thành phần Streamlit ---------- */
+[data-testid="stBaseButton-primary"] {{
+    background: linear-gradient(135deg, {COLOR_BRAND}, {COLOR_BRAND_2}) !important; border: none !important;
+    box-shadow: 0 8px 18px -8px rgba(79,70,229,.7); font-weight: 700;
+}}
+[data-testid="stBaseButton-primary"]:hover {{ filter: brightness(1.06); }}
+[data-testid="stBaseButton-secondary"] {{ background: #FFFFFF; font-weight: 600; }}
+[data-testid="stExpander"] details {{ background: {COLOR_CARD}; border-radius: 14px; border-color: {COLOR_BORDER}; }}
+[data-testid="stDataFrame"] {{ border-radius: 14px; overflow: hidden; box-shadow: {_SHADOW}; }}
+[data-testid="stTabs"] [data-baseweb="tab-list"] {{ gap: .25rem; }}
+[data-testid="stTab"] p {{ font-weight: 600; }}
+[data-testid="stAlert"] {{ border-radius: 14px; }}
+hr {{ margin: .8rem 0; }}
 
 @media (max-width: 640px) {{
     .block-container {{ padding-left: 1rem; padding-right: 1rem; }}
-    .sw-page-title {{ font-size: 1.4rem; }}
-    .sw-banner {{ padding: 1rem; }}
-    .sw-banner-title {{ font-size: 1.15rem; }}
+    .sw-hero {{ padding: 1rem; }} .sw-hero-title {{ font-size: 1.3rem; }} .sw-hero-icon {{ width: 44px; height: 44px; }}
+    .sw-banner {{ padding: 1rem; }} .sw-banner-title {{ font-size: 1.12rem; }}
 }}
 </style>
 """
@@ -137,30 +225,25 @@ def inject_global_theme():
 
 
 def render_sidebar_brand():
-    st.markdown(
-        f"""<div class="sw-brand"><div class="sw-brand-mark">SW</div>
-        <div><div class="sw-brand-name">{APP_NAME}</div><div class="sw-brand-tagline">{APP_TAGLINE}</div></div></div>""",
-        unsafe_allow_html=True,
-    )
+    """Giữ cho tương thích — logo giờ hiện bằng st.logo ở main.py."""
 
 
 def render_sidebar_profile(name="Người dùng", role=""):
     initial = name.strip()[0].upper() if name.strip() else "?"
     st.markdown(
-        f"""<div class="sw-profile"><div class="sw-avatar">{initial}</div><div>
-        <div style="font-weight:600;color:{COLOR_NAVY};font-size:0.95rem;">{name}</div>
-        <div style="font-size:0.8rem;color:{COLOR_TEXT_MUTED};">{role}</div></div></div>""",
+        f'<div class="sw-profile"><div class="sw-avatar">{initial}</div><div>'
+        f'<div class="sw-profile-name">{name}</div><div class="sw-profile-role">{role}</div></div></div>',
         unsafe_allow_html=True,
     )
 
 
 def sidebar_status_html(system_online):
     """Ô trạng thái giám sát ở sidebar — trang Trực tiếp cập nhật liên tục trong vòng lặp webcam."""
-    level = "safe" if system_online else "idle"
-    _, color, bg, fg = LEVELS[level]
-    text = "Đang giám sát" if system_online else "Chưa giám sát"
-    return (f'<div class="sw-side-status" style="background:{bg};color:{fg};">'
-            f'<span class="sw-dot" style="background:{color};"></span>{text}</div>')
+    if system_online:
+        return ('<div class="sw-side-status" style="background:rgba(34,197,94,.12);color:#BBF7D0;">'
+                '<span class="sw-dot sw-dot-live" style="background:#22C55E;"></span>Đang giám sát</div>')
+    return ('<div class="sw-side-status" style="background:rgba(148,163,184,.08);color:#CBD5E1;">'
+            '<span class="sw-dot" style="background:#64748B;"></span>Chưa giám sát</div>')
 
 
 # ------------------------------------------------------------------ khối dùng chung trong trang
@@ -179,25 +262,47 @@ def fmt_duration(seconds):
     return f"{seconds / 86400:.0f} ngày"
 
 
-def page_header(title, subtitle=""):
-    sub = f'<div class="sw-page-sub">{subtitle}</div>' if subtitle else ""
-    st.markdown(f'<div class="sw-page-head"><div class="sw-page-title">{title}</div>{sub}</div>',
-                unsafe_allow_html=True)
+def page_header(title, subtitle="", icon="🛡️"):
+    sub = f'<div class="sw-hero-sub">{subtitle}</div>' if subtitle else ""
+    st.markdown(
+        f'<div class="sw-hero"><div class="sw-hero-icon">{icon}</div><div>'
+        f'<div class="sw-hero-title">{title}</div>{sub}</div></div>',
+        unsafe_allow_html=True,
+    )
 
 
 def section(title):
     st.markdown(f'<div class="sw-section">{title}</div>', unsafe_allow_html=True)
 
 
-def kpi_html(label, value, sub=""):
+_EMOJI_PREFIX = re.compile(r"^(\S+)\s+(.*)$")
+
+
+def kpi_html(label, value, sub="", icon=None, tone="indigo"):
+    if icon is None:  # nhãn kiểu "📷 Camera" -> tách emoji thành ô biểu tượng
+        m = _EMOJI_PREFIX.match(label)
+        if m and not m.group(1)[0].isalnum():
+            icon, label = m.group(1), m.group(2)
+    bg, fg = TONES.get(tone, TONES["indigo"])
+    icon_html = f'<div class="sw-kpi-icon" style="background:{bg};color:{fg};">{icon}</div>' if icon else ""
     sub_html = f'<div class="sw-kpi-sub">{sub}</div>' if sub else ""
-    return f'<div class="sw-kpi-label">{label}</div><div class="sw-kpi-value">{value}</div>{sub_html}'
+    return (f'<div class="sw-kpi">{icon_html}<div><div class="sw-kpi-label">{label}</div>'
+            f'<div class="sw-kpi-value">{value}</div>{sub_html}</div></div>')
 
 
-def kpi_card(label, value, sub="", placeholder=None):
-    target = placeholder.container(border=True) if placeholder is not None else st.container(border=True)
-    with target:
-        st.markdown(kpi_html(label, value, sub), unsafe_allow_html=True)
+def kpi_card(label, value, sub="", placeholder=None, icon=None, tone="indigo"):
+    """Thẻ chỉ số (HTML thuần — dùng được trong vòng lặp cập nhật qua placeholder)."""
+    target = placeholder if placeholder is not None else st
+    target.markdown(kpi_html(label, value, sub, icon, tone), unsafe_allow_html=True)
+
+
+def card(key):
+    """Khung nội dung nền trắng, bo góc, đổ bóng. key phải duy nhất trong 1 lần chạy trang."""
+    return st.container(border=True, key=f"swbox_{key}")
+
+
+def card_html(inner):
+    return f'<div class="sw-card">{inner}</div>'
 
 
 def status_banner_html(level, title, subtitle="", icon=None):

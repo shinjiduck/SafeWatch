@@ -29,7 +29,7 @@ import framing
 import multi_person
 import contacts
 import notifier
-from theme import kpi_card, page_header, rows_html, sidebar_status_html, status_banner_html, steps_html
+from theme import card_html, kpi_card, page_header, rows_html, sidebar_status_html, status_banner_html, steps_html
 from webrtc_processor import DetectionVideoProcessor
 
 engine.ensure_settings_defaults()
@@ -101,6 +101,7 @@ page_header(
     "Giám sát trực tiếp",
     f"Model ngã {fall_model_name} · {'theo dõi nhiều người (thử nghiệm)' if multi_on else 'theo dõi 1 người'} · "
     f"xác minh {config['fall_grace_seconds']:.0f} s sau ngã",
+    icon="🎥",
 )
 
 
@@ -167,10 +168,11 @@ contacts.init_db()
 
 
 def render_kpis(camera_text, duration_text, duration_sub):
-    kpi_card("📷 Camera", camera_text, "Webcam qua trình duyệt", placeholder=camera_card_placeholder)
-    kpi_card("⏱️ Thời gian giám sát", duration_text, duration_sub, placeholder=duration_card_placeholder)
+    kpi_card("📷 Camera", camera_text, "Webcam qua trình duyệt", placeholder=camera_card_placeholder, tone="sky")
+    kpi_card("⏱️ Thời gian giám sát", duration_text, duration_sub, placeholder=duration_card_placeholder,
+             tone="violet")
     kpi_card("🚨 Báo động hôm nay", str(event_log.count_alarms_today()), "Không tính lần đã tự đứng dậy",
-             placeholder=incidents_card_placeholder)
+             placeholder=incidents_card_placeholder, tone="rose")
 
 
 def setup_warnings():
@@ -188,8 +190,8 @@ def render_idle():
         status_banner_html("idle", "Chưa giám sát", "Bấm START dưới khung camera để bắt đầu theo dõi."),
         unsafe_allow_html=True,
     )
-    with detail_placeholder.container(border=True):
-        st.markdown("**Bắt đầu nhanh**")
+    with detail_placeholder.container(border=True, key="swbox_quickstart"):
+        st.markdown("**🚀 Bắt đầu nhanh**")
         st.markdown(
             steps_html([
                 ("Bấm START và cho phép trình duyệt dùng camera", "Chờ vài giây để hệ thống khởi động."),
@@ -316,8 +318,8 @@ while webrtc_ctx.state.playing:
     if state.get("multi_person"):
         down = ", ".join(f"#{pid}" for pid, _x in state.get("people_down", [])) or "không ai"
         rows.append(("Số người / đang ngã", f"{state.get('people_count', 0)} / {down}"))
-    with detail_placeholder.container(border=True):
-        st.markdown(rows_html(rows), unsafe_allow_html=True)
+    with detail_placeholder.container():  # HTML, không dùng container có key (vòng lặp vẽ lại liên tục)
+        st.markdown(card_html(rows_html(rows)), unsafe_allow_html=True)
         with st.expander("Thông số kỹ thuật"):
             st.caption(f"Nhãn thô: ngã `{fall_label}` · tay `{hand_label}` "
                        f"({state['hand_confidence'] * 100:.0f}%) · FPS xử lý {state['fps']:.1f}")

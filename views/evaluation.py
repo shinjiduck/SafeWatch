@@ -16,6 +16,7 @@ page_header(
     "Kiểm định",
     "Hệ thống được đánh giá thế nào: tách theo người và phiên quay, không dùng tập test để chọn mô hình, thử trên "
     "dữ liệu chưa từng dùng với góc camera / ánh sáng / vật cản khác nhau.",
+    icon="🧪",
 )
 
 
@@ -58,21 +59,24 @@ def replay_summary(name):
 
 k1, k2, k3, k4 = st.columns(4)
 le2i = replay_summary("le2i_single.json")
+le2i_30 = replay_summary("le2i_cheb30.json")
 with k1:
-    kpi_card("Le2i — dữ liệu thật chưa từng dùng", f"{le2i[0]}/{le2i[1]}" if le2i else "—",
-             "ca ngã bắt được · 9 người, 6 phòng")
+    kpi_card("Le2i · dữ liệu thật mới", f"{le2i[0]}/{le2i[1]}" if le2i else "—",
+             "ca ngã · 9 người, 6 phòng", icon="🎯", tone="emerald")
 with k2:
-    kpi_card("Kiểm định chéo 3 bộ", "122/158", "ca ngã · tách theo người")
+    kpi_card("Le2i · vật cản che 30%", f"{le2i_30[0]}/{le2i_30[1]}" if le2i_30 else "—",
+             "ca ngã · che 40%: 74/129", icon="🧱", tone="amber")
 with k3:
-    kpi_card("Charades — 5 giờ sinh hoạt", "9 / giờ", "gửi nhầm · model cũ 61 / giờ")
+    kpi_card("Charades · 5 giờ thật", "9 / giờ", "báo ngã nhầm · cũ 61 / giờ", icon="🏠", tone="sky")
 with k4:
-    kpi_card("Che dải dưới 40% (giường, sofa)", "45/78", "ca ngã · model cũ 14/78")
-st.caption("Số liệu chi tiết và cách tính ở các tab dưới. Ô giữa lấy từ MODEL_VERSIONS.md / results_che_goc_tong_hop.md.")
+    kpi_card("Cử chỉ SOS báo nhầm", "1,9 / giờ", "có lọc · trước 132 / giờ", icon="✋", tone="violet")
+st.caption("Số liệu chi tiết và cách tính ở các tab dưới.")
 
 DOCS = [
     ("📋 Theo yêu cầu BTC", "KIEM_DINH_THEO_YEU_CAU_BTC.md"),
     ("🧠 Phiên bản model", "../../models/MODEL_VERSIONS.md"),
     ("🧱 Vật cản", "results_che_goc_tong_hop.md"),
+    ("✋ Cử chỉ tay", "../hand_eval/KIEM_DINH_TAY_XA.md"),
     ("👥 Nhiều người", "KIEM_DINH_NHIEU_NGUOI.md"),
 ]
 tabs = st.tabs([t for t, _ in DOCS])

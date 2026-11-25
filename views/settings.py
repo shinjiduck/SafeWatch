@@ -6,12 +6,12 @@ import streamlit as st
 
 import detection_engine as engine
 import event_log
-from theme import page_header, section
+from theme import card, page_header, section
 
 engine.ensure_settings_defaults()
 event_log.init_db()
 
-page_header("Cấu hình", "Thay đổi được áp dụng khi bấm STOP rồi START lại ở trang Trực tiếp.")
+page_header("Cấu hình", "Thay đổi được áp dụng khi bấm STOP rồi START lại ở trang Trực tiếp.", icon="⚙️")
 
 tab_detect, tab_alert, tab_storage = st.tabs(["🧍 Nhận diện", "🔔 Cảnh báo & âm thanh", "💾 Lưu trữ"])
 
@@ -93,7 +93,7 @@ with tab_alert:
 
     active = sorted(notifier.RUNNING.channels) if notifier.RUNNING else []
     section("Kênh gửi cảnh báo")
-    with st.container(border=True):
+    with card("channels"):
         st.markdown(rows_html([
             ("Telegram", "✅ Đang bật" if "telegram" in active else "⚪ Chưa cấu hình — TELEGRAM_BOT_TOKEN"),
             ("Email", "✅ Đang bật" if "email" in active else "⚪ Chưa cấu hình — SMTP_HOST / USER / PASSWORD"),

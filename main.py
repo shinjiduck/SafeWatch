@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 
 st.set_page_config(page_title=APP_NAME, page_icon="🛡️", layout="wide")
 inject_global_theme()
-st.logo(os.path.join(ROOT, "assets", "logo.png"), size="large", icon_image=os.path.join(ROOT, "assets", "logo_icon.png"))
+st.logo(os.path.join(ROOT, "assets", "logo_dark_bg.png"), size="large", icon_image=os.path.join(ROOT, "assets", "logo_icon.png"))
 
 
 @st.cache_resource

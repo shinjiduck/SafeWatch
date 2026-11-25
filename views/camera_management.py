@@ -4,17 +4,17 @@ hướng dẫn đặt camera. Bản demo chỉ có 1 camera: webcam của trình
 import streamlit as st
 
 import detection_engine as engine
-from theme import badge_html, page_header, rows_html, section, steps_html
+from theme import badge_html, card, page_header, rows_html, section, steps_html
 
 engine.ensure_settings_defaults()
-page_header("Camera & lắp đặt", "Camera đang dùng, cài đặt hình ảnh và cách đặt camera để phát hiện ngã tốt nhất.")
+page_header("Camera & lắp đặt", "Camera đang dùng, cài đặt hình ảnh và cách đặt camera để phát hiện ngã tốt nhất.", icon="📷")
 
 s = st.session_state
 online = s.get("camera_online", False)
 
 left, right = st.columns([3, 2], gap="large")
 with left:
-    with st.container(border=True):
+    with card("cam_info"):
         c1, c2 = st.columns([3, 1], vertical_alignment="center")
         c1.markdown("**Camera 1 — Webcam của bạn**")
         c2.markdown(badge_html("safe", "Đang giám sát") if online else badge_html("idle", "Chưa bật"),
@@ -33,7 +33,7 @@ with left:
     st.caption("Bản demo dùng 1 camera. Thêm IP camera / nhiều camera cần phần thu hình riêng — chưa hỗ trợ.")
 
     section("Cài đặt hình ảnh")
-    with st.container(border=True):
+    with card("cam_settings"):
         s["camera_resolution"] = st.selectbox(
             "Độ phân giải", list(engine.CAMERA_RESOLUTIONS), index=list(engine.CAMERA_RESOLUTIONS).index(s["camera_resolution"]),
             help="640x480 là đủ cho phát hiện ngã; cao hơn tốn CPU hơn.",
@@ -44,7 +44,7 @@ with left:
 
 with right:
     section("Đặt camera thế nào")
-    with st.container(border=True):
+    with card("cam_guide"):
         st.markdown(
             steps_html([
                 ("Cao khoảng 2 m, chếch xuống", "Nhìn từ trên xuống thấy rõ người đứng lẫn người nằm."),

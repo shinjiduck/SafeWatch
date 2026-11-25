@@ -11,7 +11,7 @@ import streamlit as st
 
 import contacts
 import notifier
-from theme import badge_html, kpi_card, page_header, section
+from theme import badge_html, card, kpi_card, page_header, section
 
 notifier.init_db()
 
@@ -23,7 +23,7 @@ STATUS_TEXT = {
 DELIVERY_TEXT = {"pending": "Đang chờ gửi", "sent": "Đã gửi", "failed": "Lỗi — sẽ thử lại", "cancelled": "Đã huỷ"}
 CHANNEL_TEXT = {"telegram": "Telegram", "email": "Email", "sms": "SMS"}
 
-page_header("Cảnh báo", "Cảnh báo gửi tới người liên hệ và việc xác nhận đã nhận.")
+page_header("Cảnh báo", "Cảnh báo gửi tới người liên hệ và việc xác nhận đã nhận.", icon="🔔")
 
 dispatcher = notifier.RUNNING
 channel_names = sorted(dispatcher.channels) if dispatcher else []
@@ -46,7 +46,7 @@ def open_alerts():
         return
     for a in pending[:3]:
         level, text = STATUS_TEXT.get(a["status"], ("monitoring", a["status"]))
-        with st.container(border=True):
+        with card(f"alert_{a['id']}"):
             c1, c2 = st.columns([4, 1.4], vertical_alignment="center")
             with c1:
                 st.markdown(f"{badge_html(level, text)} &nbsp; **{a['kind']}**", unsafe_allow_html=True)
@@ -126,11 +126,11 @@ alive = dispatcher is not None and dispatcher._thread is not None and dispatcher
 k1, k2, k3 = st.columns(3)
 with k1:
     kpi_card("Kênh đang bật", ", ".join(CHANNEL_TEXT.get(c, c) for c in channel_names) or "Chưa có",
-             "Cấu hình trong .streamlit/secrets.toml")
+             "Cấu hình trong .streamlit/secrets.toml", icon="📡", tone="indigo")
 with k2:
-    kpi_card("Người nhận liên lạc được", f"{len(reachable)}/{len(recipients)}", "Có kênh phù hợp")
+    kpi_card("Người nhận liên lạc được", f"{len(reachable)}/{len(recipients)}", "Có kênh phù hợp", icon="👥", tone="emerald")
 with k3:
-    kpi_card("Bộ gửi nền", "Đang chạy" if alive else "Đã dừng",
+    kpi_card("Bộ gửi nền", "Đang chạy" if alive else "Đã dừng", icon="⚙️", tone="slate", sub=
              f"Lỗi gần nhất: {dispatcher.last_error}" if dispatcher is not None and dispatcher.last_error else "Không có lỗi")
 if not channel_names:
     st.warning("Chưa bật kênh gửi nào — xem Cấu hình → Cảnh báo.", icon="⚠️")

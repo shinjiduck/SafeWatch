@@ -1,0 +1,18 @@
+# Chủ đề màu SafeWatch. Màu chính (chàm) dùng cho nút / công tắc / thanh kéo — KHÔNG dùng đỏ, vì đỏ trong app
+# nghĩa là KHẨN CẤP. Màu trạng thái (xanh lá / cam / đỏ / xám) định nghĩa trong theme.py.
+[theme]
+base = "light"
+primaryColor = "#4F46E5"
+backgroundColor = "#F5F7FB"
+secondaryBackgroundColor = "#EEF1F8"
+textColor = "#0F172A"
+borderColor = "#E3E8F1"
+baseRadius = "0.75rem"
+font = "sans serif"
+
+[theme.sidebar]
+backgroundColor = "#0F172A"
+secondaryBackgroundColor = "#1E293B"
+textColor = "#E2E8F0"
+primaryColor = "#818CF8"
+borderColor = "#1E293B"

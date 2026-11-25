@@ -9,7 +9,7 @@ from theme import page_header, section
 
 engine.ensure_settings_defaults()
 
-page_header("Hồ sơ", "Thông tin của người được giám sát — gửi kèm khi cần hỗ trợ.")
+page_header("Hồ sơ", "Thông tin của người được giám sát — gửi kèm khi cần hỗ trợ.", icon="👤")
 
 profile = profile_store.load_profile()
 

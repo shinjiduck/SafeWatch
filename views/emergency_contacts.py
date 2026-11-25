@@ -6,7 +6,7 @@ Chat ID) và Email."""
 import streamlit as st
 
 import contacts
-from theme import badge_html, page_header
+from theme import badge_html, card, page_header
 
 contacts.init_db()
 
@@ -14,6 +14,7 @@ page_header(
     "Người liên hệ",
     "Cảnh báo gửi tới người ưu tiên 1 trước; chưa ai xác nhận thì gửi lại và chuyển tiếp lần lượt cho người kế "
     "tiếp. Nhận qua Telegram: nhắn /start cho bot của hệ thống để lấy Chat ID.",
+    icon="📞",
 )
 
 rows = contacts.get_contacts()
@@ -41,7 +42,7 @@ if not rows:
     st.info("Chưa có người liên hệ khẩn cấp nào. Thêm ít nhất 1 người ở trên.")
 else:
     for contact_id, name, relationship, phone, email, priority, notify_enabled, telegram_chat_id in rows:
-        with st.container(border=True):
+        with card(f"contact_{contact_id}"):
             col1, col2, col3 = st.columns([3, 2, 1])
             with col1:
                 st.markdown(f"**{name}** &nbsp; {badge_html('info', f'Ưu tiên {priority}')}", unsafe_allow_html=True)

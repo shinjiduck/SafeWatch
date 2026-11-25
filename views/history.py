@@ -10,7 +10,7 @@ import event_log
 from theme import kpi_card, page_header
 
 event_log.init_db()
-page_header("Nhật ký", "Mọi sự cố và thay đổi trạng thái hệ thống đã ghi lại.")
+page_header("Nhật ký", "Mọi sự cố và thay đổi trạng thái hệ thống đã ghi lại.", icon="📋")
 
 rows = []
 for ts, event_type, details in event_log.get_events(limit=2000):
@@ -34,14 +34,15 @@ with tab_events:
     in_range = df if days == "Tất cả" else df[df["dt"] >= datetime.now() - timedelta(days=7 if days == "7 ngày" else 30)]
     k1, k2, k3, k4 = st.columns(4)
     with k1:
-        kpi_card("Báo động", int((in_range["Kết quả"] == event_log.STATUS_ALARM).sum()), "Đã gửi tới người liên hệ")
+        kpi_card("Báo động", int((in_range["Kết quả"] == event_log.STATUS_ALARM).sum()), "Đã gửi tới người liên hệ", icon="🚨", tone="rose")
     with k2:
         kpi_card("Ngã không dậy", int(((in_range["Nhóm"] == event_log.GROUP_FALL)
-                                      & (in_range["Kết quả"] == event_log.STATUS_ALARM)).sum()), "Đã báo động")
+                                      & (in_range["Kết quả"] == event_log.STATUS_ALARM)).sum()), "Đã báo động",
+                 icon="🤕", tone="amber")
     with k3:
-        kpi_card("SOS", int((in_range["Nhóm"] == event_log.GROUP_SOS).sum()), "Cử chỉ cầu cứu")
+        kpi_card("SOS", int((in_range["Nhóm"] == event_log.GROUP_SOS).sum()), "Cử chỉ cầu cứu", icon="✋", tone="violet")
     with k4:
-        kpi_card("Tự đứng dậy", int((in_range["Kết quả"] == event_log.STATUS_RECOVERED).sum()), "Không báo động")
+        kpi_card("Tự đứng dậy", int((in_range["Kết quả"] == event_log.STATUS_RECOVERED).sum()), "Không báo động", icon="🧍", tone="emerald")
     view = in_range
     if group != "Tất cả":
         view = view[view["Nhóm"] == group]

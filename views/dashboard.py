@@ -14,11 +14,11 @@ import streamlit as st
 
 import event_log
 import notifier
-from theme import COLOR_NAVY, fmt_duration, kpi_card, page_header, section
+from theme import COLOR_NAVY, card, fmt_duration, kpi_card, page_header, section
 
 event_log.init_db()
 notifier.init_db()
-page_header("Tổng quan", "Sự cố theo ngày, theo giờ và tốc độ người nhà xác nhận cảnh báo.")
+page_header("Tổng quan", "Sự cố theo ngày, theo giờ và tốc độ người nhà xác nhận cảnh báo.", icon="📊")
 
 COLORS = {event_log.STATUS_ALARM: "#DC2626", "Tự đứng dậy": "#2563EB"}
 AXIS = dict(labelColor="#64748B", titleColor="#64748B", gridColor="#EEF0F3", domainColor="#CBD5E1", tickColor="#CBD5E1")
@@ -44,13 +44,13 @@ alerts = [a for a in notifier.latency_rows(limit=500) if a["detected_at"] >= sin
 ack_times = [a["sent_to_ack_s"] for a in alerts if a["sent_to_ack_s"] is not None]
 k1, k2, k3, k4 = st.columns(4)
 with k1:
-    kpi_card("Báo động", int((recent["Kết quả"] == event_log.STATUS_ALARM).sum()), f"{days} ngày qua")
+    kpi_card("Báo động", int((recent["Kết quả"] == event_log.STATUS_ALARM).sum()), f"{days} ngày qua", icon="🚨", tone="rose")
 with k2:
-    kpi_card("Tự đứng dậy", int((recent["Kết quả"] == "Tự đứng dậy").sum()), "Không cần báo động")
+    kpi_card("Tự đứng dậy", int((recent["Kết quả"] == "Tự đứng dậy").sum()), "Không cần báo động", icon="🧍", tone="emerald")
 with k3:
-    kpi_card("Người nhà xác nhận sau", fmt_duration(median(ack_times)) if ack_times else "—", "Trung vị, từ lúc gửi được")
+    kpi_card("Người nhà xác nhận sau", fmt_duration(median(ack_times)) if ack_times else "—", "Trung vị, từ lúc gửi được", icon="⏱️", tone="sky")
 with k4:
-    kpi_card("Chưa ai xác nhận", sum(1 for a in alerts if a["status"] != notifier.STATUS_ACKED), "Cảnh báo cần xem")
+    kpi_card("Chưa ai xác nhận", sum(1 for a in alerts if a["status"] != notifier.STATUS_ACKED), "Cảnh báo cần xem", icon="📨", tone="amber")
 
 if recent.empty:
     st.info(f"Chưa có sự cố nào trong {days} ngày qua.")
@@ -78,7 +78,8 @@ chart = (
     .properties(height=260)
     .configure_view(strokeWidth=0)
 )
-st.altair_chart(chart, width="stretch")
+with card("chart_day"):
+    st.altair_chart(chart, width="stretch")
 
 section("Sự cố theo giờ trong ngày")
 per_hour = recent.assign(Giờ=recent["dt"].dt.hour).groupby("Giờ").size().reindex(range(24), fill_value=0)
@@ -94,7 +95,8 @@ chart = (
     .properties(height=200)
     .configure_view(strokeWidth=0)
 )
-st.altair_chart(chart, width="stretch")
+with card("chart_hour"):
+    st.altair_chart(chart, width="stretch")
 st.caption("Tính cả báo động và lần tự đứng dậy — cho biết khung giờ nên chú ý.")
 
 with st.expander("Xem dạng bảng"):
