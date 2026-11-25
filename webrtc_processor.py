@@ -27,6 +27,7 @@ from streamlit_webrtc import VideoProcessorBase
 import detection_engine as engine
 import event_log
 import framing
+import hand_roi
 import multi_person
 import notifier
 from hand_features import SIGNAL_SEQUENCE_LENGTH
@@ -109,6 +110,10 @@ class DetectionVideoProcessor(VideoProcessorBase):
             multi_person.PeopleTracker(lambda: engine.FallV2Tracker(fall_model)) if self.multi is not None else None
         )
         self.others_present = 0
+        # Nhận cử chỉ tay khi đứng xa (hand_roi.py): khung xương của người thấy rõ nhất ở frame hiện tại + 1 bộ Hands
+        # riêng chạy trên ô quanh bàn tay (tạo khi cần).
+        self._pose_for_hands = None
+        self._hands_roi = None
 
         event_log.init_db()
         notifier.init_db()
@@ -189,6 +194,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
         multi = cfg["enable_fall"] and self.multi is not None
         pose_results = self.pose_detector.process(img_rgb) if cfg["enable_fall"] and not multi else None
         hand_results = self.hand_detector.process(img_rgb) if cfg["enable_hand"] else None
+        self._pose_for_hands = None
 
         if multi:
             img = self._process_people(img, img_rgb, now)
@@ -201,7 +207,10 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 self.exit_side = None
                 self.hip_history.append((now, framing.hip_y(landmarks)))
                 # Đang theo dõi sau ngã / đang báo động: không nhắc "đứng lại cho đúng".
-                self.framing.observe(framing.assess(landmarks), now, quiet=self._busy(now))
+                self._pose_for_hands = landmarks
+                # Đang giơ tay cao hơn vai (có thể đang ra hiệu cầu cứu) -> không nhắc "lùi ra xa".
+                self.framing.observe(framing.assess(landmarks), now,
+                                     quiet=self._busy(now) or hand_roi.hand_raised(landmarks))
                 if self.fall_tracker is not None:
                     label = self.fall_tracker.update(landmarks, now)
                     if label is not None:
@@ -235,6 +244,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
                     )
 
         raw_vector = None
+        if (cfg["enable_hand"] and cfg.get("hand_roi") and not hand_results.multi_hand_landmarks
+                and self._pose_for_hands is not None):
+            if self._hands_roi is None:
+                self._hands_roi = engine.make_roi_hands()
+            roi_results = hand_roi.detect(self._hands_roi, img_rgb, self._pose_for_hands)
+            if roi_results is not None:
+                hand_results = roi_results
+
         if cfg["enable_hand"]:
             if hand_results.multi_hand_landmarks:
                 if cfg["show_overlay"]:
@@ -306,7 +323,9 @@ class DetectionVideoProcessor(VideoProcessorBase):
             statuses = [framing.assess(p.lm) for p in visible]
             status = (framing.TOO_CLOSE if framing.TOO_CLOSE in statuses
                       else framing.OK if framing.OK in statuses else framing.PARTIAL)
-            self.framing.observe(status, now, quiet=self._busy(now))
+            raised = [p.lm for p in visible if hand_roi.hand_raised(p.lm)]
+            self._pose_for_hands = raised[0] if raised else visible[0].lm
+            self.framing.observe(status, now, quiet=self._busy(now) or bool(raised))
             if self.observation_lost:
                 self.observation_lost = False
                 event_log.log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")

@@ -79,6 +79,7 @@ config = {
     "alert_hold_seconds": s["alert_hold_seconds"],
     "show_overlay": s["show_overlay"],
     "multi_person": s.get("multi_person", False),
+    "hand_roi": s.get("hand_roi", False),
 }
 
 fall_model, hand_model, signal_model = engine.load_models()

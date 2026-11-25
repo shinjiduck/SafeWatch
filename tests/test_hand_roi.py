@@ -1,0 +1,104 @@
+"""Kiểm thử nhận cử chỉ khi đứng xa (hand_roi.py) và việc không nhắc "lùi ra xa" lúc đang giơ tay.
+
+Chạy: python tests/test_hand_roi.py   (hoặc pytest tests/)
+"""
+
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import hand_roi  # noqa: E402
+from test_observation_safety import Harness, fresh_db  # noqa: E402
+
+
+def body(cx=0.5, top=0.3, shoulder_w=0.15, wrist_y=None, vis=0.99):
+    """Người đứng; wrist_y = độ cao cổ tay phải (None = buông xuôi ngang hông)."""
+    lm = [[cx, top - 0.08, 0.0, vis] for _ in range(33)]
+    half = shoulder_w / 2
+    lm[11], lm[12] = [cx + half, top, 0, vis], [cx - half, top, 0, vis]
+    lm[23], lm[24] = [cx + half * 0.7, top + 0.25, 0, vis], [cx - half * 0.7, top + 0.25, 0, vis]
+    wy = top + 0.25 if wrist_y is None else wrist_y
+    for side, x in ((0, cx + half + 0.02), (1, cx - half - 0.02)):
+        w, p, i, t = hand_roi.HAND_POINTS[side]
+        y = wy if side == 1 else top + 0.25
+        lm[w] = [x, y, 0, vis]
+        lm[p], lm[i], lm[t] = [x, y - 0.02, 0, vis], [x + 0.01, y - 0.03, 0, vis], [x - 0.01, y - 0.02, 0, vis]
+    for k in range(25, 33):
+        lm[k] = [cx, min(top + 0.6, 0.98), 0, vis]
+    return lm
+
+
+def test_doi_toa_do_o_cat_ve_khung_goc():
+    pts = hand_roi.to_frame_coords([(0.0, 0.0, 0.1), (1.0, 1.0, 0.0), (0.5, 0.25, -0.2)], (100, 50, 200), 640, 480)
+    assert pts[0][:2] == (100 / 640, 50 / 480)
+    assert pts[1][:2] == (300 / 640, 250 / 480)
+    assert abs(pts[2][0] - 200 / 640) < 1e-9 and abs(pts[2][1] - 100 / 480) < 1e-9
+    assert abs(pts[0][2] - 0.1 * 200 / 640) < 1e-9
+
+
+def test_o_cat_nam_trong_khung_va_tay_gio_cao_xep_truoc():
+    lm = body(wrist_y=0.2)  # tay phải giơ cao hơn vai
+    rois = hand_roi.candidate_rois(lm, 640, 480)
+    assert len(rois) == 2
+    for x0, y0, side in rois:
+        assert x0 >= 0 and y0 >= 0 and x0 + side <= 640 and y0 + side <= 480 and side >= hand_roi.MIN_SIDE_PX
+    assert rois[0][1] < rois[1][1]  # ô của tay giơ cao (y nhỏ hơn) đứng trước
+
+
+def test_co_tay_ngoai_khung_thi_khong_cat():
+    lm = body()
+    for w, *_ in hand_roi.HAND_POINTS:
+        lm[w] = [lm[w][0], 1.3, 0, 0.99]
+    assert hand_roi.candidate_rois(lm, 640, 480) == []
+
+
+def test_gio_tay_cao_hon_vai():
+    assert hand_roi.hand_raised(body(wrist_y=0.15))
+    assert not hand_roi.hand_raised(body())
+
+
+def test_ket_qua_gia_dung_duoc_nhu_mediapipe():
+    import detection_engine as engine
+
+    r = hand_roi.as_results([(0.1 * i, 0.2, 0.0) for i in range(21)])
+    vec = engine.hand_landmarks_to_vector(r)
+    assert len(vec) == 63 and abs(vec[3] - 0.1) < 1e-6
+
+
+class _ScriptedPose:
+    def __init__(self, lm):
+        self.lm = lm
+
+    def process(self, _img):
+        import types
+
+        pts = [types.SimpleNamespace(x=p[0], y=p[1], z=p[2], visibility=p[3]) for p in self.lm]
+        return types.SimpleNamespace(pose_landmarks=types.SimpleNamespace(landmark=pts))
+
+
+def test_dung_gan_nhung_dang_gio_tay_thi_khong_nhac_lui_ra():
+    fresh_db()
+    h = Harness()
+    h.pose = h.p.pose_detector = _ScriptedPose(body(shoulder_w=0.5, wrist_y=0.15))  # quá gần + giơ tay
+    h.run(6)
+    assert h.s["framing_status"] == "too_close" and h.s["voice_seq"] == 0
+    h.pose.lm = body(shoulder_w=0.5)  # hạ tay xuống -> giờ mới nhắc
+    h.run(4)
+    assert h.s["voice_cue"] == "too_close" and h.s["voice_seq"] >= 1
+
+
+if __name__ == "__main__":
+    tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
+    failed = 0
+    for name, fn in tests:
+        try:
+            fn()
+            print(f"PASS  {name}")
+        except AssertionError as e:
+            failed += 1
+            print(f"FAIL  {name}: {e}")
+    print(f"\n{len(tests) - failed}/{len(tests)} ca đạt")
+    sys.exit(1 if failed else 0)

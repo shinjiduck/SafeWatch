@@ -45,6 +45,13 @@ with tab_detect:
     )
     section("Cử chỉ cầu cứu")
     st.session_state["enable_hand"] = st.toggle("Bật phát hiện cử chỉ tay", value=st.session_state["enable_hand"])
+    st.session_state["hand_roi"] = st.toggle(
+        "Nhận cử chỉ khi đứng xa camera (thử nghiệm)",
+        value=st.session_state["hand_roi"],
+        disabled=not st.session_state["enable_hand"],
+        help="Khi không thấy tay trên cả khung hình, phóng to vùng quanh bàn tay theo khung xương rồi nhận lại. "
+        "Thấy tay nhiều hơn khi đứng ~2-3 m nhưng cũng dễ nhầm cử chỉ hơn — số đo: training/hand_eval/KIEM_DINH_TAY_XA.md.",
+    )
     st.session_state["hand_confidence_threshold"] = st.slider(
         "Ngưỡng tin cậy cử chỉ tay (%)",
         min_value=0,

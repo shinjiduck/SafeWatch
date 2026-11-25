@@ -80,5 +80,15 @@ Tách nguyên nhân (số lần bắt đầu theo dõi sau ngã trong 5 giờ):
 - Sau Charades, mọi bộ thử ở đây đều đã "được xem"; thay đổi tiếp theo cần dữ liệu thử MỚI (VD video 2 người
   tự quay) mới đánh giá khách quan được.
 
+**Hạn chế thêm (phát hiện khi dùng thử, 25/11):** người bước vào SAU khi đã có 1 người trong khung thường không
+được nhận ra — chế độ VIDEO của PoseLandmarker chỉ tìm người mới khi chưa bám ai. Đo: người thứ 2 xuất hiện ở giây
+thứ 3, 2/3 clip không bao giờ nhận ra. Đã thử chạy thêm 1 lượt tìm từ đầu (chế độ IMAGE) mỗi giây: không lần nào
+tìm thấy người mới trên 10 clip (bộ tìm người của MediaPipe cũng sót người nhỏ / bị che) mà máy chậm hơn
+(~81 ms/frame) → đã bỏ, không đưa vào app.
+
+**Khuyến nghị:** giữ chế độ 1 người làm mặc định. Khi có 2 người, người còn lại thường tự gọi giúp được (hoặc
+làm cử chỉ SOS trước camera); chế độ nhiều người chỉ thật cần khi người kia không giúp được (trẻ nhỏ, người già
+khác, người bị khống chế).
+
 **Hướng tiếp theo đúng gốc:** train một phiên bản v2 trên khung xương của PoseLandmarker (cùng 3 bộ, kiểm định
 chéo như cũ), dùng riêng cho chế độ nhiều người; kiểm lại bằng Charades + video 2 người tự quay.
