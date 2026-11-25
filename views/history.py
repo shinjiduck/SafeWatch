@@ -23,7 +23,7 @@ for ts, event_type, details in event_log.get_events(limit=2000):
                  "Kết quả": status, "Chi tiết": details})
 df = pd.DataFrame(rows, columns=["dt", "Thời gian", "Sự kiện", "Nhóm", "Kết quả", "Chi tiết"])
 
-tab_events, tab_system = st.tabs(["🚨 Sự cố", "🖥️ Hệ thống"])
+tab_events, tab_system = st.tabs(["Sự cố", "Hệ thống"])
 
 with tab_events:
     f1, f2, f3 = st.columns(3)
@@ -62,7 +62,7 @@ with tab_system:
         st.dataframe(pd.DataFrame(status_rows, columns=["Thời gian", "Trạng thái", "Chi tiết"]), width="stretch",
                      hide_index=True)
 
-with st.expander("🗑️ Xoá toàn bộ lịch sử sự cố"):
+with st.expander("Xoá toàn bộ lịch sử sự cố"):
     confirm = st.checkbox("Tôi chắc chắn muốn xoá toàn bộ lịch sử (không thể hoàn tác)")
     if st.button("Xoá lịch sử", disabled=not confirm):
         event_log.clear_events()

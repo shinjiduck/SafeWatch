@@ -29,7 +29,7 @@ with left:
             ]),
             unsafe_allow_html=True,
         )
-        st.page_link("views/live_view.py", label="Mở giám sát trực tiếp", icon="🎥")
+        st.page_link("views/live_view.py", label="Mở giám sát trực tiếp")
     st.caption("Bản demo dùng 1 camera. Thêm IP camera / nhiều camera cần phần thu hình riêng — chưa hỗ trợ.")
 
     section("Cài đặt hình ảnh")
@@ -55,4 +55,4 @@ with right:
             ]),
             unsafe_allow_html=True,
         )
-    st.info("Không có camera đặt cao? Dùng điện thoại làm webcam (DroidCam / Iriun) đặt lên tủ.", icon="💡")
+    st.info("Không có camera đặt cao? Dùng điện thoại làm webcam (DroidCam / Iriun) đặt lên tủ.")

@@ -42,7 +42,7 @@ def fmt_s(value):
 def open_alerts():
     pending = [a for a in notifier.get_alerts(limit=500) if a["acked_at"] is None]
     if not pending:
-        st.success("Không có cảnh báo nào đang chờ xác nhận.", icon="✅")
+        st.success("Không có cảnh báo nào đang chờ xác nhận.")
         return
     for a in pending[:3]:
         level, text = STATUS_TEXT.get(a["status"], ("monitoring", a["status"]))
@@ -133,15 +133,15 @@ with k3:
     kpi_card("Bộ gửi nền", "Đang chạy" if alive else "Đã dừng", icon="⚙️", tone="slate", sub=
              f"Lỗi gần nhất: {dispatcher.last_error}" if dispatcher is not None and dispatcher.last_error else "Không có lỗi")
 if not channel_names:
-    st.warning("Chưa bật kênh gửi nào — xem Cấu hình → Cảnh báo.", icon="⚠️")
+    st.warning("Chưa bật kênh gửi nào — xem Cấu hình → Cảnh báo.")
 elif not reachable:
-    st.warning("Chưa có người liên hệ nào có Telegram / email / số điện thoại khớp với kênh đang bật.", icon="⚠️")
+    st.warning("Chưa có người liên hệ nào có Telegram / email / số điện thoại khớp với kênh đang bật.")
 st.caption(
     f"Chưa ai xác nhận sau {notifier.ACK_TIMEOUT_SECONDS} s → gửi lại và chuyển tiếp thêm người kế tiếp, tối đa "
     f"{notifier.MAX_ROUNDS} vòng. Gửi lỗi → thử lại sau {', '.join(map(str, notifier.RETRY_BACKOFF_SECONDS))} s."
 )
 
-with st.expander("📱 Gửi SMS thử", expanded="sms" in channel_names and not notifier.get_alerts(limit=1)):
+with st.expander("Gửi SMS thử", expanded="sms" in channel_names and not notifier.get_alerts(limit=1)):
     if "sms" not in channel_names:
         st.info(
             "Chưa bật SMS. Cách 1 — **eSMS** (SMS Brandname): điền `ESMS_API_KEY`, `ESMS_SECRET_KEY`, "
@@ -154,17 +154,17 @@ with st.expander("📱 Gửi SMS thử", expanded="sms" in channel_names and not
         if getattr(sms, "provider", "") == "esms":
             c1, c2 = st.columns([3, 1], vertical_alignment="center")
             c1.markdown(f"Đang gửi qua **eSMS**, brandname **{sms.brandname}**"
-                        + (" · 🧪 **Sandbox**: gọi API thật nhưng không gửi tin, không trừ tiền" if sms.sandbox else ""))
+                        + (" · **Sandbox**: gọi API thật nhưng không gửi tin, không trừ tiền" if sms.sandbox else ""))
             if c2.button("Xem số dư eSMS"):
                 try:
                     st.toast(f"Số dư eSMS: {sms.balance():,} đ")
                 except Exception as exc:  # noqa: BLE001
-                    st.error(f"Không xem được số dư: {exc}", icon="❌")
+                    st.error(f"Không xem được số dư: {exc}")
         else:
             st.caption(f"Đang gửi qua: {getattr(sms, 'provider', 'sms')}")
         with_phone = [r for r in recipients if r["phone"]]
         if not with_phone:
-            st.warning("Chưa có người liên hệ nào có số điện thoại.", icon="⚠️")
+            st.warning("Chưa có người liên hệ nào có số điện thoại.")
         else:
             who = st.selectbox("Gửi tới", with_phone, format_func=lambda r: f"{r['name']} · {r['phone']}")
             if st.button("Gửi SMS thử"):
@@ -176,13 +176,13 @@ with st.expander("📱 Gửi SMS thử", expanded="sms" in channel_names and not
                     channel.send(target, test_alert)
                     if getattr(channel, "sandbox", False):
                         st.success(f"eSMS (Sandbox) đã nhận lệnh gửi tới {target} — kết nối đúng. Chế độ thử nên "
-                                   "KHÔNG có tin về máy; đặt ESMS_SANDBOX = \"0\" để gửi thật.", icon="✅")
+                                   "KHÔNG có tin về máy; đặt ESMS_SANDBOX = \"0\" để gửi thật.")
                     else:
-                        st.success(f"Cổng SMS đã nhận lệnh gửi tới {target}. Tin tới máy sau vài giây.", icon="✅")
+                        st.success(f"Cổng SMS đã nhận lệnh gửi tới {target}. Tin tới máy sau vài giây.")
                 except Exception as exc:  # noqa: BLE001 — hiện lỗi cho người cài đặt
-                    st.error(f"Gửi không được: {exc}", icon="❌")
+                    st.error(f"Gửi không được: {exc}")
 
-with st.expander("🧪 Kiểm thử chuỗi cảnh báo & bảng thời gian (minh chứng yêu cầu cải tiến số 1)"):
+with st.expander("Kiểm thử chuỗi cảnh báo & bảng thời gian (minh chứng yêu cầu cải tiến số 1)"):
     if st.button("Giả lập sự kiện ngã"):
         alert_id = notifier.raise_alert("Ngã (giả lập)", "Kiểm thử chuỗi cảnh báo", source="simulated")
         st.toast(f"Đã phát cảnh báo giả lập #{alert_id}")

@@ -191,7 +191,7 @@ def render_idle():
         unsafe_allow_html=True,
     )
     with detail_placeholder.container(border=True, key="swbox_quickstart"):
-        st.markdown("**🚀 Bắt đầu nhanh**")
+        st.markdown("**Bắt đầu nhanh**")
         st.markdown(
             steps_html([
                 ("Bấm START và cho phép trình duyệt dùng camera", "Chờ vài giây để hệ thống khởi động."),
@@ -202,10 +202,10 @@ def render_idle():
             unsafe_allow_html=True,
         )
         for w in setup_warnings():
-            st.warning(w, icon="⚠️")
+            st.warning(w)
         c1, c2 = st.columns(2)
-        c1.page_link("views/camera_management.py", label="Camera & lắp đặt", icon="📷")
-        c2.page_link("views/emergency_contacts.py", label="Người liên hệ", icon="📞")
+        c1.page_link("views/camera_management.py", label="Camera & lắp đặt")
+        c2.page_link("views/emergency_contacts.py", label="Người liên hệ")
     render_kpis("Chưa bật", "00:00:00", "Chưa bắt đầu")
     st.session_state["camera_online"] = False
     st.session_state["last_status"] = None
@@ -231,7 +231,7 @@ while webrtc_ctx.state.playing:
     # và tự phát (autoplay được vì người dùng đã bấm START trên trang).
     if pending_voice:
         with voice_placeholder.container():
-            st.caption(f"🔊 {framing.VOICE_TEXT[pending_voice]}")
+            st.caption(f"Đang nhắc: {framing.VOICE_TEXT[pending_voice]}")
             # Cùng 1 câu nhắc phát lần 2 trong cùng lần chạy -> Streamlit báo trùng ID (ID tính từ nội dung; st.audio
             # bản này không nhận key). Gắn thẻ ID3v1 có số thứ tự vào cuối mp3 -> nội dung khác, máy phát bỏ qua thẻ.
             st.session_state["_voice_play_count"] = st.session_state.get("_voice_play_count", 0) + 1

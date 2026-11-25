@@ -18,7 +18,7 @@ page_header(
 )
 
 rows = contacts.get_contacts()
-with st.expander("➕ Thêm người liên hệ", expanded=not rows):
+with st.expander("+ Thêm người liên hệ", expanded=not rows):
     with st.form("add_contact_form", clear_on_submit=True):
         c1, c2 = st.columns(2)
         with c1:
@@ -51,8 +51,8 @@ else:
                 st.markdown(" ".join(badge_html("safe" if notify_enabled else "idle", k) for k in kenh) or
                             badge_html("emergency", "Chưa có kênh nhận"), unsafe_allow_html=True)
             with col2:
-                st.caption(f"📞 {phone or '—'}")
-                st.caption(f"✉️ {email or '—'}")
+                st.caption(f"SĐT: {phone or '—'}")
+                st.caption(f"Email: {email or '—'}")
                 new_chat_id = st.text_input(
                     "Telegram Chat ID", value=telegram_chat_id or "", key=f"tg_{contact_id}", label_visibility="collapsed",
                     placeholder="Telegram Chat ID",

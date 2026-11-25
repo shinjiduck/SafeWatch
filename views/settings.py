@@ -13,7 +13,7 @@ event_log.init_db()
 
 page_header("Cấu hình", "Thay đổi được áp dụng khi bấm STOP rồi START lại ở trang Trực tiếp.", icon="⚙️")
 
-tab_detect, tab_alert, tab_storage = st.tabs(["🧍 Nhận diện", "🔔 Cảnh báo & âm thanh", "💾 Lưu trữ"])
+tab_detect, tab_alert, tab_storage = st.tabs(["Nhận diện", "Cảnh báo & âm thanh", "Lưu trữ"])
 
 with tab_detect:
     section("Phát hiện ngã")
@@ -94,16 +94,23 @@ with tab_alert:
     active = sorted(notifier.RUNNING.channels) if notifier.RUNNING else []
     section("Kênh gửi cảnh báo")
     with card("channels"):
+        from theme import badge_html
+
+        def state(name, hint, extra=""):
+            on = name in active
+            return (badge_html("safe", "Đang bật" + extra) if on
+                    else badge_html("idle", "Chưa cấu hình") + f' <span style="color:#94A3B8;font-size:.8rem;">{hint}</span>')
+
+        sms_provider = getattr(notifier.RUNNING.channels.get("sms"), "provider", "") if "sms" in active else ""
         st.markdown(rows_html([
-            ("Telegram", "✅ Đang bật" if "telegram" in active else "⚪ Chưa cấu hình — TELEGRAM_BOT_TOKEN"),
-            ("Email", "✅ Đang bật" if "email" in active else "⚪ Chưa cấu hình — SMTP_HOST / USER / PASSWORD"),
-            ("SMS", ("✅ Đang bật — " + getattr(notifier.RUNNING.channels["sms"], "provider", "")) if "sms" in active
-             else "⚪ Chưa cấu hình — ESMS_*, SMS_GATEWAY_* hoặc TWILIO_*"),
+            ("Telegram", state("telegram", "TELEGRAM_BOT_TOKEN")),
+            ("Email", state("email", "SMTP_HOST / USER / PASSWORD")),
+            ("SMS", state("sms", "ESMS_* / SMS_GATEWAY_* / TWILIO_*", f" · {sms_provider}" if sms_provider else "")),
         ]), unsafe_allow_html=True)
         st.caption("Khai báo trong `.streamlit/secrets.toml` rồi khởi động lại app.")
     c1, c2 = st.columns(2)
-    c1.page_link("views/emergency_contacts.py", label="Người liên hệ nhận cảnh báo", icon="📞")
-    c2.page_link("views/alerts.py", label="Xem cảnh báo & thử gửi", icon="🔔")
+    c1.page_link("views/emergency_contacts.py", label="Người liên hệ nhận cảnh báo")
+    c2.page_link("views/alerts.py", label="Xem cảnh báo & thử gửi")
     section("Âm thanh & giọng nói")
     st.session_state["sound_alert"] = st.toggle(
         "Phát âm thanh khi báo động khẩn cấp", value=st.session_state["sound_alert"]

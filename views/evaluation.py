@@ -73,11 +73,11 @@ with k4:
 st.caption("Số liệu chi tiết và cách tính ở các tab dưới.")
 
 DOCS = [
-    ("📋 Theo yêu cầu BTC", "KIEM_DINH_THEO_YEU_CAU_BTC.md"),
-    ("🧠 Phiên bản model", "../../models/MODEL_VERSIONS.md"),
-    ("🧱 Vật cản", "results_che_goc_tong_hop.md"),
-    ("✋ Cử chỉ tay", "../hand_eval/KIEM_DINH_TAY_XA.md"),
-    ("👥 Nhiều người", "KIEM_DINH_NHIEU_NGUOI.md"),
+    ("Theo yêu cầu BTC", "KIEM_DINH_THEO_YEU_CAU_BTC.md"),
+    ("Phiên bản model", "../../models/MODEL_VERSIONS.md"),
+    ("Vật cản", "results_che_goc_tong_hop.md"),
+    ("Cử chỉ tay", "../hand_eval/KIEM_DINH_TAY_XA.md"),
+    ("Nhiều người", "KIEM_DINH_NHIEU_NGUOI.md"),
 ]
 tabs = st.tabs([t for t, _ in DOCS])
 for tab, (_, name) in zip(tabs, DOCS):

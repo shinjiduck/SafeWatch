@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 
 st.set_page_config(page_title=APP_NAME, page_icon="🛡️", layout="wide")
 inject_global_theme()
-st.logo(os.path.join(ROOT, "assets", "logo_dark_bg.png"), size="large", icon_image=os.path.join(ROOT, "assets", "logo_icon.png"))
+st.logo(os.path.join(ROOT, "assets", "logo_light.png"), size="large", icon_image=os.path.join(ROOT, "assets", "logo_icon.png"))
 
 
 @st.cache_resource
@@ -40,7 +40,7 @@ notifier.RUNNING = start_notifier()
 _ack_token = st.query_params.get("ack")
 if _ack_token:
     if notifier.ack(_ack_token, by="(link xác nhận)", via="web-link"):
-        st.success("✅ Đã ghi nhận: bạn đã nhận được cảnh báo. Cảm ơn bạn!")
+        st.success("Đã ghi nhận: bạn đã nhận được cảnh báo. Cảm ơn bạn!")
     else:
         st.info("Cảnh báo này đã được xác nhận trước đó, hoặc mã xác nhận không hợp lệ.")
     st.query_params.clear()
@@ -51,21 +51,21 @@ if "user_name" not in st.session_state:
 # Dùng emoji thay cho :material/...: — font icon Material không tải được trên máy demo.
 pages = {
     "Giám sát": [
-        st.Page("views/live_view.py", title="Trực tiếp", icon="🎥", default=True),
-        st.Page("views/alerts.py", title="Cảnh báo", icon="🔔"),
-        st.Page("views/history.py", title="Nhật ký", icon="📋"),
+        st.Page("views/live_view.py", title="Trực tiếp", default=True),
+        st.Page("views/alerts.py", title="Cảnh báo"),
+        st.Page("views/history.py", title="Nhật ký"),
     ],
     "Thiết lập": [
-        st.Page("views/emergency_contacts.py", title="Người liên hệ", icon="📞"),
-        st.Page("views/camera_management.py", title="Camera & lắp đặt", icon="📷"),
-        st.Page("views/settings.py", title="Cấu hình", icon="⚙️"),
+        st.Page("views/emergency_contacts.py", title="Người liên hệ"),
+        st.Page("views/camera_management.py", title="Camera & lắp đặt"),
+        st.Page("views/settings.py", title="Cấu hình"),
     ],
     "Báo cáo": [
-        st.Page("views/dashboard.py", title="Tổng quan", icon="📊"),
-        st.Page("views/evaluation.py", title="Kiểm định", icon="🧪"),
+        st.Page("views/dashboard.py", title="Tổng quan"),
+        st.Page("views/evaluation.py", title="Kiểm định"),
     ],
     "Tài khoản": [
-        st.Page("views/account.py", title="Hồ sơ", icon="👤"),
+        st.Page("views/account.py", title="Hồ sơ"),
     ],
 }
 

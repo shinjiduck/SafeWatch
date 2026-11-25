@@ -76,7 +76,7 @@ chart = (
         tooltip=[alt.Tooltip("Ngày:T", format="%d/%m/%Y"), "Kết quả:N", "Số lần:Q"],
     )
     .properties(height=260)
-    .configure_view(strokeWidth=0)
+    .configure_view(strokeWidth=0).configure(background="#FFFFFF")
 )
 with card("chart_day"):
     st.altair_chart(chart, width="stretch")
@@ -93,7 +93,7 @@ chart = (
         tooltip=[alt.Tooltip("Giờ:O", title="Giờ"), "Số lần:Q"],
     )
     .properties(height=200)
-    .configure_view(strokeWidth=0)
+    .configure_view(strokeWidth=0).configure(background="#FFFFFF")
 )
 with card("chart_hour"):
     st.altair_chart(chart, width="stretch")
