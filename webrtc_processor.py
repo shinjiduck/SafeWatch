@@ -99,7 +99,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
         # Model ngã v2 (app truyền vào FallV2Model) dùng bộ theo dõi 3 bước riêng;
         # không có thì giữ nguyên đường cũ (LSTM 10 frame + bỏ phiếu đa số).
         self.fall_tracker = (
-            engine.FallV2Tracker(fall_model) if isinstance(fall_model, engine.FallV2Model) else None
+            engine.FallV2Tracker(fall_model) if engine.is_fall_v2(fall_model) else None
         )
 
         # Chế độ nhiều người (multi_person.py): chỉ chạy với model v2 (cần bộ theo dõi từng người).

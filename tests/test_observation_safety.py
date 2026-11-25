@@ -230,6 +230,22 @@ def test_hien_lai_van_nam_thi_chua_phuc_hoi_dung_day_thi_huy():
     assert "Ngã - đã phục hồi" in [k for k, _ in events()]
 
 
+def test_model_v2_sau_khi_nap_lai_code_van_nhan_dung():
+    """Streamlit nạp lại module khi file đổi, model cache vẫn thuộc class cũ -> không được dựa vào isinstance."""
+
+    class ReloadedFallV2Model:  # class "khác" nhưng cùng khả năng như FallV2Model
+        window, threshold, consecutive = 15, 0.95, 2
+
+        def prob(self, _features):
+            return 0.0
+
+    fresh_db()
+    model = ReloadedFallV2Model()
+    assert engine.is_fall_v2(model) and not engine.is_fall_v2(None)
+    p = webrtc_processor.DetectionVideoProcessor(model, None, None, FakeDetector("pose"), None, Harness().p.config)
+    assert p.fall_tracker is not None
+
+
 def test_mat_landmark_thi_xoa_cua_so_va_bao_khong_du_du_lieu():
     fresh_db()
     h = Harness()

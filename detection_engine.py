@@ -268,6 +268,13 @@ def fall_v2_available():
     return os.path.exists(FALL_V2_MODEL_PATH) and os.path.exists(FALL_V2_META_PATH)
 
 
+def is_fall_v2(model):
+    """Model ngã v2 hay không — xét theo khả năng (có prob + window), KHÔNG dùng isinstance: Streamlit nạp lại
+    module khi file đổi lúc server đang chạy, còn model trong @st.cache_resource vẫn là object của class CŨ ->
+    isinstance(model, FallV2Model) sai -> app gọi model v2 theo kiểu model cũ và lỗi."""
+    return model is not None and hasattr(model, "prob") and hasattr(model, "window")
+
+
 @st.cache_resource
 def load_fall_v2():
     return FallV2Model() if fall_v2_available() else None
@@ -294,7 +301,7 @@ def warm_up_models(fall_model, hand_model, signal_model):
     chậm rõ ở vài giây đầu, kể cả khi model đã cache qua @st.cache_resource
     -- cache chỉ tránh load lại file, không tránh được chi phí lần predict
     đầu tiên)."""
-    if isinstance(fall_model, FallV2Model):
+    if is_fall_v2(fall_model):
         import fall_v2
 
         fall_model.prob([[0.0] * fall_v2.N_FEATURES] * fall_model.window)

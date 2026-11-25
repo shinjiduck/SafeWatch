@@ -90,7 +90,7 @@ if s.get("fall_model_version", "v2") == "v2" and engine.load_fall_v2() is not No
 if config["enable_signal"] and signal_model is None:
     config["enable_signal"] = False
 pose_detector, hand_detector = engine.get_mediapipe()
-multi_on = config["multi_person"] and isinstance(fall_model, engine.FallV2Model)
+multi_on = config["multi_person"] and engine.is_fall_v2(fall_model)
 
 # Làm nóng model 1 lần trước khi stream bắt đầu (tránh giật ở vài frame đầu).
 engine.warm_up_models(fall_model, hand_model, signal_model)
