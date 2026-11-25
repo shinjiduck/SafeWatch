@@ -17,4 +17,22 @@ sinh hoạt KHÔNG có cử chỉ cầu cứu (video quay thử + 200 clip Chara
 - Chưa có video cử chỉ ở xa -> CHƯA kết luận được cử chỉ có nhận ĐÚNG ở xa không; cần nhóm quay thêm.
 
 ## Kết quả
-(điền sau khi chạy)
+
+| Video sinh hoạt (không ai ra hiệu cầu cứu) | Thấy tay khi Pose thấy cổ tay | SOS báo nhầm |
+|---|---|---|
+| Video quay thử (2 phút) | 19% → 34% | 6 → 11 lần |
+| Charades 200 clip (1.62 giờ) | 36.4% → 43.4% | **132 → 184 / giờ** (+39%) |
+
+**Không đạt tiêu chí (a)** → `hand_roi` để TẮT mặc định (Cấu hình → "Nhận cử chỉ khi đứng xa", thử nghiệm).
+
+**Phát hiện quan trọng hơn:** ngay cả không có hand_roi, cử chỉ tay đã báo SOS nhầm ~132 lần / giờ sinh hoạt
+(Need Ambulance 91, Need Help 72, Signal For Help 51 trên 1.62 giờ) — gấp ~15 lần báo nhầm của phát hiện ngã
+(~9 / giờ trên Charades). Đây là nguồn báo nhầm lớn nhất của hệ thống.
+
+## Bước tiếp: lọc cử chỉ SOS (tiêu chí ghi TRƯỚC khi chạy)
+- Dữ liệu: Charades clip 0-199 (chọn luật) và 200-399 (chấm 1 lần, sạch). Lưu từng frame (nhãn, độ tin cậy, tay
+  giơ cao hơn vai) rồi thử luật offline.
+- Luật thử: tay giơ cao hơn vai · giữ cử chỉ >= 1.5 s · ngưỡng tin cậy cao hơn — và kết hợp.
+- Chọn luật giảm báo nhầm nhiều nhất trên clip 0-199 mà vẫn hợp lý cho người ra hiệu thật (tay giơ, giữ vài giây).
+- Đạt nếu trên clip 200-399 báo nhầm giảm >= 80% so với hiện tại. Nhận đúng cử chỉ thật phải kiểm bằng video cử
+  chỉ do nhóm quay (>= 90% lần ra hiệu được nhận) trước khi đưa vào app.
