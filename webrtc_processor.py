@@ -290,7 +290,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 person.down_since, person.vanish_suspected = None, False
             if not person.seen_now and not person.lost and now - person.last_seen >= engine.POSE_LOST_SECONDS:
                 person.lost = True
-                if (person.down_since is None and not person.fall.down
+                if (person.down_since is None and not person.fall.down and self.people.established(person)
                         and framing.vanished_after_drop(list(person.hips), person.last_seen, person.lm)):
                     person.fall.mark_down()
                     person.down_since, person.vanish_suspected = person.last_seen, True

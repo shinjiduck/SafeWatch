@@ -110,6 +110,19 @@ def test_nga_khuat_sau_vat_can_trong_che_do_nhieu_nguoi():
     assert h.s["fall_escalated"]
 
 
+def test_nguoi_ma_chop_nhoang_khong_bi_coi_la_nga_khuat():
+    fresh_db()
+    h = multi_harness(grace=5.0)
+    h.p.multi.poses = [standing(cx=0.25)]
+    h.run(3)
+    for i in range(1, 6):  # khung xương giả hiện 0.5 s bên phải, "tụt" rồi biến mất giữa khung
+        h.p.multi.poses = [standing(cx=0.25), standing(top=0.3 + 0.04 * i, cx=0.7)]
+        h.run(0.1)
+    h.p.multi.poses = [standing(cx=0.25)]
+    h.run(3)
+    assert h.s["fall_down_since"] is None and not h.s["sos_alert"]
+
+
 def test_khong_ai_thi_khong_co_nguoi():
     fresh_db()
     h = multi_harness()

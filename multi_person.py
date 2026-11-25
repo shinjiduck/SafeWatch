@@ -27,6 +27,11 @@ DUPLICATE_DIST = 0.05  # 2 khung xương lệch trung bình < 5% khung hình -> 
 MATCH_DIST = 0.20  # ghép người giữa 2 lần xử lý: giữa thân dịch < 20% khung hình
 DOWN_MATCH_DIST = 0.30  # người đang bị coi là đã ngã: đứng dậy / xuất hiện lại gần chỗ cũ vẫn nhận đúng người
 FORGET_SECONDS = 3.0  # người đã mất dấu (không bị nghi ngã) quá lâu thì xoá
+# Luật "khuất sau vật cản" chỉ áp cho người đã thấy ổn định >= bấy nhiêu giây: ở ngưỡng phát hiện 0.3 thỉnh thoảng
+# có "người ma" (khung xương giả) hiện vài frame rồi mất giữa khung -> bị tưởng là ngã khuất. Thêm SAU khi xem
+# kết quả GMDCSA-24 / CAUCAFall (8 lần nghi nhầm kiểu này ở CAUCAFall) -> 2 bộ đó không còn khách quan cho
+# thay đổi này; Charades là bài thử sạch (KIEM_DINH_NHIEU_NGUOI.md). 0 = tắt (đúng bản đã đăng ký trước).
+MIN_TRACK_SECONDS = float(os.environ.get("MULTI_MIN_TRACK_SECONDS", "2.0"))
 
 
 class MultiPoseDetector:
@@ -79,6 +84,7 @@ class Person:
         self.id = pid
         self.lm = lm
         self.center = center(lm)
+        self.first_seen = now
         self.last_seen = now
         self.seen_now = True
         self.lost = False
@@ -141,6 +147,10 @@ class PeopleTracker:
                     if not p.seen_now and p.down_since is None and now - p.last_seen > FORGET_SECONDS]:
             del self.people[pid]
         return [p for p in self.people.values() if p.seen_now]
+
+    @staticmethod
+    def established(person):
+        return person.last_seen - person.first_seen >= MIN_TRACK_SECONDS
 
     def visible(self):
         return [p for p in self.people.values() if p.seen_now]
