@@ -27,7 +27,9 @@ import detection_engine as engine
 import event_log
 import framing
 import multi_person
-from theme import sidebar_status_html, status_banner_html
+import contacts
+import notifier
+from theme import kpi_card, page_header, rows_html, sidebar_status_html, status_banner_html, steps_html
 from webrtc_processor import DetectionVideoProcessor
 
 engine.ensure_settings_defaults()
@@ -65,9 +67,6 @@ if _ice_servers == [{"urls": ["stun:stun.l.google.com:19302"]}] and _hf_token:
 
 RTC_CONFIGURATION = RTCConfiguration({"iceServers": _ice_servers})
 
-st.title("Trang chủ")
-st.caption("Giám sát an toàn cá nhân bằng AI")
-
 s = st.session_state
 config = {
     "enable_fall": s["enable_fall"],
@@ -82,41 +81,30 @@ config = {
     "multi_person": s.get("multi_person", False),
 }
 
-control_col1, control_col2 = st.columns([2, 3])
-with control_col1:
-    st.selectbox("Camera", ["Webcam của bạn (qua trình duyệt)"], disabled=True)
-with control_col2:
-    config["show_overlay"] = st.checkbox("Hiện điểm landmark", value=s["show_overlay"], key="show_overlay")
-    st.caption(
-        "Bật/tắt pipeline và ngưỡng: xem trang **Cấu hình**. Đổi cấu hình cần Stop rồi Start lại "
-        "stream bên dưới để áp dụng (cấu hình được chốt lúc bắt đầu stream)."
-    )
-
-video_col, action_col = st.columns([7, 3])
-
 fall_model, hand_model, signal_model = engine.load_models()
 # Model ngã v2 (cú rơi nhanh + theo dõi tư thế) nếu đã train; không có thì dùng model cũ.
 fall_model_name = "LSTM 10 frame (cũ)"
 if s.get("fall_model_version", "v2") == "v2" and engine.load_fall_v2() is not None:
     fall_model = engine.load_fall_v2()
-    fall_model_name = "v2: cú rơi nhanh + tư thế"
+    fall_model_name = "v2 — cú rơi nhanh + tư thế"
 if config["enable_signal"] and signal_model is None:
     config["enable_signal"] = False
 pose_detector, hand_detector = engine.get_mediapipe()
+multi_on = config["multi_person"] and isinstance(fall_model, engine.FallV2Model)
 
-# Làm nóng model 1 lần (xem detection_engine.warm_up_models) trước khi
-# stream thật bắt đầu, để chi phí trace/biên dịch graph lần đầu không lộ ra
-# thành giật ở vài frame đầu tiên người dùng xem.
+# Làm nóng model 1 lần trước khi stream bắt đầu (tránh giật ở vài frame đầu).
 engine.warm_up_models(fall_model, hand_model, signal_model)
+
+page_header(
+    "Giám sát trực tiếp",
+    f"Model ngã {fall_model_name} · {'theo dõi nhiều người (thử nghiệm)' if multi_on else 'theo dõi 1 người'} · "
+    f"xác minh {config['fall_grace_seconds']:.0f} s sau ngã",
+)
 
 
 def processor_factory():
     # Mỗi lần bắt đầu stream tạo 1 bộ nhận diện nhiều người riêng (chế độ VIDEO giữ trạng thái theo dõi).
-    multi_detector = (
-        multi_person.MultiPoseDetector()
-        if config["multi_person"] and isinstance(fall_model, engine.FallV2Model)
-        else None
-    )
+    multi_detector = multi_person.MultiPoseDetector() if multi_on else None
     return DetectionVideoProcessor(
         fall_model, hand_model, signal_model, pose_detector, hand_detector, config, multi_detector=multi_detector
     )
@@ -124,50 +112,30 @@ def processor_factory():
 
 cam_width, cam_height = engine.CAMERA_RESOLUTIONS.get(s["camera_resolution"], (640, 480))
 
+video_col, panel_col = st.columns([3, 2], gap="large")
+
 with video_col:
     webrtc_ctx = webrtc_streamer(
         key="safewatch-live",
         video_processor_factory=processor_factory,
         rtc_configuration=RTC_CONFIGURATION,
-        # Không giới hạn độ phân giải ở đây thì trình duyệt tự capture ở độ
-        # phân giải MẶC ĐỊNH của webcam (thường 720p+) — nặng hơn hẳn cho
-        # mọi bước sau (mã hoá gửi lên, decode ở server, chạy AI), nhất là
-        # trên CPU giới hạn của free tier cloud. "ideal" là gợi ý, không ép
-        # buộc — webcam yếu hơn vẫn hoạt động, chỉ không vượt quá mức này.
+        # Giới hạn độ phân giải ("ideal" = gợi ý): mặc định trình duyệt lấy 720p+, nặng cho mọi bước sau.
         media_stream_constraints={
             "video": {"width": {"ideal": cam_width}, "height": {"ideal": cam_height}},
             "audio": False,
         },
-        # Hàng đợi nội bộ mặc định giữ tới 4 frame trước khi xử lý — cộng
-        # dồn thành độ trễ vài trăm ms tới vài giây nếu xử lý không theo
-        # kịp. Giảm về 1 (giống CAP_PROP_BUFFERSIZE=1 ở bản cv2 cũ): luôn
-        # lấy đúng frame mới nhất, chấp nhận rớt frame cũ thay vì trễ dồn.
+        # Hàng đợi 1 frame: luôn xử lý frame mới nhất, chấp nhận rớt frame cũ thay vì trễ dồn.
         video_receiver_size=1,
     )
+    st.caption("Bấm **START** để bắt đầu · đổi cấu hình thì **STOP** rồi START lại để áp dụng.")
 
-with action_col:
+with panel_col:
     status_banner_placeholder = st.empty()
-    fall_line_placeholder = st.empty()
-    hand_line_placeholder = st.empty()
-    advanced_placeholder = st.empty()
+    detail_placeholder = st.empty()
     voice_placeholder = st.empty()
 
-st.markdown("")
-card_col1, card_col2, card_col3 = st.columns(3)
-with card_col1:
-    camera_card_placeholder = st.empty()
-with card_col2:
-    duration_card_placeholder = st.empty()
-with card_col3:
-    incidents_card_placeholder = st.empty()
-
-
-def render_kpi_card(placeholder, label, value, sub):
-    with placeholder.container(border=True):
-        st.markdown(f'<div class="sw-kpi-label">{label}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="sw-kpi-value">{value}</div>', unsafe_allow_html=True)
-        st.caption(sub)
-
+kpi1, kpi2, kpi3 = st.columns(3)
+camera_card_placeholder, duration_card_placeholder, incidents_card_placeholder = kpi1.empty(), kpi2.empty(), kpi3.empty()
 
 VOICE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "voice")
 
@@ -184,26 +152,51 @@ EXIT_TEXT = {
     "right": "Người đã đi ra khỏi khung hình (phía phải).",
     "middle": "Mất dấu người ngay giữa khung hình — có thể bị vật che khuất.",
 }
-
-
-def count_today_incidents():
-    return sum(1 for ts, _, _ in event_log.get_events(limit=1000) if ts.startswith(time.strftime("%Y-%m-%d")))
-
+FRAMING_TEXT = {framing.OK: "Tốt", framing.TOO_CLOSE: "Quá gần camera", framing.PARTIAL: "Chỉ thấy một phần cơ thể"}
 
 event_log.init_db()
+contacts.init_db()
+
+
+def render_kpis(camera_text, duration_text, duration_sub):
+    kpi_card("📷 Camera", camera_text, "Webcam qua trình duyệt", placeholder=camera_card_placeholder)
+    kpi_card("⏱️ Thời gian giám sát", duration_text, duration_sub, placeholder=duration_card_placeholder)
+    kpi_card("🚨 Báo động hôm nay", str(event_log.count_alarms_today()), "Không tính lần đã tự đứng dậy",
+             placeholder=incidents_card_placeholder)
+
+
+def setup_warnings():
+    """Những thứ còn thiếu để cảnh báo tới được người nhà — hiện ngay ở trang chính."""
+    out = []
+    if not contacts.get_alert_recipients():
+        out.append("Chưa có **người liên hệ** nào nhận cảnh báo.")
+    if not (notifier.RUNNING and notifier.RUNNING.channels):
+        out.append("Chưa bật **kênh gửi** (Telegram / Email / SMS).")
+    return out
 
 
 def render_idle():
     status_banner_placeholder.markdown(
-        status_banner_html("safe", "CHƯA GIÁM SÁT", 'Bấm "START" ở khung camera bên trái để hệ thống theo dõi.'),
+        status_banner_html("idle", "Chưa giám sát", "Bấm START dưới khung camera để bắt đầu theo dõi."),
         unsafe_allow_html=True,
     )
-    fall_line_placeholder.markdown("**Phát hiện ngã:** Đã tắt")
-    hand_line_placeholder.markdown("**Cử chỉ tay:** Đã tắt")
-    advanced_placeholder.empty()
-    render_kpi_card(camera_card_placeholder, "📷 Trạng thái camera", "Chưa hoạt động", "Webcam của bạn")
-    render_kpi_card(duration_card_placeholder, "⏱️ Thời gian giám sát", "00:00:00", "Chưa bắt đầu")
-    render_kpi_card(incidents_card_placeholder, "🚨 Sự cố phát hiện", str(count_today_incidents()), "Hôm nay")
+    with detail_placeholder.container(border=True):
+        st.markdown("**Bắt đầu nhanh**")
+        st.markdown(
+            steps_html([
+                ("Bấm START và cho phép trình duyệt dùng camera", "Chờ vài giây để hệ thống khởi động."),
+                ("Đặt camera cao ~2 m, chéo góc phòng, cách ~3 m",
+                 "Thấy được toàn thân và vùng sàn — xem trang Camera & lắp đặt."),
+                ("Kiểm tra người nhận cảnh báo", "Ít nhất 1 người liên hệ có Telegram / email / số điện thoại."),
+            ]),
+            unsafe_allow_html=True,
+        )
+        for w in setup_warnings():
+            st.warning(w, icon="⚠️")
+        c1, c2 = st.columns(2)
+        c1.page_link("views/camera_management.py", label="Camera & lắp đặt", icon="📷")
+        c2.page_link("views/emergency_contacts.py", label="Người liên hệ", icon="📞")
+    render_kpis("Chưa bật", "00:00:00", "Chưa bắt đầu")
     st.session_state["camera_online"] = False
     st.session_state["last_status"] = None
     if st.session_state.get("sidebar_status_placeholder") is not None:
@@ -224,8 +217,8 @@ if st.session_state.get("sidebar_status_placeholder") is not None:
 
 pending_voice = None
 while webrtc_ctx.state.playing:
-    # Lời nhắc giọng nói: vòng trước đã xoá player cũ, giờ mới tạo player mới -> trình duyệt
-    # coi là phần tử mới và tự phát (autoplay được vì người dùng đã bấm START trên trang).
+    # Lời nhắc giọng nói: vòng trước đã xoá player cũ, giờ mới tạo player mới -> trình duyệt coi là phần tử mới
+    # và tự phát (autoplay được vì người dùng đã bấm START trên trang).
     if pending_voice:
         with voice_placeholder.container():
             st.caption(f"🔊 {framing.VOICE_TEXT[pending_voice]}")
@@ -237,8 +230,7 @@ while webrtc_ctx.state.playing:
         time.sleep(0.2)
         continue
 
-    # Kiểm tra mất camera + đếm giờ sau ngã ngay cả khi không còn frame nào
-    # tới (khi đó recv() không chạy) — xem DetectionVideoProcessor.tick().
+    # Kiểm tra mất camera + đếm giờ sau ngã ngay cả khi không còn frame nào tới (khi đó recv() không chạy).
     processor.tick()
     state = processor.get_state()
     now = time.time()
@@ -261,122 +253,68 @@ while webrtc_ctx.state.playing:
             voice_placeholder.empty()
             pending_voice = state["voice_cue"]
 
-    # Thứ tự ưu tiên: khẩn cấp > đang theo dõi sau ngã > không đủ dữ liệu >
-    # an toàn. Mất tín hiệu KHÔNG bao giờ được hiển thị là "an toàn".
+    # Thứ tự ưu tiên: khẩn cấp > đang theo dõi sau ngã > không đủ dữ liệu > an toàn.
+    # Mất tín hiệu / không thấy người KHÔNG BAO GIỜ được hiển thị là "an toàn".
     if sos_alert:
-        st.session_state["last_status"] = "emergency"
+        level, title, sub = "emergency", "Tình huống khẩn cấp", (
+            "Đã gửi cảnh báo tới người liên hệ." if fall_escalated else "Phát hiện cử chỉ cầu cứu — đã gửi cảnh báo.")
     elif fall_monitoring:
-        st.session_state["last_status"] = "monitoring"
-    elif camera_lost or observation_lost or framing_status != framing.OK:
-        st.session_state["last_status"] = "nodata"
-    else:
-        st.session_state["last_status"] = "safe"
-
-    if sos_alert:
-        status_banner_placeholder.markdown(
-            status_banner_html("emergency", "🚨 TÌNH HUỐNG KHẨN CẤP", "SOS đã được kích hoạt"),
-            unsafe_allow_html=True,
-        )
-    elif fall_monitoring:
-        remaining = max(0, config["fall_grace_seconds"] - (now - fall_down_since))
-        progress = min(1.0, (now - fall_down_since) / config["fall_grace_seconds"])
+        level, title = "monitoring", "Đang theo dõi sau ngã"
         if state.get("vanish_suspected") and observation_lost:
-            sub = "Người tụt xuống nhanh rồi khuất giữa khung hình — nghi ngã sau vật cản, đang đếm giờ."
+            sub = "Người tụt xuống nhanh rồi khuất giữa khung hình — nghi ngã sau vật cản."
         elif camera_lost:
             sub = "Mất tín hiệu camera sau khi phát hiện ngã — vẫn tiếp tục đếm giờ."
         elif observation_lost:
             sub = "Không còn thấy người sau khi phát hiện ngã — vẫn tiếp tục đếm giờ."
         else:
-            sub = "Phát hiện dấu hiệu ngã. Hệ thống đang xác minh tình trạng."
-        with status_banner_placeholder.container():
-            st.markdown(
-                status_banner_html("monitoring", "⏳ ĐANG THEO DÕI SAU NGÃ", sub),
-                unsafe_allow_html=True,
-            )
-            st.progress(progress, text=f"Còn {remaining:.0f}s trước khi báo động")
+            sub = "Phát hiện dấu hiệu ngã. Nếu không đứng dậy lại, hệ thống sẽ báo động."
     elif camera_lost:
-        status_banner_placeholder.markdown(
-            status_banner_html(
-                "nodata",
-                "📷 MẤT TÍN HIỆU CAMERA",
-                f"Không nhận được hình ảnh trong {now - state['last_frame_time']:.0f}s — chưa xác nhận được an toàn.",
-            ),
-            unsafe_allow_html=True,
-        )
+        level, title = "nodata", "Mất tín hiệu camera"
+        sub = f"Không nhận được hình trong {now - state['last_frame_time']:.0f} s — chưa xác nhận được an toàn."
     elif observation_lost:
-        status_banner_placeholder.markdown(
-            status_banner_html(
-                "nodata",
-                "👤 KHÔNG CÓ NGƯỜI TRONG KHUNG HÌNH",
-                f"{EXIT_TEXT[state.get('exit_side')]} Chưa thể đánh giá an toàn.",
-            ),
-            unsafe_allow_html=True,
-        )
+        level, title = "nodata", "Không có người trong khung hình"
+        sub = f"{EXIT_TEXT[state.get('exit_side')]} Chưa thể đánh giá an toàn."
     elif framing_status == framing.TOO_CLOSE:
-        status_banner_placeholder.markdown(
-            status_banner_html(
-                "nodata",
-                "📏 ĐỨNG QUÁ GẦN CAMERA",
-                "Camera không thấy đủ cơ thể nên phát hiện ngã kém chính xác. Xin lùi ra xa (khoảng 2–3 m).",
-            ),
-            unsafe_allow_html=True,
-        )
+        level, title = "nodata", "Đứng quá gần camera"
+        sub = "Camera không thấy đủ cơ thể nên phát hiện ngã kém chính xác. Xin lùi ra xa khoảng 2–3 m."
     elif framing_status == framing.PARTIAL:
-        status_banner_placeholder.markdown(
-            status_banner_html(
-                "nodata",
-                "🧍 CHỈ THẤY MỘT PHẦN CƠ THỂ",
-                "Người ở sát mép hoặc bị che một phần (vai/hông). Xin di chuyển vào giữa khung hình.",
-            ),
-            unsafe_allow_html=True,
-        )
+        level, title = "nodata", "Chỉ thấy một phần cơ thể"
+        sub = "Người ở sát mép hoặc bị che vai / hông. Xin di chuyển vào giữa khung hình."
     elif now < recovered_message_until:
-        status_banner_placeholder.markdown(
-            status_banner_html("safe", "✅ ĐÃ PHỤC HỒI", "Người dùng đã đứng lên lại — cảnh báo đã được huỷ."),
-            unsafe_allow_html=True,
-        )
+        level, title, sub = "safe", "Đã đứng dậy lại", "Người dùng đã đứng lên — cảnh báo được huỷ, không báo động."
     else:
-        status_banner_placeholder.markdown(
-            status_banner_html("safe", "AN TOÀN", "Không phát hiện ngã hoặc tín hiệu cầu cứu."),
-            unsafe_allow_html=True,
-        )
+        level, title, sub = "safe", "An toàn", "Không phát hiện ngã hoặc tín hiệu cầu cứu."
+    st.session_state["last_status"] = {"safe": "safe", "monitoring": "monitoring", "emergency": "emergency"}.get(
+        level, "nodata")
 
-    fall_line_placeholder.markdown(
-        f"**Phát hiện ngã:** {engine.friendly_fall_label(fall_label) if config['enable_fall'] else 'Đã tắt'}"
-    )
-    hand_line_placeholder.markdown(
-        f"**Cử chỉ tay:** {engine.friendly_hand_label(hand_label) if config['enable_hand'] else 'Đã tắt'}"
-    )
+    with status_banner_placeholder.container():
+        st.markdown(status_banner_html(level, title, sub), unsafe_allow_html=True)
+        if fall_monitoring:
+            remaining = max(0, config["fall_grace_seconds"] - (now - fall_down_since))
+            st.progress(min(1.0, (now - fall_down_since) / config["fall_grace_seconds"]),
+                        text=f"Còn {remaining:.0f} s trước khi báo động")
 
-    with advanced_placeholder.container():
-        with st.expander("Thông tin nâng cao", expanded=False):
-            st.caption(f"Nhãn thô (ngã): `{fall_label}`")
-            st.caption(f"Nhãn thô (tay): `{hand_label}`")
-            st.caption(f"Độ tin cậy tay: {state['hand_confidence'] * 100:.0f}%")
+    rows = [
+        ("Phát hiện ngã", engine.friendly_fall_label(fall_label) if config["enable_fall"] else "Đã tắt"),
+        ("Khung hình", "—" if not config["enable_fall"] or observation_lost else FRAMING_TEXT[framing_status]),
+        ("Cử chỉ tay", engine.friendly_hand_label(hand_label) if config["enable_hand"] else "Đã tắt"),
+    ]
+    if state.get("multi_person"):
+        down = ", ".join(f"#{pid}" for pid, _x in state.get("people_down", [])) or "không ai"
+        rows.append(("Số người / đang ngã", f"{state.get('people_count', 0)} / {down}"))
+    with detail_placeholder.container(border=True):
+        st.markdown(rows_html(rows), unsafe_allow_html=True)
+        with st.expander("Thông số kỹ thuật"):
+            st.caption(f"Nhãn thô: ngã `{fall_label}` · tay `{hand_label}` "
+                       f"({state['hand_confidence'] * 100:.0f}%) · FPS xử lý {state['fps']:.1f}")
             if config["enable_signal"]:
-                st.caption(
-                    f"Signal chuỗi: {'Có' if state['signal_detected'] else 'Không'} "
-                    f"({state['signal_probability'] * 100:.0f}%)"
-                )
-            st.caption(f"FPS xử lý: {state['fps']:.1f}")
-            if state.get("multi_person"):
-                down = ", ".join(f"#{pid}" for pid, _x in state.get("people_down", [])) or "không"
-                st.caption(f"Theo dõi nhiều người: thấy {state.get('people_count', 0)} người · đang ngã: {down}")
-            st.caption(f"Model ngã: {fall_model_name} · DNN+LSTM 14 nhãn (tay) · LSTM nhị phân (signal, thử nghiệm)")
+                st.caption(f"Signal for Help (chuỗi): {'có' if state['signal_detected'] else 'không'} "
+                           f"({state['signal_probability'] * 100:.0f}%)")
 
     elapsed = now - st.session_state["monitor_start_time"]
     hh, rem = divmod(int(elapsed), 3600)
     mm, ss = divmod(rem, 60)
-    render_kpi_card(
-        camera_card_placeholder,
-        "📷 Trạng thái camera",
-        "Mất tín hiệu" if camera_lost else "Đang hoạt động",
-        "Webcam của bạn",
-    )
-    render_kpi_card(
-        duration_card_placeholder, "⏱️ Thời gian giám sát", f"{hh:02d}:{mm:02d}:{ss:02d}", "Đang giám sát"
-    )
-    render_kpi_card(incidents_card_placeholder, "🚨 Sự cố phát hiện", str(count_today_incidents()), "Hôm nay")
+    render_kpis("Mất tín hiệu" if camera_lost else "Đang hoạt động", f"{hh:02d}:{mm:02d}:{ss:02d}", "Đang giám sát")
 
     time.sleep(0.3)
 

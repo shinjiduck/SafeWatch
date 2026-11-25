@@ -96,7 +96,45 @@ def cmd_lists(out_dir):
     if os.path.exists(f"{DATA}/omnifall/labels/of-syn.csv"):
         _write(f"{out_dir}/ofsyn.csv", ofsyn_rows())
         names.append("ofsyn")
+    if os.path.isdir(f"{DATA}/le2i") and os.path.exists(f"{DATA}/omnifall/labels/le2i.csv"):
+        _write(f"{out_dir}/le2i.csv", le2i_rows())
+        names.append("le2i")
     print("xong:", {n: len(list(csv.DictReader(open(f"{out_dir}/{n}.csv", encoding="utf-8")))) for n in names})
+
+
+def le2i_rows():
+    """Le2i (Charfi et al. 2013; 9 người, 6 phòng = 6 góc camera / ánh sáng). Nhãn từ OmniFall (le2i.csv).
+    Cùng quy tắc với OF-Syn: ngã cần >= OFSYN_MIN_LEAD s trước cú ngã; sinh hoạt = không có nhãn 1 / 2."""
+    files = {}
+    for d, _, fs in os.walk(f"{DATA}/le2i"):
+        room = os.path.relpath(d, f"{DATA}/le2i").replace("\\", "/").split("/")[0]
+        for n in fs:
+            m = re.fullmatch(r"video \((\d+)\)\.avi", n)
+            if m:
+                files[(room, int(m.group(1)))] = os.path.join(d, n).replace("\\", "/")
+    segs = {}
+    for r in csv.DictReader(open(f"{DATA}/omnifall/labels/le2i.csv", encoding="utf-8")):
+        segs.setdefault(r["path"], []).append(r)
+    rows, missing = [], 0
+    for path, ss in sorted(segs.items()):
+        room, vid = path.split("/")
+        main = files.get((room, int(vid.split("_")[1])))
+        if main is None:
+            missing += 1
+            continue
+        labels = {x["label"] for x in ss}
+        base = dict(name=f"le2i_{room}_{vid}", main=main, other="", side="", nguoi=f"le2i-{ss[0]['subject']}",
+                    nhom=f"phong={room};nguoi={ss[0]['subject']}")
+        if "1" in labels:
+            f = min((x for x in ss if x["label"] == "1"), key=lambda x: float(x["start"]))
+            start, end = float(f["start"]), float(f["end"])
+            if start >= OFSYN_MIN_LEAD:
+                rows.append(dict(base, loai="fall", fall_start_s=start, fall_end_s=min(end, start + 1.5)))
+        elif "2" not in labels:
+            rows.append(dict(base, loai="adl", fall_start_s="", fall_end_s=""))
+    if missing:
+        print(f"le2i: thiếu {missing} video so với nhãn")
+    return rows
 
 
 def ofsyn_rows():

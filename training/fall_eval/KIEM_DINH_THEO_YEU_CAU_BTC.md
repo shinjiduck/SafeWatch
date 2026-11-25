@@ -38,6 +38,26 @@ Code: `train_eval.py` → `stratified_folds` (chia theo `group`), kiểm định
 
 ## 4. Chấm trên dữ liệu chưa từng dùng (hệ thống đã đóng băng)
 
+Tất cả: chế độ 1 người, model `all3`, phát lại qua đúng code app (`replay_eval.py`), xác minh 30 s.
+
+### Le2i (dữ liệu thật — 9 người, 6 phòng; Charfi et al. 2013, nhãn thời gian từ OmniFall)
+Chưa từng dùng cho bất kỳ quyết định nào. Ngã cần >= 1 s trước cú ngã (bỏ 1 video). Mỗi phòng một góc camera
+và ánh sáng riêng.
+
+| Phòng | Ngã bắt được | Clip sinh hoạt bị nghi ngã |
+|---|---|---|
+| Coffee room 1 | 47/47 | — |
+| Coffee room 2 | 13/14 | 0/8 |
+| Home 1 | 25/30 | — |
+| Home 2 | 7/7 | 2/23 |
+| Lecture room | 14/14 | 5/13 |
+| Office | 15/17 | 3/16 |
+| **Tổng** | **121/129 (94%)** | 10/60 — 13 cảnh báo gửi / giờ sinh hoạt (0.38 giờ) |
+
+Theo người (9 người): bắt được 87–100% ca ngã mỗi người. 18 ca bắt được nhưng không gửi vì người đó tự đứng
+dậy trong 30 s (đúng thiết kế). Điểm yếu: báo nhầm ở Lecture room / Office — ghi nhận, KHÔNG chỉnh hệ thống dựa
+trên Le2i để nó còn là bài thử sạch.
+
 ### OF-Syn (OmniFall, video tổng hợp bằng Wan 2.2; nhãn CC BY-NC-SA 4.0)
 - Có ghi sẵn: độ cao camera (thấp / ngang mắt / cao / từ trên xuống), hướng (trước / trái / phải / sau), khoảng
   cách (vừa / xa), trong nhà / ngoài trời, 6 nhóm tuổi.

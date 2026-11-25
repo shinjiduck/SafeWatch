@@ -1,5 +1,5 @@
-"""Trang Lịch sử sự cố — bản restyle của pages/1_Lich_su_canh_bao.py cũ, có
-thêm bộ lọc theo thời gian/loại sự cố."""
+"""Trang Nhật ký — 2 tab: Sự cố (ngã, SOS, đã tự đứng dậy...) và Hệ thống (mất / khôi phục camera, mất người).
+Phân loại sự kiện dùng chung event_log.classify (cùng cách đếm với trang Trực tiếp và Tổng quan)."""
 
 from datetime import datetime, timedelta
 
@@ -7,91 +7,61 @@ import pandas as pd
 import streamlit as st
 
 import event_log
-from theme import badge_html
+from theme import kpi_card, page_header
 
-st.title("Lịch sử sự cố")
 event_log.init_db()
+page_header("Nhật ký", "Mọi sự cố và thay đổi trạng thái hệ thống đã ghi lại.")
 
-
-def bucket_and_status(event_type):
-    if event_type.startswith("Ngã - đã phục hồi"):
-        return "Ngã", "Đã phục hồi"
-    if event_type.startswith("Ngã"):
-        return "Ngã", "SOS đã kích hoạt"
-    return "SOS tay", "SOS đã kích hoạt"
-
-
-events = event_log.get_events(limit=1000)
 rows = []
-for ts, event_type, details in events:
+for ts, event_type, details in event_log.get_events(limit=2000):
     try:
         dt = datetime.fromisoformat(ts)
     except ValueError:
         continue
-    bucket, status = bucket_and_status(event_type)
-    rows.append({"dt": dt, "Thời gian": ts, "Loại sự cố": event_type, "Nhóm": bucket, "Chi tiết": details, "Trạng thái": status, "Camera": "Webcam chính"})
+    group, status = event_log.classify(event_type)
+    rows.append({"dt": dt, "Thời gian": dt.strftime("%d/%m/%Y %H:%M:%S"), "Sự kiện": event_type, "Nhóm": group,
+                 "Kết quả": status, "Chi tiết": details})
+df = pd.DataFrame(rows, columns=["dt", "Thời gian", "Sự kiện", "Nhóm", "Kết quả", "Chi tiết"])
 
-df = pd.DataFrame(rows)
+tab_events, tab_system = st.tabs(["🚨 Sự cố", "🖥️ Hệ thống"])
 
-# ----- KPI -----
-total = len(df)
-fall_count = int((df["Nhóm"] == "Ngã").sum()) if total else 0
-sos_count = int((df["Nhóm"] == "SOS tay").sum()) if total else 0
-recovered_count = int((df["Trạng thái"] == "Đã phục hồi").sum()) if total else 0
-
-k1, k2, k3, k4 = st.columns(4)
-for col, label, value in [
-    (k1, "Tổng sự cố", total),
-    (k2, "Phát hiện ngã", fall_count),
-    (k3, "SOS tay", sos_count),
-    (k4, "Đã phục hồi / huỷ", recovered_count),
-]:
-    with col:
-        with st.container(border=True):
-            st.markdown(f'<div class="sw-kpi-label">{label}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="sw-kpi-value">{value}</div>', unsafe_allow_html=True)
-
-st.markdown("---")
-
-# ----- Bộ lọc -----
-f1, f2, f3 = st.columns(3)
-with f1:
-    days = st.selectbox("Khoảng thời gian", ["7 ngày", "30 ngày", "Tất cả"], index=0)
-with f2:
-    loai = st.selectbox("Loại sự cố", ["Tất cả", "Ngã", "SOS tay"], index=0)
-with f3:
-    trang_thai = st.selectbox("Trạng thái", ["Tất cả", "SOS đã kích hoạt", "Đã phục hồi"], index=0)
-
-filtered = df.copy()
-if not filtered.empty:
-    if days == "7 ngày":
-        filtered = filtered[filtered["dt"] >= datetime.now() - timedelta(days=7)]
-    elif days == "30 ngày":
-        filtered = filtered[filtered["dt"] >= datetime.now() - timedelta(days=30)]
-    if loai != "Tất cả":
-        filtered = filtered[filtered["Nhóm"] == loai]
-    if trang_thai != "Tất cả":
-        filtered = filtered[filtered["Trạng thái"] == trang_thai]
-
-st.subheader(f"Chi tiết ({len(filtered)} kết quả)")
-if filtered.empty:
-    st.info("Không có sự cố nào khớp bộ lọc.")
-else:
-    display_df = filtered[["Thời gian", "Loại sự cố", "Camera", "Chi tiết", "Trạng thái"]].reset_index(drop=True)
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
-
-with st.expander("Nhật ký trạng thái hệ thống (mất/khôi phục camera, mất/khôi phục quan sát)"):
-    status_rows = event_log.get_status_log(limit=500)
-    if not status_rows:
-        st.caption("Chưa có ghi nhận nào.")
+with tab_events:
+    f1, f2, f3 = st.columns(3)
+    days = f1.selectbox("Khoảng thời gian", ["7 ngày", "30 ngày", "Tất cả"])
+    group = f2.selectbox("Nhóm", ["Tất cả", event_log.GROUP_FALL, event_log.GROUP_SOS])
+    result = f3.selectbox("Kết quả", ["Tất cả", event_log.STATUS_ALARM, event_log.STATUS_RECOVERED,
+                                      event_log.STATUS_VERIFYING])
+    in_range = df if days == "Tất cả" else df[df["dt"] >= datetime.now() - timedelta(days=7 if days == "7 ngày" else 30)]
+    k1, k2, k3, k4 = st.columns(4)
+    with k1:
+        kpi_card("Báo động", int((in_range["Kết quả"] == event_log.STATUS_ALARM).sum()), "Đã gửi tới người liên hệ")
+    with k2:
+        kpi_card("Ngã không dậy", int(((in_range["Nhóm"] == event_log.GROUP_FALL)
+                                      & (in_range["Kết quả"] == event_log.STATUS_ALARM)).sum()), "Đã báo động")
+    with k3:
+        kpi_card("SOS", int((in_range["Nhóm"] == event_log.GROUP_SOS).sum()), "Cử chỉ cầu cứu")
+    with k4:
+        kpi_card("Tự đứng dậy", int((in_range["Kết quả"] == event_log.STATUS_RECOVERED).sum()), "Không báo động")
+    view = in_range
+    if group != "Tất cả":
+        view = view[view["Nhóm"] == group]
+    if result != "Tất cả":
+        view = view[view["Kết quả"] == result]
+    st.caption(f"{len(view)} sự kiện")
+    if view.empty:
+        st.info("Không có sự kiện nào khớp bộ lọc.")
     else:
-        st.dataframe(
-            pd.DataFrame(status_rows, columns=["Thời gian", "Trạng thái", "Chi tiết"]),
-            use_container_width=True,
-            hide_index=True,
-        )
+        st.dataframe(view[["Thời gian", "Sự kiện", "Kết quả", "Chi tiết"]], width="stretch", hide_index=True)
 
-with st.expander("Xoá toàn bộ lịch sử"):
+with tab_system:
+    status_rows = event_log.get_status_log(limit=1000)
+    if not status_rows:
+        st.info("Chưa có ghi nhận nào.")
+    else:
+        st.dataframe(pd.DataFrame(status_rows, columns=["Thời gian", "Trạng thái", "Chi tiết"]), width="stretch",
+                     hide_index=True)
+
+with st.expander("🗑️ Xoá toàn bộ lịch sử sự cố"):
     confirm = st.checkbox("Tôi chắc chắn muốn xoá toàn bộ lịch sử (không thể hoàn tác)")
     if st.button("Xoá lịch sử", disabled=not confirm):
         event_log.clear_events()

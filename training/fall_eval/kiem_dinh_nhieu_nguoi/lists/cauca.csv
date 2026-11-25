@@ -1,101 +1,101 @@
-name,main,other,side,loai,fall_start_s,fall_end_s,nguoi
-cauca-FallBackwardsS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall backwards/FallBackwardsS1.avi,,,fall,1.9,3.1,cauca-S1
-cauca-FallBackwardsS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall backwards/FallBackwardsS10.avi,,,fall,2.9,4.1,cauca-S10
-cauca-FallBackwardsS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall backwards/FallBackwardsS2.avi,,,fall,2.15,3.35,cauca-S2
-cauca-FallBackwardsS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall backwards/FallBackwardsS3.avi,,,fall,2.35,3.5500000000000003,cauca-S3
-cauca-FallBackwardsS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall backwards/FallBackwardsS4.avi,,,fall,2.5,3.7,cauca-S4
-cauca-FallBackwardsS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall backwards/FallBackwardsS5.avi,,,fall,1.4,2.6,cauca-S5
-cauca-FallBackwardsS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall backwards/FallBackwardsS6.avi,,,fall,3.55,4.75,cauca-S6
-cauca-FallBackwardsS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall backwards/FallBackwardsS7.avi,,,fall,3.5999999999999996,4.8,cauca-S7
-cauca-FallBackwardsS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall backwards/FallBackwardsS8.avi,,,fall,2.2,3.4000000000000004,cauca-S8
-cauca-FallBackwardsS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall backwards/FallBackwardsS9.avi,,,fall,2.25,3.45,cauca-S9
-cauca-FallForwardS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall forward/FallForwardS1.avi,,,fall,5.55,6.75,cauca-S1
-cauca-FallForwardS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall forward/FallForwardS10.avi,,,fall,1.65,2.85,cauca-S10
-cauca-FallForwardS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall forward/FallForwardS2.avi,,,fall,0.19999999999999996,1.4,cauca-S2
-cauca-FallForwardS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall forward/FallForwardS3.avi,,,fall,3.2,4.4,cauca-S3
-cauca-FallForwardS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall forward/FallForwardS4.avi,,,fall,0.25,1.45,cauca-S4
-cauca-FallForwardS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall forward/FallForwardS5.avi,,,fall,1.9,3.1,cauca-S5
-cauca-FallForwardS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall forward/FallForwardS6.avi,,,fall,3.1500000000000004,4.3500000000000005,cauca-S6
-cauca-FallForwardS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall forward/FallForwardS7.avi,,,fall,1.15,2.35,cauca-S7
-cauca-FallForwardS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall forward/FallForwardS8.avi,,,fall,1.0,2.2,cauca-S8
-cauca-FallForwardS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall forward/FallForwardS9.avi,,,fall,1.7999999999999998,3.0,cauca-S9
-cauca-FallLeftS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall left/FallLeftS1.avi,,,fall,1.2000000000000002,2.4000000000000004,cauca-S1
-cauca-FallLeftS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall left/FallLeftS10.avi,,,fall,1.5,2.7,cauca-S10
-cauca-FallLeftS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall left/FallLeftS2.avi,,,fall,0.6000000000000001,1.8,cauca-S2
-cauca-FallLeftS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall left/FallLeftS3.avi,,,fall,4.1,5.3,cauca-S3
-cauca-FallLeftS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall left/FallLeftS4.avi,,,fall,2.05,3.25,cauca-S4
-cauca-FallLeftS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall left/FallLeftS5.avi,,,fall,2.8,4.0,cauca-S5
-cauca-FallLeftS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall left/FallLeftS6.avi,,,fall,1.5499999999999998,2.75,cauca-S6
-cauca-FallLeftS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall left/FallLeftS7.avi,,,fall,2.65,3.85,cauca-S7
-cauca-FallLeftS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall left/FallLeftS8.avi,,,fall,1.85,3.0500000000000003,cauca-S8
-cauca-FallLeftS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall left/FallLeftS9.avi,,,fall,1.75,2.95,cauca-S9
-cauca-FallRightS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall right/FallRightS1.avi,,,fall,1.7999999999999998,3.0,cauca-S1
-cauca-FallRightS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall right/FallRightS10.avi,,,fall,2.7,3.9000000000000004,cauca-S10
-cauca-FallRightS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall right/FallRightS2.avi,,,fall,0.6499999999999999,1.8499999999999999,cauca-S2
-cauca-FallRightS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall right/FallRightS3.avi,,,fall,1.65,2.85,cauca-S3
-cauca-FallRightS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall right/FallRightS4.avi,,,fall,1.35,2.5500000000000003,cauca-S4
-cauca-FallRightS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall right/FallRightS5.avi,,,fall,2.75,3.95,cauca-S5
-cauca-FallRightS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall right/FallRightS6.avi,,,fall,3.05,4.25,cauca-S6
-cauca-FallRightS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall right/FallRightS7.avi,,,fall,1.2999999999999998,2.5,cauca-S7
-cauca-FallRightS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall right/FallRightS8.avi,,,fall,1.9500000000000002,3.1500000000000004,cauca-S8
-cauca-FallRightS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall right/FallRightS9.avi,,,fall,1.85,3.0500000000000003,cauca-S9
-cauca-FallSittingS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall sitting/FallSittingS1.avi,,,fall,3.9000000000000004,5.1000000000000005,cauca-S1
-cauca-FallSittingS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall sitting/FallSittingS10.avi,,,fall,2.8,4.0,cauca-S10
-cauca-FallSittingS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall sitting/FallSittingS2.avi,,,fall,3.05,4.25,cauca-S2
-cauca-FallSittingS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall sitting/FallSittingS3.avi,,,fall,1.5499999999999998,2.75,cauca-S3
-cauca-FallSittingS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall sitting/FallSittingS4.avi,,,fall,2.05,3.25,cauca-S4
-cauca-FallSittingS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall sitting/FallSittingS5.avi,,,fall,2.45,3.6500000000000004,cauca-S5
-cauca-FallSittingS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall sitting/FallSittingS6.avi,,,fall,4.35,5.55,cauca-S6
-cauca-FallSittingS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall sitting/FallSittingS7.avi,,,fall,1.35,2.5500000000000003,cauca-S7
-cauca-FallSittingS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall sitting/FallSittingS8.avi,,,fall,3.0,4.2,cauca-S8
-cauca-FallSittingS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall sitting/FallSittingS9.avi,,,fall,3.45,4.65,cauca-S9
-cauca-HopS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Hop/HopS1.avi,,,adl,,,cauca-S1
-cauca-HopS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Hop/HopS10.avi,,,adl,,,cauca-S10
-cauca-HopS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Hop/HopS2.avi,,,adl,,,cauca-S2
-cauca-HopS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Hop/HopS3.avi,,,adl,,,cauca-S3
-cauca-HopS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Hop/HopS4.avi,,,adl,,,cauca-S4
-cauca-HopS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Hop/HopS5.avi,,,adl,,,cauca-S5
-cauca-HopS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Hop/HopS6.avi,,,adl,,,cauca-S6
-cauca-HopS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Hop/HopS7.avi,,,adl,,,cauca-S7
-cauca-HopS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Hop/HopS8.avi,,,adl,,,cauca-S8
-cauca-HopS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Hop/HopS9.avi,,,adl,,,cauca-S9
-cauca-KneelS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Kneel/KneelS1.avi,,,adl,,,cauca-S1
-cauca-KneelS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Kneel/KneelS10.avi,,,adl,,,cauca-S10
-cauca-KneelS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Kneel/KneelS2.avi,,,adl,,,cauca-S2
-cauca-KneelS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Kneel/KneelS3.avi,,,adl,,,cauca-S3
-cauca-KneelS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Kneel/KneelS4.avi,,,adl,,,cauca-S4
-cauca-KneelS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Kneel/KneelS5.avi,,,adl,,,cauca-S5
-cauca-KneelS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Kneel/KneelS6.avi,,,adl,,,cauca-S6
-cauca-KneelS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Kneel/KneelS7.avi,,,adl,,,cauca-S7
-cauca-KneelS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Kneel/KneelS8.avi,,,adl,,,cauca-S8
-cauca-KneelS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Kneel/KneelS9.avi,,,adl,,,cauca-S9
-cauca-PickupobjectS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Pick up object/PickupobjectS1.avi,,,adl,,,cauca-S1
-cauca-PickupobjectS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Pick up object/PickupobjectS10.avi,,,adl,,,cauca-S10
-cauca-PickupobjectS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Pick up object/PickupobjectS2.avi,,,adl,,,cauca-S2
-cauca-PickupobjectS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Pick up object/PickupobjectS3.avi,,,adl,,,cauca-S3
-cauca-PickupobjectS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Pick up object/PickupobjectS4.avi,,,adl,,,cauca-S4
-cauca-PickupobjectS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Pick up object/PickupobjectS5.avi,,,adl,,,cauca-S5
-cauca-PickupobjectS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Pick up object/PickupobjectS6.avi,,,adl,,,cauca-S6
-cauca-PickupobjectS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Pick up object/PickupobjectS7.avi,,,adl,,,cauca-S7
-cauca-PickupobjectS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Pick up object/PickupobjectS8.avi,,,adl,,,cauca-S8
-cauca-PickupobjectS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Pick up object/PickupobjectS9.avi,,,adl,,,cauca-S9
-cauca-SitDownS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Sit down/SitDownS1.avi,,,adl,,,cauca-S1
-cauca-SitDownS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Sit down/SitDownS10.avi,,,adl,,,cauca-S10
-cauca-SitDownS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Sit down/SitDownS2.avi,,,adl,,,cauca-S2
-cauca-SitDownS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Sit down/SitDownS3.avi,,,adl,,,cauca-S3
-cauca-SitDownS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Sit down/SitDownS4.avi,,,adl,,,cauca-S4
-cauca-SitDownS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Sit down/SitDownS5.avi,,,adl,,,cauca-S5
-cauca-SitDownS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Sit down/SitDownS6.avi,,,adl,,,cauca-S6
-cauca-SitDownS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Sit down/SitDownS7.avi,,,adl,,,cauca-S7
-cauca-SitDownS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Sit down/SitDownS8.avi,,,adl,,,cauca-S8
-cauca-SitDownS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Sit down/SitDownS9.avi,,,adl,,,cauca-S9
-cauca-WalkS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Walk/WalkS1.avi,,,adl,,,cauca-S1
-cauca-WalkS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Walk/WalkS10.avi,,,adl,,,cauca-S10
-cauca-WalkS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Walk/WalkS2.avi,,,adl,,,cauca-S2
-cauca-WalkS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Walk/WalkS3.avi,,,adl,,,cauca-S3
-cauca-WalkS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Walk/WalkS4.avi,,,adl,,,cauca-S4
-cauca-WalkS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Walk/WalkS5.avi,,,adl,,,cauca-S5
-cauca-WalkS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Walk/WalkS6.avi,,,adl,,,cauca-S6
-cauca-WalkS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Walk/WalkS7.avi,,,adl,,,cauca-S7
-cauca-WalkS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Walk/WalkS8.avi,,,adl,,,cauca-S8
-cauca-WalkS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Walk/WalkS9.avi,,,adl,,,cauca-S9
+name,main,other,side,loai,fall_start_s,fall_end_s,nguoi,nhom
+cauca-FallBackwardsS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall backwards/FallBackwardsS1.avi,,,fall,1.9,3.1,cauca-S1,
+cauca-FallBackwardsS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall backwards/FallBackwardsS10.avi,,,fall,2.9,4.1,cauca-S10,
+cauca-FallBackwardsS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall backwards/FallBackwardsS2.avi,,,fall,2.15,3.35,cauca-S2,
+cauca-FallBackwardsS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall backwards/FallBackwardsS3.avi,,,fall,2.35,3.5500000000000003,cauca-S3,
+cauca-FallBackwardsS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall backwards/FallBackwardsS4.avi,,,fall,2.5,3.7,cauca-S4,
+cauca-FallBackwardsS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall backwards/FallBackwardsS5.avi,,,fall,1.4,2.6,cauca-S5,
+cauca-FallBackwardsS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall backwards/FallBackwardsS6.avi,,,fall,3.55,4.75,cauca-S6,
+cauca-FallBackwardsS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall backwards/FallBackwardsS7.avi,,,fall,3.5999999999999996,4.8,cauca-S7,
+cauca-FallBackwardsS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall backwards/FallBackwardsS8.avi,,,fall,2.2,3.4000000000000004,cauca-S8,
+cauca-FallBackwardsS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall backwards/FallBackwardsS9.avi,,,fall,2.25,3.45,cauca-S9,
+cauca-FallForwardS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall forward/FallForwardS1.avi,,,fall,5.55,6.75,cauca-S1,
+cauca-FallForwardS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall forward/FallForwardS10.avi,,,fall,1.65,2.85,cauca-S10,
+cauca-FallForwardS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall forward/FallForwardS2.avi,,,fall,0.19999999999999996,1.4,cauca-S2,
+cauca-FallForwardS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall forward/FallForwardS3.avi,,,fall,3.2,4.4,cauca-S3,
+cauca-FallForwardS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall forward/FallForwardS4.avi,,,fall,0.25,1.45,cauca-S4,
+cauca-FallForwardS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall forward/FallForwardS5.avi,,,fall,1.9,3.1,cauca-S5,
+cauca-FallForwardS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall forward/FallForwardS6.avi,,,fall,3.1500000000000004,4.3500000000000005,cauca-S6,
+cauca-FallForwardS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall forward/FallForwardS7.avi,,,fall,1.15,2.35,cauca-S7,
+cauca-FallForwardS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall forward/FallForwardS8.avi,,,fall,1.0,2.2,cauca-S8,
+cauca-FallForwardS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall forward/FallForwardS9.avi,,,fall,1.7999999999999998,3.0,cauca-S9,
+cauca-FallLeftS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall left/FallLeftS1.avi,,,fall,1.2000000000000002,2.4000000000000004,cauca-S1,
+cauca-FallLeftS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall left/FallLeftS10.avi,,,fall,1.5,2.7,cauca-S10,
+cauca-FallLeftS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall left/FallLeftS2.avi,,,fall,0.6000000000000001,1.8,cauca-S2,
+cauca-FallLeftS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall left/FallLeftS3.avi,,,fall,4.1,5.3,cauca-S3,
+cauca-FallLeftS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall left/FallLeftS4.avi,,,fall,2.05,3.25,cauca-S4,
+cauca-FallLeftS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall left/FallLeftS5.avi,,,fall,2.8,4.0,cauca-S5,
+cauca-FallLeftS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall left/FallLeftS6.avi,,,fall,1.5499999999999998,2.75,cauca-S6,
+cauca-FallLeftS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall left/FallLeftS7.avi,,,fall,2.65,3.85,cauca-S7,
+cauca-FallLeftS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall left/FallLeftS8.avi,,,fall,1.85,3.0500000000000003,cauca-S8,
+cauca-FallLeftS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall left/FallLeftS9.avi,,,fall,1.75,2.95,cauca-S9,
+cauca-FallRightS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall right/FallRightS1.avi,,,fall,1.7999999999999998,3.0,cauca-S1,
+cauca-FallRightS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall right/FallRightS10.avi,,,fall,2.7,3.9000000000000004,cauca-S10,
+cauca-FallRightS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall right/FallRightS2.avi,,,fall,0.6499999999999999,1.8499999999999999,cauca-S2,
+cauca-FallRightS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall right/FallRightS3.avi,,,fall,1.65,2.85,cauca-S3,
+cauca-FallRightS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall right/FallRightS4.avi,,,fall,1.35,2.5500000000000003,cauca-S4,
+cauca-FallRightS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall right/FallRightS5.avi,,,fall,2.75,3.95,cauca-S5,
+cauca-FallRightS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall right/FallRightS6.avi,,,fall,3.05,4.25,cauca-S6,
+cauca-FallRightS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall right/FallRightS7.avi,,,fall,1.2999999999999998,2.5,cauca-S7,
+cauca-FallRightS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall right/FallRightS8.avi,,,fall,1.9500000000000002,3.1500000000000004,cauca-S8,
+cauca-FallRightS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall right/FallRightS9.avi,,,fall,1.85,3.0500000000000003,cauca-S9,
+cauca-FallSittingS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Fall sitting/FallSittingS1.avi,,,fall,3.9000000000000004,5.1000000000000005,cauca-S1,
+cauca-FallSittingS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Fall sitting/FallSittingS10.avi,,,fall,2.8,4.0,cauca-S10,
+cauca-FallSittingS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Fall sitting/FallSittingS2.avi,,,fall,3.05,4.25,cauca-S2,
+cauca-FallSittingS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Fall sitting/FallSittingS3.avi,,,fall,1.5499999999999998,2.75,cauca-S3,
+cauca-FallSittingS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Fall sitting/FallSittingS4.avi,,,fall,2.05,3.25,cauca-S4,
+cauca-FallSittingS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Fall sitting/FallSittingS5.avi,,,fall,2.45,3.6500000000000004,cauca-S5,
+cauca-FallSittingS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Fall sitting/FallSittingS6.avi,,,fall,4.35,5.55,cauca-S6,
+cauca-FallSittingS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Fall sitting/FallSittingS7.avi,,,fall,1.35,2.5500000000000003,cauca-S7,
+cauca-FallSittingS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Fall sitting/FallSittingS8.avi,,,fall,3.0,4.2,cauca-S8,
+cauca-FallSittingS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Fall sitting/FallSittingS9.avi,,,fall,3.45,4.65,cauca-S9,
+cauca-HopS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Hop/HopS1.avi,,,adl,,,cauca-S1,
+cauca-HopS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Hop/HopS10.avi,,,adl,,,cauca-S10,
+cauca-HopS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Hop/HopS2.avi,,,adl,,,cauca-S2,
+cauca-HopS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Hop/HopS3.avi,,,adl,,,cauca-S3,
+cauca-HopS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Hop/HopS4.avi,,,adl,,,cauca-S4,
+cauca-HopS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Hop/HopS5.avi,,,adl,,,cauca-S5,
+cauca-HopS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Hop/HopS6.avi,,,adl,,,cauca-S6,
+cauca-HopS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Hop/HopS7.avi,,,adl,,,cauca-S7,
+cauca-HopS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Hop/HopS8.avi,,,adl,,,cauca-S8,
+cauca-HopS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Hop/HopS9.avi,,,adl,,,cauca-S9,
+cauca-KneelS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Kneel/KneelS1.avi,,,adl,,,cauca-S1,
+cauca-KneelS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Kneel/KneelS10.avi,,,adl,,,cauca-S10,
+cauca-KneelS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Kneel/KneelS2.avi,,,adl,,,cauca-S2,
+cauca-KneelS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Kneel/KneelS3.avi,,,adl,,,cauca-S3,
+cauca-KneelS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Kneel/KneelS4.avi,,,adl,,,cauca-S4,
+cauca-KneelS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Kneel/KneelS5.avi,,,adl,,,cauca-S5,
+cauca-KneelS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Kneel/KneelS6.avi,,,adl,,,cauca-S6,
+cauca-KneelS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Kneel/KneelS7.avi,,,adl,,,cauca-S7,
+cauca-KneelS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Kneel/KneelS8.avi,,,adl,,,cauca-S8,
+cauca-KneelS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Kneel/KneelS9.avi,,,adl,,,cauca-S9,
+cauca-PickupobjectS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Pick up object/PickupobjectS1.avi,,,adl,,,cauca-S1,
+cauca-PickupobjectS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Pick up object/PickupobjectS10.avi,,,adl,,,cauca-S10,
+cauca-PickupobjectS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Pick up object/PickupobjectS2.avi,,,adl,,,cauca-S2,
+cauca-PickupobjectS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Pick up object/PickupobjectS3.avi,,,adl,,,cauca-S3,
+cauca-PickupobjectS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Pick up object/PickupobjectS4.avi,,,adl,,,cauca-S4,
+cauca-PickupobjectS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Pick up object/PickupobjectS5.avi,,,adl,,,cauca-S5,
+cauca-PickupobjectS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Pick up object/PickupobjectS6.avi,,,adl,,,cauca-S6,
+cauca-PickupobjectS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Pick up object/PickupobjectS7.avi,,,adl,,,cauca-S7,
+cauca-PickupobjectS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Pick up object/PickupobjectS8.avi,,,adl,,,cauca-S8,
+cauca-PickupobjectS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Pick up object/PickupobjectS9.avi,,,adl,,,cauca-S9,
+cauca-SitDownS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Sit down/SitDownS1.avi,,,adl,,,cauca-S1,
+cauca-SitDownS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Sit down/SitDownS10.avi,,,adl,,,cauca-S10,
+cauca-SitDownS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Sit down/SitDownS2.avi,,,adl,,,cauca-S2,
+cauca-SitDownS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Sit down/SitDownS3.avi,,,adl,,,cauca-S3,
+cauca-SitDownS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Sit down/SitDownS4.avi,,,adl,,,cauca-S4,
+cauca-SitDownS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Sit down/SitDownS5.avi,,,adl,,,cauca-S5,
+cauca-SitDownS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Sit down/SitDownS6.avi,,,adl,,,cauca-S6,
+cauca-SitDownS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Sit down/SitDownS7.avi,,,adl,,,cauca-S7,
+cauca-SitDownS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Sit down/SitDownS8.avi,,,adl,,,cauca-S8,
+cauca-SitDownS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Sit down/SitDownS9.avi,,,adl,,,cauca-S9,
+cauca-WalkS1,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.1/Walk/WalkS1.avi,,,adl,,,cauca-S1,
+cauca-WalkS10,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.10/Walk/WalkS10.avi,,,adl,,,cauca-S10,
+cauca-WalkS2,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.2/Walk/WalkS2.avi,,,adl,,,cauca-S2,
+cauca-WalkS3,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.3/Walk/WalkS3.avi,,,adl,,,cauca-S3,
+cauca-WalkS4,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.4/Walk/WalkS4.avi,,,adl,,,cauca-S4,
+cauca-WalkS5,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.5/Walk/WalkS5.avi,,,adl,,,cauca-S5,
+cauca-WalkS6,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.6/Walk/WalkS6.avi,,,adl,,,cauca-S6,
+cauca-WalkS7,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.7/Walk/WalkS7.avi,,,adl,,,cauca-S7,
+cauca-WalkS8,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.8/Walk/WalkS8.avi,,,adl,,,cauca-S8,
+cauca-WalkS9,D:/DeTaiAI/datasets/caucafall/CAUCAFall/Subject.9/Walk/WalkS9.avi,,,adl,,,cauca-S9,

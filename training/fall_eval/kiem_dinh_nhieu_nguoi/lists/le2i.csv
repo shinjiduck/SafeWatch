@@ -1,0 +1,190 @@
+name,main,other,side,loai,fall_start_s,fall_end_s,nguoi,nhom
+le2i_Coffee_room_01_video_1,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (1).avi,,,fall,1.55006,3.05006,le2i-1,phong=Coffee_room_01;nguoi=1
+le2i_Coffee_room_01_video_10,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (10).avi,,,fall,7.821,9.321,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_11,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (11).avi,,,fall,14.717,16.217,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_12,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (12).avi,,,fall,1.904,3.404,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_13,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (13).avi,,,fall,3.279,4.779,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_14,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (14).avi,,,fall,1.779,3.279,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_15,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (15).avi,,,fall,1.696,3.1959999999999997,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_16,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (16).avi,,,fall,1.425,2.925,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_18,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (18).avi,,,fall,5.717,7.217,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_19,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (19).avi,,,fall,3.02923,4.52923,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_2,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (2).avi,,,fall,7.217,8.716999999999999,le2i-1,phong=Coffee_room_01;nguoi=1
+le2i_Coffee_room_01_video_20,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (20).avi,,,fall,12.52923,14.02923,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_21,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (21).avi,,,fall,2.967,4.4670000000000005,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_22,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (22).avi,,,fall,4.113,5.613,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_01_video_23,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (23).avi,,,fall,7.529,9.029,le2i-2,phong=Coffee_room_01;nguoi=2
+le2i_Coffee_room_01_video_24,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (24).avi,,,fall,7.571,9.071,le2i-2,phong=Coffee_room_01;nguoi=2
+le2i_Coffee_room_01_video_25,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (25).avi,,,fall,5.196,6.696,le2i-2,phong=Coffee_room_01;nguoi=2
+le2i_Coffee_room_01_video_26,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (26).avi,,,fall,7.342,8.841999999999999,le2i-2,phong=Coffee_room_01;nguoi=2
+le2i_Coffee_room_01_video_27,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (27).avi,,,fall,6.237,7.737,le2i-2,phong=Coffee_room_01;nguoi=2
+le2i_Coffee_room_01_video_28,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (28).avi,,,fall,2.154,3.654,le2i-2,phong=Coffee_room_01;nguoi=2
+le2i_Coffee_room_01_video_29,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (29).avi,,,fall,11.40423,12.90423,le2i-3,phong=Coffee_room_01;nguoi=3
+le2i_Coffee_room_01_video_3,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (3).avi,,,fall,8.342,9.842,le2i-1,phong=Coffee_room_01;nguoi=1
+le2i_Coffee_room_01_video_30,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (30).avi,,,fall,2.717,4.2170000000000005,le2i-3,phong=Coffee_room_01;nguoi=3
+le2i_Coffee_room_01_video_31,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (31).avi,,,fall,5.508,7.008,le2i-3,phong=Coffee_room_01;nguoi=3
+le2i_Coffee_room_01_video_32,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (32).avi,,,fall,7.738,9.238,le2i-3,phong=Coffee_room_01;nguoi=3
+le2i_Coffee_room_01_video_33,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (33).avi,,,fall,2.988,4.4879999999999995,le2i-3,phong=Coffee_room_01;nguoi=3
+le2i_Coffee_room_01_video_34,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (34).avi,,,fall,12.925,14.425,le2i-3,phong=Coffee_room_01;nguoi=3
+le2i_Coffee_room_01_video_35,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (35).avi,,,fall,2.488,3.988,le2i-3,phong=Coffee_room_01;nguoi=3
+le2i_Coffee_room_01_video_36,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (36).avi,,,fall,43.175,44.675,le2i-4,phong=Coffee_room_01;nguoi=4
+le2i_Coffee_room_01_video_37,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (37).avi,,,fall,1.821,3.3209999999999997,le2i-4,phong=Coffee_room_01;nguoi=4
+le2i_Coffee_room_01_video_38,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (38).avi,,,fall,9.154,10.654,le2i-4,phong=Coffee_room_01;nguoi=4
+le2i_Coffee_room_01_video_39,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (39).avi,,,fall,1.321,2.8209999999999997,le2i-4,phong=Coffee_room_01;nguoi=4
+le2i_Coffee_room_01_video_4,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (4).avi,,,fall,4.592,6.092,le2i-7,phong=Coffee_room_01;nguoi=7
+le2i_Coffee_room_01_video_40,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (40).avi,,,fall,9.925,11.425,le2i-4,phong=Coffee_room_01;nguoi=4
+le2i_Coffee_room_01_video_41,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (41).avi,,,fall,10.279,11.779,le2i-4,phong=Coffee_room_01;nguoi=4
+le2i_Coffee_room_01_video_42,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (42).avi,,,fall,3.904,5.404,le2i-5,phong=Coffee_room_01;nguoi=5
+le2i_Coffee_room_01_video_43,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (43).avi,,,fall,24.4459,25.9459,le2i-5,phong=Coffee_room_01;nguoi=5
+le2i_Coffee_room_01_video_44,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (44).avi,,,fall,1.42506,2.92506,le2i-5,phong=Coffee_room_01;nguoi=5
+le2i_Coffee_room_01_video_45,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (45).avi,,,fall,3.467,4.9670000000000005,le2i-5,phong=Coffee_room_01;nguoi=5
+le2i_Coffee_room_01_video_46,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (46).avi,,,fall,6.133,7.633,le2i-5,phong=Coffee_room_01;nguoi=5
+le2i_Coffee_room_01_video_47,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (47).avi,,,fall,24.195,25.695,le2i-6,phong=Coffee_room_01;nguoi=6
+le2i_Coffee_room_01_video_48,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (48).avi,,,fall,25.778,27.278,le2i-6,phong=Coffee_room_01;nguoi=6
+le2i_Coffee_room_01_video_5,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (5).avi,,,fall,4.883,6.383,le2i-7,phong=Coffee_room_01;nguoi=7
+le2i_Coffee_room_01_video_6,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (6).avi,,,fall,5.32,6.82,le2i-7,phong=Coffee_room_01;nguoi=7
+le2i_Coffee_room_01_video_7,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (7).avi,,,fall,3.84,5.34,le2i-7,phong=Coffee_room_01;nguoi=7
+le2i_Coffee_room_01_video_8,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (8).avi,,,fall,6.07,7.57,le2i-7,phong=Coffee_room_01;nguoi=7
+le2i_Coffee_room_01_video_9,D:/DeTaiAI/datasets/le2i/Coffee_room_01/Coffee_room_01/Videos/video (9).avi,,,fall,3.133,4.633,le2i-0,phong=Coffee_room_01;nguoi=0
+le2i_Coffee_room_02_video_49,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (49).avi,,,fall,16.508,18.008,le2i-8,phong=Coffee_room_02;nguoi=8
+le2i_Coffee_room_02_video_50,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (50).avi,,,fall,70.34,71.84,le2i-8,phong=Coffee_room_02;nguoi=8
+le2i_Coffee_room_02_video_51,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (51).avi,,,fall,2.436,3.936,le2i-1,phong=Coffee_room_02;nguoi=1
+le2i_Coffee_room_02_video_52,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (52).avi,,,fall,2.94,4.4399999999999995,le2i-1,phong=Coffee_room_02;nguoi=1
+le2i_Coffee_room_02_video_53,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (53).avi,,,fall,10.041,11.541,le2i-1,phong=Coffee_room_02;nguoi=1
+le2i_Coffee_room_02_video_54,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (54).avi,,,fall,5.959,7.459,le2i-7,phong=Coffee_room_02;nguoi=7
+le2i_Coffee_room_02_video_55,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (55).avi,,,fall,8.265,9.765,le2i-0,phong=Coffee_room_02;nguoi=0
+le2i_Coffee_room_02_video_56,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (56).avi,,,fall,11.508,13.008,le2i-0,phong=Coffee_room_02;nguoi=0
+le2i_Coffee_room_02_video_57,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (57).avi,,,fall,17.216,18.716,le2i-2,phong=Coffee_room_02;nguoi=2
+le2i_Coffee_room_02_video_58,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (58).avi,,,fall,6.612,8.112,le2i-3,phong=Coffee_room_02;nguoi=3
+le2i_Coffee_room_02_video_59,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (59).avi,,,fall,4.883,6.383,le2i-4,phong=Coffee_room_02;nguoi=4
+le2i_Coffee_room_02_video_60,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (60).avi,,,fall,4.841,6.341,le2i-4,phong=Coffee_room_02;nguoi=4
+le2i_Coffee_room_02_video_61,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (61).avi,,,adl,,,le2i-0,phong=Coffee_room_02;nguoi=0
+le2i_Coffee_room_02_video_62,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (62).avi,,,fall,6.758,7.90347,le2i-0,phong=Coffee_room_02;nguoi=0
+le2i_Coffee_room_02_video_63,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (63).avi,,,adl,,,le2i-0,phong=Coffee_room_02;nguoi=0
+le2i_Coffee_room_02_video_64,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (64).avi,,,fall,5.153,6.653,le2i-4,phong=Coffee_room_02;nguoi=4
+le2i_Coffee_room_02_video_65,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (65).avi,,,adl,,,le2i-6,phong=Coffee_room_02;nguoi=6
+le2i_Coffee_room_02_video_66,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (66).avi,,,adl,,,le2i-8,phong=Coffee_room_02;nguoi=8
+le2i_Coffee_room_02_video_67,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (67).avi,,,adl,,,le2i-1,phong=Coffee_room_02;nguoi=1
+le2i_Coffee_room_02_video_68,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (68).avi,,,adl,,,le2i-7,phong=Coffee_room_02;nguoi=7
+le2i_Coffee_room_02_video_69,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (69).avi,,,adl,,,le2i-4,phong=Coffee_room_02;nguoi=4
+le2i_Coffee_room_02_video_70,D:/DeTaiAI/datasets/le2i/Coffee_room_02/Coffee_room_02/Videos/video (70).avi,,,adl,,,le2i-6,phong=Coffee_room_02;nguoi=6
+le2i_Home_01_video_1,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (1).avi,,,fall,5.758,7.258,le2i-1,phong=Home_01;nguoi=1
+le2i_Home_01_video_10,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (10).avi,,,fall,5.112,6.38264,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_11,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (11).avi,,,fall,5.278,6.778,le2i-7,phong=Home_01;nguoi=7
+le2i_Home_01_video_12,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (12).avi,,,fall,6.362,7.71597,le2i-1,phong=Home_01;nguoi=1
+le2i_Home_01_video_13,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (13).avi,,,fall,6.195,7.695,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_14,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (14).avi,,,fall,7.299,8.799,le2i-7,phong=Home_01;nguoi=7
+le2i_Home_01_video_15,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (15).avi,,,fall,6.528,8.00764,le2i-7,phong=Home_01;nguoi=7
+le2i_Home_01_video_16,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (16).avi,,,fall,6.799,8.299,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_17,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (17).avi,,,fall,5.841,7.29931,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_18,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (18).avi,,,fall,4.799,6.299,le2i-7,phong=Home_01;nguoi=7
+le2i_Home_01_video_19,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (19).avi,,,fall,4.82,6.32,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_2,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (2).avi,,,fall,4.633,6.133,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_20,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (20).avi,,,fall,5.487,6.987,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_21,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (21).avi,,,fall,5.758,7.258,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_22,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (22).avi,,,fall,5.737,7.237,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_23,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (23).avi,,,fall,6.341,7.841,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_24,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (24).avi,,,fall,5.049,6.549,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_25,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (25).avi,,,fall,6.528,8.027999999999999,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_26,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (26).avi,,,fall,5.049,6.48681,le2i-1,phong=Home_01;nguoi=1
+le2i_Home_01_video_27,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (27).avi,,,fall,6.133,7.633,le2i-1,phong=Home_01;nguoi=1
+le2i_Home_01_video_28,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (28).avi,,,fall,6.549,8.049,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_29,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (29).avi,,,fall,6.278,7.778,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_3,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (3).avi,,,fall,4.841,6.27847,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_30,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (30).avi,,,fall,4.383,5.883,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_4,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (4).avi,,,fall,5.883,7.383,le2i-5,phong=Home_01;nguoi=5
+le2i_Home_01_video_5,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (5).avi,,,fall,4.216,5.716,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_6,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (6).avi,,,fall,4.112,5.612,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_7,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (7).avi,,,fall,5.487,6.987,le2i-0,phong=Home_01;nguoi=0
+le2i_Home_01_video_8,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (8).avi,,,fall,4.674,6.174,le2i-1,phong=Home_01;nguoi=1
+le2i_Home_01_video_9,D:/DeTaiAI/datasets/le2i/Home_01/Home_01/Videos/video (9).avi,,,fall,5.778,7.17431,le2i-1,phong=Home_01;nguoi=1
+le2i_Home_02_video_31,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (31).avi,,,fall,7.674,9.174,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_32,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (32).avi,,,fall,2.883,4.383,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_33,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (33).avi,,,fall,4.528,6.00764,le2i-3,phong=Home_02;nguoi=3
+le2i_Home_02_video_34,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (34).avi,,,fall,5.903,7.403,le2i-1,phong=Home_02;nguoi=1
+le2i_Home_02_video_35,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (35).avi,,,fall,4.716,6.216,le2i-1,phong=Home_02;nguoi=1
+le2i_Home_02_video_36,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (36).avi,,,fall,4.674,6.174,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_37,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (37).avi,,,fall,4.716,6.216,le2i-1,phong=Home_02;nguoi=1
+le2i_Home_02_video_38,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (38).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_39,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (39).avi,,,adl,,,le2i-1,phong=Home_02;nguoi=1
+le2i_Home_02_video_40,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (40).avi,,,adl,,,le2i-7,phong=Home_02;nguoi=7
+le2i_Home_02_video_41,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (41).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_42,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (42).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_43,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (43).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_44,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (44).avi,,,adl,,,le2i-1,phong=Home_02;nguoi=1
+le2i_Home_02_video_45,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (45).avi,,,adl,,,le2i-1,phong=Home_02;nguoi=1
+le2i_Home_02_video_46,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (46).avi,,,adl,,,le2i-5,phong=Home_02;nguoi=5
+le2i_Home_02_video_47,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (47).avi,,,adl,,,le2i-5,phong=Home_02;nguoi=5
+le2i_Home_02_video_48,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (48).avi,,,adl,,,le2i-5,phong=Home_02;nguoi=5
+le2i_Home_02_video_49,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (49).avi,,,adl,,,le2i-5,phong=Home_02;nguoi=5
+le2i_Home_02_video_50,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (50).avi,,,adl,,,le2i-5,phong=Home_02;nguoi=5
+le2i_Home_02_video_51,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (51).avi,,,adl,,,le2i-5,phong=Home_02;nguoi=5
+le2i_Home_02_video_52,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (52).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_53,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (53).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_54,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (54).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_55,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (55).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_56,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (56).avi,,,adl,,,le2i-0,phong=Home_02;nguoi=0
+le2i_Home_02_video_57,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (57).avi,,,adl,,,le2i-7,phong=Home_02;nguoi=7
+le2i_Home_02_video_58,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (58).avi,,,adl,,,le2i-7,phong=Home_02;nguoi=7
+le2i_Home_02_video_59,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (59).avi,,,adl,,,le2i-7,phong=Home_02;nguoi=7
+le2i_Home_02_video_60,D:/DeTaiAI/datasets/le2i/Home_02/Home_02/Videos/video (60).avi,,,adl,,,le2i-7,phong=Home_02;nguoi=7
+le2i_Lecture_room_video_1,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (1).avi,,,fall,6.341,7.841,le2i-3,phong=Lecture_room;nguoi=3
+le2i_Lecture_room_video_10,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (10).avi,,,fall,13.299,14.799,le2i-1,phong=Lecture_room;nguoi=1
+le2i_Lecture_room_video_11,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (11).avi,,,fall,8.695,10.195,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_12,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (12).avi,,,fall,22.653,24.153,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_13,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (13).avi,,,fall,11.612,13.112,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_14,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (14).avi,,,fall,11.695,13.195,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_15,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (15).avi,,,adl,,,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_16,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (16).avi,,,adl,,,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_17,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (17).avi,,,adl,,,le2i-6,phong=Lecture_room;nguoi=6
+le2i_Lecture_room_video_18,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (18).avi,,,adl,,,le2i-6,phong=Lecture_room;nguoi=6
+le2i_Lecture_room_video_19,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (19).avi,,,adl,,,le2i-1,phong=Lecture_room;nguoi=1
+le2i_Lecture_room_video_2,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (2).avi,,,fall,14.549,16.049,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_20,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (20).avi,,,adl,,,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_21,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (21).avi,,,adl,,,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_22,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (22).avi,,,adl,,,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_23,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (23).avi,,,adl,,,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_24,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (24).avi,,,adl,,,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_25,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (25).avi,,,adl,,,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_26,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (26).avi,,,adl,,,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_27,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (27).avi,,,adl,,,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_3,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (3).avi,,,fall,18.008,19.508,le2i-0,phong=Lecture_room;nguoi=0
+le2i_Lecture_room_video_4,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (4).avi,,,fall,10.57,12.07,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_5,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (5).avi,,,fall,10.487,11.987,le2i-7,phong=Lecture_room;nguoi=7
+le2i_Lecture_room_video_6,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (6).avi,,,fall,6.32,7.82,le2i-1,phong=Lecture_room;nguoi=1
+le2i_Lecture_room_video_7,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (7).avi,,,fall,8.883,10.383,le2i-1,phong=Lecture_room;nguoi=1
+le2i_Lecture_room_video_8,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (8).avi,,,fall,23.091,24.591,le2i-1,phong=Lecture_room;nguoi=1
+le2i_Lecture_room_video_9,D:/DeTaiAI/datasets/le2i/Lecture_room/Lecture room/video (9).avi,,,fall,30.487,31.987,le2i-1,phong=Lecture_room;nguoi=1
+le2i_Office_video_1,D:/DeTaiAI/datasets/le2i/Office/Office/video (1).avi,,,fall,11.383,12.883,le2i-3,phong=Office;nguoi=3
+le2i_Office_video_10,D:/DeTaiAI/datasets/le2i/Office/Office/video (10).avi,,,fall,6.07,7.57,le2i-7,phong=Office;nguoi=7
+le2i_Office_video_11,D:/DeTaiAI/datasets/le2i/Office/Office/video (11).avi,,,fall,3.091,4.54931,le2i-7,phong=Office;nguoi=7
+le2i_Office_video_12,D:/DeTaiAI/datasets/le2i/Office/Office/video (12).avi,,,fall,7.424,8.71597,le2i-7,phong=Office;nguoi=7
+le2i_Office_video_13,D:/DeTaiAI/datasets/le2i/Office/Office/video (13).avi,,,fall,26.153,27.653,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_14,D:/DeTaiAI/datasets/le2i/Office/Office/video (14).avi,,,fall,2.278,3.778,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_15,D:/DeTaiAI/datasets/le2i/Office/Office/video (15).avi,,,fall,8.528,10.028,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_16,D:/DeTaiAI/datasets/le2i/Office/Office/video (16).avi,,,fall,9.049,10.549,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_17,D:/DeTaiAI/datasets/le2i/Office/Office/video (17).avi,,,fall,3.112,4.612,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_18,D:/DeTaiAI/datasets/le2i/Office/Office/video (18).avi,,,adl,,,le2i-3,phong=Office;nguoi=3
+le2i_Office_video_19,D:/DeTaiAI/datasets/le2i/Office/Office/video (19).avi,,,adl,,,le2i-1,phong=Office;nguoi=1
+le2i_Office_video_2,D:/DeTaiAI/datasets/le2i/Office/Office/video (2).avi,,,fall,5.841,7.341,le2i-3,phong=Office;nguoi=3
+le2i_Office_video_20,D:/DeTaiAI/datasets/le2i/Office/Office/video (20).avi,,,adl,,,le2i-1,phong=Office;nguoi=1
+le2i_Office_video_21,D:/DeTaiAI/datasets/le2i/Office/Office/video (21).avi,,,adl,,,le2i-7,phong=Office;nguoi=7
+le2i_Office_video_22,D:/DeTaiAI/datasets/le2i/Office/Office/video (22).avi,,,adl,,,le2i-7,phong=Office;nguoi=7
+le2i_Office_video_23,D:/DeTaiAI/datasets/le2i/Office/Office/video (23).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_24,D:/DeTaiAI/datasets/le2i/Office/Office/video (24).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_25,D:/DeTaiAI/datasets/le2i/Office/Office/video (25).avi,,,adl,,,le2i-7,phong=Office;nguoi=7
+le2i_Office_video_26,D:/DeTaiAI/datasets/le2i/Office/Office/video (26).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_27,D:/DeTaiAI/datasets/le2i/Office/Office/video (27).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_28,D:/DeTaiAI/datasets/le2i/Office/Office/video (28).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_29,D:/DeTaiAI/datasets/le2i/Office/Office/video (29).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_3,D:/DeTaiAI/datasets/le2i/Office/Office/video (3).avi,,,fall,13.278,14.778,le2i-3,phong=Office;nguoi=3
+le2i_Office_video_30,D:/DeTaiAI/datasets/le2i/Office/Office/video (30).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_31,D:/DeTaiAI/datasets/le2i/Office/Office/video (31).avi,,,adl,,,le2i-7,phong=Office;nguoi=7
+le2i_Office_video_32,D:/DeTaiAI/datasets/le2i/Office/Office/video (32).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_33,D:/DeTaiAI/datasets/le2i/Office/Office/video (33).avi,,,adl,,,le2i-0,phong=Office;nguoi=0
+le2i_Office_video_4,D:/DeTaiAI/datasets/le2i/Office/Office/video (4).avi,,,fall,6.841,8.341000000000001,le2i-3,phong=Office;nguoi=3
+le2i_Office_video_5,D:/DeTaiAI/datasets/le2i/Office/Office/video (5).avi,,,fall,5.153,6.34097,le2i-3,phong=Office;nguoi=3
+le2i_Office_video_6,D:/DeTaiAI/datasets/le2i/Office/Office/video (6).avi,,,fall,11.549,13.049,le2i-1,phong=Office;nguoi=1
+le2i_Office_video_7,D:/DeTaiAI/datasets/le2i/Office/Office/video (7).avi,,,fall,4.112,5.612,le2i-1,phong=Office;nguoi=1
+le2i_Office_video_8,D:/DeTaiAI/datasets/le2i/Office/Office/video (8).avi,,,fall,11.383,12.883,le2i-1,phong=Office;nguoi=1
+le2i_Office_video_9,D:/DeTaiAI/datasets/le2i/Office/Office/video (9).avi,,,fall,2.174,3.674,le2i-1,phong=Office;nguoi=1

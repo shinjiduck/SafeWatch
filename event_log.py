@@ -97,3 +97,28 @@ def prune_older_than(days):
         cursor = conn.execute("DELETE FROM events WHERE timestamp < ?", (cutoff,))
         conn.execute("DELETE FROM status_log WHERE timestamp < ?", (cutoff,))
         return cursor.rowcount
+
+
+# Phân loại sự kiện cho giao diện (Nhật ký, Tổng quan, Trực tiếp) — 1 chỗ duy nhất.
+GROUP_FALL, GROUP_SOS = "Ngã", "SOS"
+STATUS_ALARM, STATUS_RECOVERED, STATUS_VERIFYING = "Đã báo động", "Đã phục hồi", "Bắt đầu xác minh"
+
+
+def classify(event_type):
+    """Trả về (nhóm, trạng thái) của 1 loại sự kiện trong bảng events."""
+    t = event_type or ""
+    if t.startswith("Ngã - đã phục hồi"):
+        return GROUP_FALL, STATUS_RECOVERED
+    if t.startswith("Nghi ngã"):
+        return GROUP_FALL, STATUS_VERIFYING
+    if t.startswith("Ngã"):
+        return GROUP_FALL, STATUS_ALARM
+    return GROUP_SOS, STATUS_ALARM
+
+
+def count_alarms_today():
+    """Số lần THẬT SỰ báo động hôm nay (không tính lần đã phục hồi / lần nghi ngã đang xác minh)."""
+    import time
+
+    today = time.strftime("%Y-%m-%d")
+    return sum(1 for ts, t, _ in get_events(limit=2000) if ts.startswith(today) and classify(t)[1] == STATUS_ALARM)

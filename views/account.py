@@ -5,32 +5,16 @@ import streamlit as st
 
 import detection_engine as engine
 import profile_store
+from theme import page_header, section
 
 engine.ensure_settings_defaults()
 
-st.title("Tài khoản của tôi")
+page_header("Hồ sơ", "Thông tin của người được giám sát — gửi kèm khi cần hỗ trợ.")
 
 profile = profile_store.load_profile()
 
-avatar_col, info_col = st.columns([1, 4])
-with avatar_col:
-    st.markdown(
-        f"""
-        <div style="width:72px;height:72px;border-radius:50%;background:#2563EB;color:white;
-                    display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;">
-            {profile['name'].strip()[0].upper() if profile['name'].strip() else '?'}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-with info_col:
-    st.markdown(f"### {profile['name']}")
-    st.caption(profile["role"])
-
-st.markdown("---")
-
 with st.form("profile_form"):
-    st.subheader("Thông tin cá nhân")
+    section("Thông tin cá nhân")
     c1, c2 = st.columns(2)
     with c1:
         name = st.text_input("Họ và tên", value=profile["name"])
@@ -47,7 +31,7 @@ with st.form("profile_form"):
             else 0,
         )
 
-    st.subheader("Thông tin an toàn cá nhân")
+    section("Thông tin an toàn")
     health_notes = st.text_area("Ghi chú sức khoẻ (bệnh nền, thuốc đang dùng...)", value=profile["health_notes"])
     watch_area = st.text_input("Khu vực giám sát chính", value=profile["watch_area"])
 
@@ -68,14 +52,4 @@ with st.form("profile_form"):
         st.success("Đã lưu hồ sơ.")
         st.rerun()
 
-st.markdown("---")
-st.subheader("Bảo mật")
-st.caption("Demo này chưa có hệ thống đăng nhập/tài khoản thật, nên các mục dưới đây chỉ minh hoạ giao diện.")
-st.button("Đổi mật khẩu", disabled=True)
-st.button("Bật xác thực 2 bước", disabled=True)
-st.button("Đăng xuất khỏi tất cả thiết bị", disabled=True)
-
-st.markdown("---")
-st.subheader("Cá nhân hoá")
-st.selectbox("Giao diện", ["Light", "Dark (chưa hỗ trợ)"], disabled=True)
-st.selectbox("Ngôn ngữ", ["Tiếng Việt"], disabled=True)
+st.caption("Đăng nhập, đổi mật khẩu, xác thực 2 bước: chưa có trong bản demo (1 hồ sơ duy nhất, lưu trên máy).")

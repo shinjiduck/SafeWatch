@@ -1,52 +1,58 @@
-"""Trang Quản lý camera — demo chỉ hỗ trợ 1 webcam local thật, nên "Thêm
-camera" bị disable kèm giải thích, thay vì giả vờ hỗ trợ nhiều camera."""
+"""Trang Camera & lắp đặt — camera đang dùng, cài đặt hình ảnh (gom từ trang Cấu hình về đây cho đúng chỗ) và
+hướng dẫn đặt camera. Bản demo chỉ có 1 camera: webcam của trình duyệt đang mở trang."""
 
 import streamlit as st
 
 import detection_engine as engine
-from theme import badge_html
+from theme import badge_html, page_header, rows_html, section, steps_html
 
 engine.ensure_settings_defaults()
+page_header("Camera & lắp đặt", "Camera đang dùng, cài đặt hình ảnh và cách đặt camera để phát hiện ngã tốt nhất.")
 
-st.title("Quản lý camera")
+s = st.session_state
+online = s.get("camera_online", False)
 
-st.button("➕ Thêm camera", disabled=True, help="Demo hiện chỉ hỗ trợ 1 webcam local (index 0).")
-st.caption("Muốn dùng nhiều camera/IP camera cần bản mở rộng phần capture — hiện chưa hỗ trợ.")
-
-st.markdown("---")
-
-camera_online = st.session_state.get("camera_online", False)
-
-with st.container(border=True):
-    c1, c2 = st.columns([2, 1])
-    with c1:
-        st.markdown("### Camera 1 — Webcam chính")
-        st.caption("Nguồn: webcam local (index 0)")
-    with c2:
-        st.markdown(badge_html("safe", "Online") if camera_online else badge_html("neutral", "Offline"), unsafe_allow_html=True)
-
-    st.markdown("")
-    m1, m2, m3 = st.columns(3)
-    with m1:
-        st.metric("Độ phân giải", st.session_state["camera_resolution"])
-    with m2:
-        st.metric("FPS mục tiêu", "~15-25")
-    with m3:
-        pipelines_on = sum(
-            [st.session_state["enable_fall"], st.session_state["enable_hand"], st.session_state["enable_signal"]]
+left, right = st.columns([3, 2], gap="large")
+with left:
+    with st.container(border=True):
+        c1, c2 = st.columns([3, 1], vertical_alignment="center")
+        c1.markdown("**Camera 1 — Webcam của bạn**")
+        c2.markdown(badge_html("safe", "Đang giám sát") if online else badge_html("idle", "Chưa bật"),
+                    unsafe_allow_html=True)
+        st.markdown(
+            rows_html([
+                ("Nguồn", "Webcam qua trình duyệt (WebRTC)"),
+                ("Độ phân giải", s["camera_resolution"]),
+                ("Phát hiện ngã", "Bật" if s["enable_fall"] else "Tắt"),
+                ("Cử chỉ tay", "Bật" if s["enable_hand"] else "Tắt"),
+                ("Theo dõi nhiều người", "Bật (thử nghiệm)" if s.get("multi_person") else "Tắt"),
+            ]),
+            unsafe_allow_html=True,
         )
-        st.metric("AI pipeline đang bật", f"{pipelines_on}/3")
+        st.page_link("views/live_view.py", label="Mở giám sát trực tiếp", icon="🎥")
+    st.caption("Bản demo dùng 1 camera. Thêm IP camera / nhiều camera cần phần thu hình riêng — chưa hỗ trợ.")
 
-    st.markdown(
-        f"- Phát hiện Ngã: {'✅ Bật' if st.session_state['enable_fall'] else '⛔ Tắt'}\n"
-        f"- Cử chỉ tay: {'✅ Bật' if st.session_state['enable_hand'] else '⛔ Tắt'}\n"
-        f"- Signal for Help (chuỗi, thử nghiệm): {'✅ Bật' if st.session_state['enable_signal'] else '⛔ Tắt'}"
-    )
+    section("Cài đặt hình ảnh")
+    with st.container(border=True):
+        s["camera_resolution"] = st.selectbox(
+            "Độ phân giải", list(engine.CAMERA_RESOLUTIONS), index=list(engine.CAMERA_RESOLUTIONS).index(s["camera_resolution"]),
+            help="640x480 là đủ cho phát hiện ngã; cao hơn tốn CPU hơn.",
+        )
+        s["mirror_camera"] = st.toggle("Lật ngang hình (như soi gương)", value=s["mirror_camera"])
+        s["show_overlay"] = st.toggle("Vẽ khung xương lên video", value=s["show_overlay"])
+        st.caption("Áp dụng khi bấm STOP rồi START lại ở trang Trực tiếp.")
 
-    b1, b2, b3 = st.columns(3)
-    with b1:
-        st.page_link("views/live_view.py", label="Xem trực tiếp", icon="🎥")
-    with b2:
-        st.page_link("views/settings.py", label="Sửa cấu hình", icon="⚙️")
-    with b3:
-        st.button("Xoá camera", disabled=True, help="Camera duy nhất của hệ thống, không thể xoá trong demo.")
+with right:
+    section("Đặt camera thế nào")
+    with st.container(border=True):
+        st.markdown(
+            steps_html([
+                ("Cao khoảng 2 m, chếch xuống", "Nhìn từ trên xuống thấy rõ người đứng lẫn người nằm."),
+                ("Ở góc phòng, cách chỗ hay đi lại ~3 m", "Thấy được toàn thân — đứng quá gần sẽ bị nhắc lùi ra."),
+                ("Vùng sàn không bị giường / bàn / sofa che", "Che vùng sàn làm bỏ sót nhiều ca ngã nhất."),
+                ("Đủ sáng, tránh ngược sáng cửa sổ", "Ngược sáng làm khung xương chập chờn."),
+                ("Cửa ra vào không nằm giữa khung hình", "Người đi khuất giữa khung dễ bị nghi ngã khuất."),
+            ]),
+            unsafe_allow_html=True,
+        )
+    st.info("Không có camera đặt cao? Dùng điện thoại làm webcam (DroidCam / Iriun) đặt lên tủ.", icon="💡")

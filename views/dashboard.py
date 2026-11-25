@@ -1,123 +1,102 @@
-"""Trang Dashboard — tổng quan hệ thống. Lưu ý: Streamlit chỉ chạy 1 trang
-tại 1 thời điểm trong 1 session, nên khối trạng thái lớn ở đây hiện đúng
-trạng thái GHI NHẬN LẦN CUỐI từ trang Xem trực tiếp (session_state), không
-phải trạng thái "sống" song song thật — vì demo chỉ chạy trên 1 máy/1 luồng.
+"""Trang Tổng quan — thống kê sự cố theo thời gian và tốc độ người nhà phản hồi. Không lặp lại trạng thái
+"sống" của trang Trực tiếp (Streamlit chỉ chạy 1 trang / lúc nên trạng thái ở đây luôn cũ — dễ hiểu nhầm).
+
+Màu biểu đồ (đã kiểm tra mù màu bằng validate_palette của skill dataviz): báo động #DC2626, tự đứng dậy
+#2563EB (đỏ + xanh lá trượt kiểm tra mù màu đỏ-lục); biểu đồ 1 dãy theo giờ dùng xám trung tính.
 """
 
 from datetime import datetime, timedelta
+from statistics import median
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
-import detection_engine as engine
 import event_log
-from theme import badge_html, status_banner_html
+import notifier
+from theme import COLOR_NAVY, fmt_duration, kpi_card, page_header, section
 
-engine.ensure_settings_defaults()
 event_log.init_db()
+notifier.init_db()
+page_header("Tổng quan", "Sự cố theo ngày, theo giờ và tốc độ người nhà xác nhận cảnh báo.")
 
-st.title("Dashboard")
+COLORS = {event_log.STATUS_ALARM: "#DC2626", "Tự đứng dậy": "#2563EB"}
+AXIS = dict(labelColor="#64748B", titleColor="#64748B", gridColor="#EEF0F3", domainColor="#CBD5E1", tickColor="#CBD5E1")
 
-header_col1, header_col2 = st.columns([3, 1])
-with header_col1:
-    st.markdown(f"### Xin chào, {st.session_state.get('user_name', 'Người dùng')} 👋")
-    st.caption(datetime.now().strftime("%A, %d/%m/%Y — %H:%M"))
-with header_col2:
-    today_count = sum(
-        1
-        for ts, _, _ in event_log.get_events(limit=1000)
-        if ts.startswith(datetime.now().strftime("%Y-%m-%d"))
-    )
-    st.markdown(f"🔔 **{today_count}** cảnh báo hôm nay")
-
-st.markdown("---")
-
-# ----- KPI -----
-kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-camera_online = st.session_state.get("camera_online", False)
-last_status = st.session_state.get("last_status")
-
-with kpi1:
-    with st.container(border=True):
-        st.markdown('<div class="sw-kpi-label">Tổng camera</div>', unsafe_allow_html=True)
-        st.markdown('<div class="sw-kpi-value">1</div>', unsafe_allow_html=True)
-with kpi2:
-    with st.container(border=True):
-        st.markdown('<div class="sw-kpi-label">Camera đang hoạt động</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="sw-kpi-value">{1 if camera_online else 0}</div>', unsafe_allow_html=True)
-with kpi3:
-    with st.container(border=True):
-        st.markdown('<div class="sw-kpi-label">Camera đang cảnh báo</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="sw-kpi-value">{1 if last_status == "emergency" else 0}</div>', unsafe_allow_html=True)
-with kpi4:
-    with st.container(border=True):
-        st.markdown('<div class="sw-kpi-label">Sự cố hôm nay</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="sw-kpi-value">{today_count}</div>', unsafe_allow_html=True)
-
-st.markdown("")
-
-# ----- Trạng thái tổng thể -----
-if last_status == "emergency":
-    st.markdown(status_banner_html("emergency", "🚨 TÌNH HUỐNG KHẨN CẤP", "SOS đã được kích hoạt"), unsafe_allow_html=True)
-elif last_status == "monitoring":
-    st.markdown(status_banner_html("monitoring", "⏳ ĐANG THEO DÕI SAU NGÃ", "Đang xác minh tình trạng người dùng"), unsafe_allow_html=True)
-elif last_status == "nodata":
-    st.markdown(status_banner_html("nodata", "⚠️ KHÔNG ĐỦ DỮ LIỆU", "Mất camera hoặc không thấy người — chưa xác nhận được an toàn"), unsafe_allow_html=True)
-elif last_status == "safe":
-    st.markdown(status_banner_html("safe", "AN TOÀN", "Không có cảnh báo nào đang hoạt động"), unsafe_allow_html=True)
-else:
-    st.markdown(status_banner_html("safe", "CHƯA GIÁM SÁT", "Vào trang Xem trực tiếp để bắt đầu"), unsafe_allow_html=True)
-
-st.caption("Trạng thái hiện theo lần ghi nhận cuối từ trang Xem trực tiếp (demo chạy trên 1 luồng, không đa nhiệm thật).")
-
-st.markdown("---")
-
-# ----- Danh sách camera (mock: chỉ có 1 webcam thật) -----
-st.subheader("Camera")
-cam_col, _ = st.columns([1, 3])
-with cam_col:
-    with st.container(border=True):
-        st.markdown("**Camera 1 – Webcam chính**")
-        badge = badge_html("safe", "Online") if camera_online else badge_html("neutral", "Offline")
-        st.markdown(badge, unsafe_allow_html=True)
-        st.caption("640x480 · MediaPipe Pose + Hands")
-        st.page_link("views/live_view.py", label="Xem trực tiếp →", icon="🎥")
-
-st.markdown("---")
-
-# ----- Biểu đồ 7 ngày -----
-st.subheader("Sự cố trong 7 ngày gần nhất")
-
-events = event_log.get_events(limit=2000)
-
-
-def bucket_type(event_type):
-    if event_type.startswith("Ngã - đã phục hồi"):
-        return "Recovered / Cancelled"
-    if event_type.startswith("Ngã"):
-        return "Fall"
-    return "SOS Gesture"
-
-
-rows = []
-for ts, event_type, _ in events:
+events = []
+for ts, event_type, _ in event_log.get_events(limit=5000):
     try:
-        date = datetime.fromisoformat(ts).date()
+        dt = datetime.fromisoformat(ts)
     except ValueError:
         continue
-    rows.append({"date": date, "bucket": bucket_type(event_type)})
+    _, status = event_log.classify(event_type)
+    if status == event_log.STATUS_VERIFYING:  # bước trung gian — kết cục đã ghi riêng (báo động / tự đứng dậy)
+        continue
+    events.append({"dt": dt, "Kết quả": "Tự đứng dậy" if status == event_log.STATUS_RECOVERED else status})
+df = pd.DataFrame(events, columns=["dt", "Kết quả"])
 
-today = datetime.now().date()
-date_range = [today - timedelta(days=i) for i in range(6, -1, -1)]
+period = st.segmented_control("Khoảng thời gian", ["7 ngày", "30 ngày"], default="7 ngày") or "7 ngày"
+days = 7 if period == "7 ngày" else 30
+since = datetime.now() - timedelta(days=days)
+recent = df[df["dt"] >= since]
 
-if rows:
-    df = pd.DataFrame(rows)
-    pivot = df.groupby(["date", "bucket"]).size().unstack(fill_value=0)
-    pivot = pivot.reindex(date_range, fill_value=0)
-    for col in ["Fall", "SOS Gesture", "Recovered / Cancelled"]:
-        if col not in pivot.columns:
-            pivot[col] = 0
-    pivot.index = [d.strftime("%d/%m") for d in pivot.index]
-    st.bar_chart(pivot[["Fall", "SOS Gesture", "Recovered / Cancelled"]])
-else:
-    st.info("Chưa có sự cố nào được ghi lại trong 7 ngày gần đây.")
+alerts = [a for a in notifier.latency_rows(limit=500) if a["detected_at"] >= since.timestamp()]
+ack_times = [a["sent_to_ack_s"] for a in alerts if a["sent_to_ack_s"] is not None]
+k1, k2, k3, k4 = st.columns(4)
+with k1:
+    kpi_card("Báo động", int((recent["Kết quả"] == event_log.STATUS_ALARM).sum()), f"{days} ngày qua")
+with k2:
+    kpi_card("Tự đứng dậy", int((recent["Kết quả"] == "Tự đứng dậy").sum()), "Không cần báo động")
+with k3:
+    kpi_card("Người nhà xác nhận sau", fmt_duration(median(ack_times)) if ack_times else "—", "Trung vị, từ lúc gửi được")
+with k4:
+    kpi_card("Chưa ai xác nhận", sum(1 for a in alerts if a["status"] != notifier.STATUS_ACKED), "Cảnh báo cần xem")
+
+if recent.empty:
+    st.info(f"Chưa có sự cố nào trong {days} ngày qua.")
+    st.stop()
+
+section("Sự cố theo ngày")
+dates = pd.date_range((datetime.now() - timedelta(days=days - 1)).date(), datetime.now().date())
+per_day = (recent.assign(Ngày=recent["dt"].dt.normalize()).groupby(["Ngày", "Kết quả"]).size()
+           .rename("Số lần").reset_index())
+full = pd.MultiIndex.from_product([dates, list(COLORS)], names=["Ngày", "Kết quả"])
+per_day = per_day.set_index(["Ngày", "Kết quả"]).reindex(full, fill_value=0).reset_index()
+per_day["Nhãn"] = per_day["Ngày"].dt.strftime("%d/%m")  # trục rời từng ngày: mỗi ngày đúng 1 cột
+chart = (
+    alt.Chart(per_day)
+    .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, stroke="white", strokeWidth=2)
+    .encode(
+        x=alt.X("Nhãn:O", title=None, sort=[d.strftime("%d/%m") for d in dates],
+                axis=alt.Axis(labelAngle=0, grid=False, labelOverlap=True, **AXIS)),
+        y=alt.Y("Số lần:Q", title=None, axis=alt.Axis(tickMinStep=1, **AXIS)),
+        color=alt.Color("Kết quả:N", scale=alt.Scale(domain=list(COLORS), range=list(COLORS.values())),
+                        legend=alt.Legend(orient="top", title=None, labelColor=COLOR_NAVY)),
+        order=alt.Order("Kết quả:N", sort="descending"),
+        tooltip=[alt.Tooltip("Ngày:T", format="%d/%m/%Y"), "Kết quả:N", "Số lần:Q"],
+    )
+    .properties(height=260)
+    .configure_view(strokeWidth=0)
+)
+st.altair_chart(chart, width="stretch")
+
+section("Sự cố theo giờ trong ngày")
+per_hour = recent.assign(Giờ=recent["dt"].dt.hour).groupby("Giờ").size().reindex(range(24), fill_value=0)
+per_hour = per_hour.rename("Số lần").reset_index()
+chart = (
+    alt.Chart(per_hour)
+    .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, color="#475569")
+    .encode(
+        x=alt.X("Giờ:O", title="Giờ", axis=alt.Axis(labelAngle=0, grid=False, **AXIS)),
+        y=alt.Y("Số lần:Q", title=None, axis=alt.Axis(tickMinStep=1, **AXIS)),
+        tooltip=[alt.Tooltip("Giờ:O", title="Giờ"), "Số lần:Q"],
+    )
+    .properties(height=200)
+    .configure_view(strokeWidth=0)
+)
+st.altair_chart(chart, width="stretch")
+st.caption("Tính cả báo động và lần tự đứng dậy — cho biết khung giờ nên chú ý.")
+
+with st.expander("Xem dạng bảng"):
+    st.dataframe(per_day.pivot(index="Ngày", columns="Kết quả", values="Số lần").sort_index(ascending=False),
+                 width="stretch")

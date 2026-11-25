@@ -1,25 +1,23 @@
-"""Trang Cấu hình — 4 tab: Nhận diện, Camera, Cảnh báo, Lưu trữ. Các giá trị
-đọc/ghi qua st.session_state (key trùng SETTINGS_DEFAULTS trong
-detection_engine.py) để trang Xem trực tiếp đọc lại được ngay.
-
-Lưu ý thật: mục Email/SMS/Push/Lưu snapshot/video hiện chỉ là toggle giao
-diện — demo này chưa có backend gửi thông báo hay ghi video thật.
-"""
+"""Trang Cấu hình — 3 tab: Nhận diện, Cảnh báo & âm thanh, Lưu trữ (cài đặt camera ở trang Camera & lắp đặt).
+Giá trị đọc/ghi qua st.session_state (key trùng SETTINGS_DEFAULTS trong detection_engine.py) để trang Trực tiếp
+đọc lại được; áp dụng khi bắt đầu lại stream."""
 
 import streamlit as st
 
 import detection_engine as engine
 import event_log
+from theme import page_header, section
 
 engine.ensure_settings_defaults()
 event_log.init_db()
 
-st.title("Cấu hình")
+page_header("Cấu hình", "Thay đổi được áp dụng khi bấm STOP rồi START lại ở trang Trực tiếp.")
 
-tab_detect, tab_camera, tab_alert, tab_storage = st.tabs(["Nhận diện", "Camera", "Cảnh báo", "Lưu trữ"])
+tab_detect, tab_alert, tab_storage = st.tabs(["🧍 Nhận diện", "🔔 Cảnh báo & âm thanh", "💾 Lưu trữ"])
 
 with tab_detect:
-    st.session_state["enable_fall"] = st.checkbox("Bật phát hiện Ngã", value=st.session_state["enable_fall"])
+    section("Phát hiện ngã")
+    st.session_state["enable_fall"] = st.toggle("Bật phát hiện ngã", value=st.session_state["enable_fall"])
     _versions = ["v2", "v1"]
     st.session_state["fall_model_version"] = st.radio(
         "Model phát hiện ngã",
@@ -29,7 +27,7 @@ with tab_detect:
         horizontal=True,
         help="v2 cần models/fall_v2.keras (train bằng training/fall_eval/train_eval.py); thiếu thì tự dùng v1.",
     )
-    st.session_state["multi_person"] = st.checkbox(
+    st.session_state["multi_person"] = st.toggle(
         "Theo dõi nhiều người cùng lúc (tối đa 3)",
         value=st.session_state["multi_person"],
         disabled=st.session_state["fall_model_version"] != "v2",
@@ -45,7 +43,8 @@ with tab_detect:
         step=5,
         help="Ngã xong tự đứng lên lại trong thời gian này sẽ KHÔNG báo động.",
     )
-    st.session_state["enable_hand"] = st.checkbox("Bật phát hiện cử chỉ tay", value=st.session_state["enable_hand"])
+    section("Cử chỉ cầu cứu")
+    st.session_state["enable_hand"] = st.toggle("Bật phát hiện cử chỉ tay", value=st.session_state["enable_hand"])
     st.session_state["hand_confidence_threshold"] = st.slider(
         "Ngưỡng tin cậy cử chỉ tay (%)",
         min_value=0,
@@ -56,7 +55,7 @@ with tab_detect:
 
     signal_col1, signal_col2 = st.columns([3, 1])
     with signal_col1:
-        st.session_state["enable_signal"] = st.checkbox(
+        st.session_state["enable_signal"] = st.toggle(
             "Bật Signal for Help theo chuyển động", value=st.session_state["enable_signal"]
         )
     with signal_col2:
@@ -73,56 +72,45 @@ with tab_detect:
     ) / 100
     st.caption("Model này train trên rất ít data, còn hay báo sai — xem chi tiết ở README/training/.")
 
+with tab_alert:
+    import notifier
+
+    from theme import rows_html
+
+    active = sorted(notifier.RUNNING.channels) if notifier.RUNNING else []
+    section("Kênh gửi cảnh báo")
+    with st.container(border=True):
+        st.markdown(rows_html([
+            ("Telegram", "✅ Đang bật" if "telegram" in active else "⚪ Chưa cấu hình — TELEGRAM_BOT_TOKEN"),
+            ("Email", "✅ Đang bật" if "email" in active else "⚪ Chưa cấu hình — SMTP_HOST / USER / PASSWORD"),
+            ("SMS", "✅ Đang bật" if "sms" in active else "⚪ Chưa cấu hình — SMS_GATEWAY_* hoặc TWILIO_*"),
+        ]), unsafe_allow_html=True)
+        st.caption("Khai báo trong `.streamlit/secrets.toml` rồi khởi động lại app.")
+    c1, c2 = st.columns(2)
+    c1.page_link("views/emergency_contacts.py", label="Người liên hệ nhận cảnh báo", icon="📞")
+    c2.page_link("views/alerts.py", label="Xem cảnh báo & thử gửi", icon="🔔")
+    section("Âm thanh & giọng nói")
+    st.session_state["sound_alert"] = st.toggle(
+        "Phát âm thanh khi báo động khẩn cấp", value=st.session_state["sound_alert"]
+    )
+    st.session_state["voice_prompts"] = st.toggle(
+        "Nhắc bằng giọng nói khi đứng quá gần / bị khuất / rời khung hình",
+        value=st.session_state["voice_prompts"],
+        help='VD: "Xin mời quý vị rời xa camera một chút." Không nhắc trong lúc đang theo dõi sau ngã.',
+    )
+    st.session_state["silent_monitoring"] = st.toggle(
+        "Theo dõi im lặng sau Ngã (không phát âm thanh trong lúc xác minh)",
+        value=st.session_state["silent_monitoring"],
+        help="Đúng ý tưởng gốc: tránh gây chú ý không cần thiết trong tình huống nhạy cảm (VD bị khống chế).",
+    )
+    section("Nâng cao")
     st.session_state["alert_hold_seconds"] = st.slider(
-        "Thời gian giữ cảnh báo tối thiểu (giây)",
+        "Giữ trạng thái báo động tối thiểu (giây)",
         min_value=0.5,
         max_value=10.0,
         value=float(st.session_state["alert_hold_seconds"]),
         step=0.5,
         help="Tránh cảnh báo nhấp nháy khi tín hiệu dao động ngay ở ngưỡng.",
-    )
-
-with tab_camera:
-    st.session_state["camera_resolution"] = st.selectbox(
-        "Độ phân giải camera",
-        list(engine.CAMERA_RESOLUTIONS.keys()),
-        index=list(engine.CAMERA_RESOLUTIONS.keys()).index(st.session_state["camera_resolution"]),
-    )
-    st.session_state["show_overlay"] = st.checkbox(
-        "Hiển thị landmark đè lên video", value=st.session_state["show_overlay"]
-    )
-    st.session_state["mirror_camera"] = st.checkbox(
-        "Lật ngược camera (mirror)", value=st.session_state["mirror_camera"]
-    )
-    st.caption("Nguồn camera: hiện chỉ hỗ trợ 1 webcam local (index 0). Nhiều camera cần bản mở rộng sau.")
-
-with tab_alert:
-    import notifier
-
-    active = sorted(notifier.RUNNING.channels) if notifier.RUNNING else []
-    st.markdown("**Kênh gửi cảnh báo**")
-    st.markdown(f"- Telegram: {'✅ đang bật' if 'telegram' in active else '⚪ chưa cấu hình (TELEGRAM_BOT_TOKEN)'}")
-    st.markdown(f"- Email: {'✅ đang bật' if 'email' in active else '⚪ chưa cấu hình (SMTP_HOST/USER/PASSWORD)'}")
-    st.markdown(
-        f"- SMS: {'✅ đang bật' if 'sms' in active else '⚪ chưa cấu hình (SMS_GATEWAY_USER/PASSWORD hoặc TWILIO_*)'}"
-    )
-    st.markdown("- Push: chưa hỗ trợ")
-    st.caption("Kênh cấu hình trong `.streamlit/secrets.toml`, khởi động lại app để áp dụng.")
-    st.page_link("views/alerts.py", label="Cảnh báo & xác nhận (giả lập, bảng thời gian) →", icon="🔔")
-    st.page_link("views/emergency_contacts.py", label="Quản lý người liên hệ khẩn cấp →", icon="📞")
-    st.markdown("---")
-    st.session_state["sound_alert"] = st.checkbox(
-        "Phát âm thanh khi báo động khẩn cấp", value=st.session_state["sound_alert"]
-    )
-    st.session_state["voice_prompts"] = st.checkbox(
-        "Nhắc bằng giọng nói khi đứng quá gần / bị khuất / rời khung hình",
-        value=st.session_state["voice_prompts"],
-        help='VD: "Xin mời quý vị rời xa camera một chút." Không nhắc trong lúc đang theo dõi sau ngã.',
-    )
-    st.session_state["silent_monitoring"] = st.checkbox(
-        "Theo dõi im lặng sau Ngã (không phát âm thanh trong lúc xác minh)",
-        value=st.session_state["silent_monitoring"],
-        help="Đúng ý tưởng gốc: tránh gây chú ý không cần thiết trong tình huống nhạy cảm (VD bị khống chế).",
     )
 
 with tab_storage:
