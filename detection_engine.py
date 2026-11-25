@@ -62,7 +62,9 @@ HAND_VOTE_WINDOW = 5
 ALERT_HOLD_SECONDS = 2.0
 SIGNAL_CONSECUTIVE_REQUIRED = 5
 
-DEFAULT_FALL_GRACE_SECONDS = 120
+# Thời gian chờ xác minh sau ngã: đứng dậy trong khoảng này thì huỷ, không báo. 30 s = đúng mức đã dùng khi đo báo
+# nhầm (system_level_eval.py, replay_eval.py) nên số trong báo cáo khớp với app. Chỉnh được 5-300 s ở trang Cấu hình.
+DEFAULT_FALL_GRACE_SECONDS = 30
 DEFAULT_HAND_CONFIDENCE_THRESHOLD = 0.8
 DEFAULT_SIGNAL_CONFIDENCE_THRESHOLD = 0.7
 DEFAULT_ENABLE_FALL = True

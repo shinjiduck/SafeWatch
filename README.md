@@ -52,7 +52,7 @@ Trình duyệt sẽ tự mở `http://localhost:8501`. Vào trang **Xem trực t
 
 **Logic cảnh báo:**
 - 3 cử chỉ tay SOS (Need Ambulance/Need Help/Signal For Help) → báo động ngay.
-- Ngã → theo dõi im lặng (không báo ngay) trong khoảng thời gian cấu hình được (mặc định 120s). Đứng lên lại trong thời gian đó → huỷ, ghi log "đã phục hồi". Hết giờ vẫn chưa đứng lên → báo động thật + ghi log.
+- Ngã → theo dõi im lặng (không báo ngay) trong khoảng thời gian cấu hình được (mặc định 30 s, chỉnh được 5–300 s). Đứng lên lại trong thời gian đó → huỷ, ghi log "đã phục hồi". Hết giờ vẫn chưa đứng lên → báo động thật + ghi log.
 - Mọi cảnh báo được ghi vào `data/events.db`, xem lại ở trang Lịch sử sự cố / Dashboard.
 - **Đứng sai chỗ** (`framing.py`): đứng quá gần camera, chỉ thấy một phần cơ thể, hoặc rời khung hình → hiện
   thông báo + nhắc bằng giọng nói ("Xin mời quý vị rời xa camera một chút."). Không thấy ai → trạng thái

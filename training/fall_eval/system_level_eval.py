@@ -1,9 +1,9 @@
 """Số CẢNH BÁO THẬT SỰ GỬI ĐI (mức hệ thống), không chỉ số lần model phát hiện cú rơi.
 
 App chỉ gửi cảnh báo khi sau lúc phát hiện, người đó KHÔNG đứng thẳng lại liên tục 2 s trong
-suốt thời gian chờ (Cài đặt -> fall_grace_seconds, mặc định 120 s). Mô phỏng đúng luật đó trên
+suốt thời gian chờ (Cài đặt -> fall_grace_seconds, mặc định 30 s). Mô phỏng đúng luật đó trên
 traces.json. Video kết thúc trước hết thời gian chờ mà chưa đứng dậy -> vẫn tính LÀ CÓ GỬI
-(bất lợi cho mình: con số thật với thời gian chờ 120 s chỉ thấp hơn hoặc bằng).
+(bất lợi cho mình: với clip dài hơn thời gian chờ thì con số thật chỉ thấp hơn hoặc bằng).
 
 Chạy: python -I system_level_eval.py <grace_s> <traces.json> [<traces.json> ...]
 """
