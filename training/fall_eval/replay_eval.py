@@ -42,7 +42,9 @@ MATCH_BEFORE, MATCH_AFTER = 0.5, 2.0  # = fall_v2.MATCH_BEFORE_S / MATCH_AFTER_S
 CROP = 0.6  # ghép 2 người: lấy 60% giữa mỗi khung hình
 MAX_PEOPLE_SAVED = 3
 
-FIELDS = ["name", "main", "other", "side", "loai", "fall_start_s", "fall_end_s", "nguoi"]
+FIELDS = ["name", "main", "other", "side", "loai", "fall_start_s", "fall_end_s", "nguoi", "nhom"]
+OFSYN_ATTRS = ["camera_elevation", "camera_azimuth", "camera_distance", "environment_category", "age_group"]
+OFSYN_MIN_LEAD = 1.0  # clip ngã phải có >= 1 s trước cú ngã (82% clip OF-Syn mở ra giữa lúc đang ngã)
 
 
 # ------------------------------------------------------------------ danh sách bài thử
@@ -90,8 +92,34 @@ def cmd_lists(out_dir):
                          other=f"{DATA}/gmdcsa24/videos/{b['video']}", side="left" if j % 2 == 0 else "right",
                          loai="adl", fall_start_s="", fall_end_s="", nguoi=f"{a['nguoi']}+{b['nguoi']}"))
     _write(f"{out_dir}/ghep.csv", rows)
-    print("xong:", {n: len(list(csv.DictReader(open(f"{out_dir}/{n}.csv", encoding="utf-8"))))
-                    for n in ("gmd", "cauca", "charades", "ghep")})
+    names = ["gmd", "cauca", "charades", "ghep"]
+    if os.path.exists(f"{DATA}/omnifall/labels/of-syn.csv"):
+        _write(f"{out_dir}/ofsyn.csv", ofsyn_rows())
+        names.append("ofsyn")
+    print("xong:", {n: len(list(csv.DictReader(open(f"{out_dir}/{n}.csv", encoding="utf-8")))) for n in names})
+
+
+def ofsyn_rows():
+    """OF-Syn (OmniFall, video tổng hợp, CC BY-NC-SA): góc camera ghi sẵn cho từng clip.
+    Ngã = clip có đoạn nhãn 1 (fall) bắt đầu >= OFSYN_MIN_LEAD s; pha rơi = [start, min(end, start + 1.5)].
+    Sinh hoạt = clip không có nhãn 1 (fall) hay 2 (fallen). Còn lại (ngã ngay từ đầu clip, đã nằm sẵn) bỏ."""
+    segs = {}
+    for r in csv.DictReader(open(f"{DATA}/omnifall/labels/of-syn.csv", encoding="utf-8")):
+        segs.setdefault(r["path"], []).append(r)
+    rows = []
+    for path, ss in sorted(segs.items()):
+        labels = {s["label"] for s in ss}
+        nhom = ";".join(f"{a}={ss[0][a]}" for a in OFSYN_ATTRS)
+        base = dict(name="ofsyn_" + path.replace("/", "_"), main=f"{DATA}/omnifall/syn/{path}.mp4", other="", side="",
+                    nguoi="ofsyn", nhom=nhom)
+        if "1" in labels:
+            f = min((s for s in ss if s["label"] == "1"), key=lambda s: float(s["start"]))
+            start, end = float(f["start"]), float(f["end"])
+            if start >= OFSYN_MIN_LEAD:
+                rows.append(dict(base, loai="fall", fall_start_s=start, fall_end_s=min(end, start + 1.5)))
+        elif "2" not in labels and path.split("/")[0] not in ("fall", "fallen"):  # thư mục ngã mà thiếu nhãn: mơ hồ, bỏ
+            rows.append(dict(base, loai="adl", fall_start_s="", fall_end_s=""))
+    return rows
 
 
 def _write(path, rows):
@@ -334,7 +362,24 @@ def cmd_report(*paths):
         print(line)
 
 
-COMMANDS = {"lists": cmd_lists, "extract": cmd_extract, "replay": cmd_replay, "report": cmd_report}
+def cmd_breakdown(path, attr):
+    """Tách kết quả theo 1 thuộc tính trong cột nhom (VD camera_elevation) — bộ OF-Syn."""
+    results = json.load(open(path, encoding="utf-8"))
+    groups = {}
+    for k, r in results.items():
+        tags = dict(x.split("=", 1) for x in (r.get("nhom") or "").split(";") if "=" in x)
+        groups.setdefault(tags.get(attr, "?"), {})[k] = r
+    print(f"{path} theo {attr}:")
+    for g, rs in sorted(groups.items()):
+        s = summarize(rs)
+        n_adl = sum(1 for r in rs.values() if r["loai"] == "adl")
+        n_fp = sum(1 for r in rs.values() if r["loai"] == "adl" and r["episodes"])
+        print(f"  {g:22s} ngã bắt được {s['caught']}/{s['falls']} | clip sinh hoạt bị nghi ngã {n_fp}/{n_adl}"
+              + (f" ({n_fp / n_adl * 100:.1f}%)" if n_adl else ""))
+
+
+COMMANDS = {"lists": cmd_lists, "extract": cmd_extract, "replay": cmd_replay, "report": cmd_report,
+            "breakdown": cmd_breakdown}
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
