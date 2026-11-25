@@ -50,3 +50,25 @@ cần thử lại trên dữ liệu khác trước khi tin hẳn.
 
 Tạo lại: `OCCLUDE=bl:0.4 python -X utf8 -I extract_pose.py <videos> <pose_che_bl>` rồi
 `FALL_MODEL=urfd_cauca python -X utf8 -I train_eval.py test <pose_che_bl> <labels.csv> results_che_goc_bl`.
+
+## Chấm lại qua đúng code app (25/11) — `replay_eval.py`, lấy mẫu 10 lần / giây, xác minh 30 s
+
+Hệ thống như đang chạy: model v2, luật khuất sau vật cản 10%. Che bằng `REPLAY_OCCLUDE`.
+
+| Bài thử | Ngã bắt được | Trong đó nhờ luật khuất vật cản | Gửi nhầm / giờ sinh hoạt |
+|---|---|---|---|
+| GMDCSA-24 không che (`urfd_cauca`) | 71/78 | 0 | 96 |
+| GMDCSA-24 che dải dưới 40% | 49/78 | 13 | 134 |
+| GMDCSA-24 che góc dưới-trái | 59/78 | 7 | 125 |
+| GMDCSA-24 che góc dưới-phải | 67/78 | 2 | 96 |
+| **Le2i không che** (`all3`, bài thử sạch) | **121/129** | 0 | 13 |
+| **Le2i che dải dưới 40%** (bài thử sạch) | **74/129** | **28** | 5 |
+
+- GMDCSA-24 không còn là bài thử sạch cho luật khuất vật cản (ngưỡng 10% chọn khi đã xem bộ này). **Le2i là bài
+  thử sạch**: che dải dưới làm rơi 121 -> 74 ca; luật khuất vật cản cứu 28 ca trong số đó (không có luật: 46/129).
+- Le2i che dải dưới theo phòng: Coffee room 1 29/47, Coffee room 2 10/14, Home 1 15/30, Home 2 4/7,
+  **Lecture room 2/14** (người ngã khuất hẳn sau dải che), Office 14/17.
+- Báo nhầm tăng khi che (GMDCSA-24 53 -> 73 lần theo dõi): do model v2 thấy khung xương bị cắt nửa dưới, KHÔNG
+  phải do luật khuất vật cản (chỉ 1 lần). Mọi lần "gửi" ở đây đều là do clip hết trong lúc chờ xác minh 30 s.
+- **Kết luận:** vật cản che vùng sàn vẫn là điểm yếu lớn nhất (mất ~40% ca ngã dù đã có luật). Cách giảm thiệt
+  hại thực tế nhất vẫn là đặt camera cao, chéo góc để vùng sàn không bị che (hướng dẫn trong app: Camera & lắp đặt).

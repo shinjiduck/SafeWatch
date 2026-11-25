@@ -206,8 +206,29 @@ def _crop(frame):
     return cv2.resize(part, (int(part.shape[1] * 360 / h), 360))
 
 
+def occlude(img):
+    """Che vật cản giả lập: biến môi trường REPLAY_OCCLUDE = "<vùng>:<tỉ lệ>", vùng = b (cả dải dưới), bl / br / tl / tr
+    (1 góc). VD "b:0.4" = tô đen 40% chiều cao phía dưới (như giường / sofa chắn trước)."""
+    spec = os.environ.get("REPLAY_OCCLUDE")
+    if not spec:
+        return img
+    where, frac = spec.split(":")
+    h, w = img.shape[:2]
+    ch, cw = int(h * float(frac)), int(w * float(frac))
+    y0 = 0 if where[0] == "t" else h - ch
+    x0, cw = (0, w) if len(where) == 1 else (0 if where[1] == "l" else w - cw, cw)
+    img = img.copy()
+    img[y0:y0 + ch, x0:x0 + cw] = 0
+    return img
+
+
 def frames_for(row):
-    """Khung hình đưa vào nhận diện: clip thường (thu về rộng 640), hoặc ghép 2 người."""
+    """Khung hình đưa vào nhận diện: clip thường (thu về rộng 640), hoặc ghép 2 người; có thể che vật cản (occlude)."""
+    for t, f in _frames_for(row):
+        yield t, occlude(f)
+
+
+def _frames_for(row):
     import cv2
 
     if not row["other"]:
