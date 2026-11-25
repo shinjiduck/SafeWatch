@@ -44,7 +44,9 @@ Không đạt → vẫn giữ trong app nhưng là tuỳ chọn thử nghiệm, 
 | **CAUCAFall** 1 người/clip (`urfd_only`) | 1 người | 21/50 | **14** (2 lần / 0.14 giờ) | 100 |
 | | nhiều người | 22/50 | 77 (11 lần) | 166 |
 | | nhiều người, bản sửa | 21/50 | 56 (8 lần) | 166 |
-| **Charades** 5 giờ sinh hoạt (`all3`) | | (đang chạy) | | |
+| **Charades** 5 giờ sinh hoạt (`all3`, bài thử sạch) | 1 người | — | **7.9** | 107 |
+| | nhiều người | — | 52.1 | 127 |
+| | nhiều người, bản sửa | — | 42.3 | 127 |
 
 \* đo trong lúc máy chạy song song nhiều tiến trình trích khung xương — chỉ so tương đối: nhiều người tốn
 khoảng 1.6–2 lần.
@@ -63,6 +65,20 @@ khoảng 1.6–2 lần.
   `multi_person.MIN_TRACK_SECONDS`) bớt được 3 lần. Bản sửa làm SAU khi xem GMDCSA-24 / CAUCAFall nên 2 bộ
   này không còn khách quan cho nó; Charades (chưa xem khi sửa) là bài thử sạch.
 - Ở cảnh 2 người, báo nhầm gấp đôi một phần là tự nhiên: có 2 người sinh hoạt thì gấp đôi cơ hội nhầm.
+
+**Charades xác nhận: chưa dùng được làm mặc định.** Gửi nhầm tăng 5–6 lần (7.9 → 52/giờ; bản sửa 42/giờ).
+Tách nguyên nhân (số lần bắt đầu theo dõi sau ngã trong 5 giờ):
+
+| | 1 người | nhiều người | bản sửa |
+|---|---|---|---|
+| Do model v2 thấy cú rơi | 132 | 185 | 210 |
+| Do luật khuất sau vật cản | 18 | **220** | **148** |
+
+- PoseLandmarker mất dấu rồi bắt lại người thường xuyên hơn hẳn MediaPipe Pose cũ → luật khuất sau vật cản
+  (vốn đo trên bộ cũ) nghi nhầm gấp 8–12 lần. Luật này chưa dùng được với bộ trích mới.
+- Model v2 nhầm nhiều hơn ~40% trên toạ độ của bộ trích mới (chưa được train trên đó).
+- Sau Charades, mọi bộ thử ở đây đều đã "được xem"; thay đổi tiếp theo cần dữ liệu thử MỚI (VD video 2 người
+  tự quay) mới đánh giá khách quan được.
 
 **Hướng tiếp theo đúng gốc:** train một phiên bản v2 trên khung xương của PoseLandmarker (cùng 3 bộ, kiểm định
 chéo như cũ), dùng riêng cho chế độ nhiều người; kiểm lại bằng Charades + video 2 người tự quay.
