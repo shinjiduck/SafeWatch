@@ -69,6 +69,7 @@ Trình duyệt sẽ tự mở `http://localhost:8501`. Vào trang **Xem trực t
 | Email | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` |
 | SMS qua điện thoại Android (miễn phí, tính cước SIM) | `SMS_GATEWAY_USER`, `SMS_GATEWAY_PASSWORD`, `SMS_GATEWAY_URL` (cloud: `https://api.sms-gate.app/3rdparty/v1`, cùng wifi: `http://<IP điện thoại>:8080`) |
 | SMS qua Twilio | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` |
+| **SMS Brandname qua eSMS** (ưu tiên nếu có) | `ESMS_API_KEY`, `ESMS_SECRET_KEY`, `ESMS_BRANDNAME`; tuỳ chọn `ESMS_TEMPLATE` (mẫu nội dung đã đăng ký, chỗ trống `{kind}` `{details}` `{time}` `{link}` `{code}`), `ESMS_SANDBOX = "1"` để thử không gửi / không trừ tiền |
 
 SMS gửi tới số điện thoại của người liên hệ khẩn cấp, không dấu để vừa 1 tin. Xác nhận "đã nhận" qua link
 (cần `PUBLIC_BASE_URL`).

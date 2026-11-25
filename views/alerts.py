@@ -144,12 +144,24 @@ st.caption(
 with st.expander("📱 Gửi SMS thử", expanded="sms" in channel_names and not notifier.get_alerts(limit=1)):
     if "sms" not in channel_names:
         st.info(
-            "Chưa bật SMS. Cài app **SMS Gateway for Android** (sms-gate.app) lên 1 điện thoại có SIM, bật chế độ "
-            "Cloud, rồi điền Username / Password của app vào `SMS_GATEWAY_USER` / `SMS_GATEWAY_PASSWORD` trong "
-            "`.streamlit/secrets.toml` và khởi động lại app.",
+            "Chưa bật SMS. Cách 1 — **eSMS** (SMS Brandname): điền `ESMS_API_KEY`, `ESMS_SECRET_KEY`, "
+            "`ESMS_BRANDNAME` trong `.streamlit/secrets.toml`. Cách 2 — **điện thoại Android** có SIM với app "
+            "SMS Gateway for Android: điền `SMS_GATEWAY_USER` / `SMS_GATEWAY_PASSWORD`. Rồi khởi động lại app.",
             icon="ℹ️",
         )
     else:
+        sms = dispatcher.channels["sms"]
+        if getattr(sms, "provider", "") == "esms":
+            c1, c2 = st.columns([3, 1], vertical_alignment="center")
+            c1.markdown(f"Đang gửi qua **eSMS**, brandname **{sms.brandname}**"
+                        + (" · 🧪 **Sandbox**: gọi API thật nhưng không gửi tin, không trừ tiền" if sms.sandbox else ""))
+            if c2.button("Xem số dư eSMS"):
+                try:
+                    st.toast(f"Số dư eSMS: {sms.balance():,} đ")
+                except Exception as exc:  # noqa: BLE001
+                    st.error(f"Không xem được số dư: {exc}", icon="❌")
+        else:
+            st.caption(f"Đang gửi qua: {getattr(sms, 'provider', 'sms')}")
         with_phone = [r for r in recipients if r["phone"]]
         if not with_phone:
             st.warning("Chưa có người liên hệ nào có số điện thoại.", icon="⚠️")
@@ -162,7 +174,11 @@ with st.expander("📱 Gửi SMS thử", expanded="sms" in channel_names and not
                               "source": "simulated", "ack_token": "test"}
                 try:
                     channel.send(target, test_alert)
-                    st.success(f"Cổng SMS đã nhận lệnh gửi tới {target}. Tin tới máy sau vài giây.", icon="✅")
+                    if getattr(channel, "sandbox", False):
+                        st.success(f"eSMS (Sandbox) đã nhận lệnh gửi tới {target} — kết nối đúng. Chế độ thử nên "
+                                   "KHÔNG có tin về máy; đặt ESMS_SANDBOX = \"0\" để gửi thật.", icon="✅")
+                    else:
+                        st.success(f"Cổng SMS đã nhận lệnh gửi tới {target}. Tin tới máy sau vài giây.", icon="✅")
                 except Exception as exc:  # noqa: BLE001 — hiện lỗi cho người cài đặt
                     st.error(f"Gửi không được: {exc}", icon="❌")
 

@@ -97,7 +97,8 @@ with tab_alert:
         st.markdown(rows_html([
             ("Telegram", "✅ Đang bật" if "telegram" in active else "⚪ Chưa cấu hình — TELEGRAM_BOT_TOKEN"),
             ("Email", "✅ Đang bật" if "email" in active else "⚪ Chưa cấu hình — SMTP_HOST / USER / PASSWORD"),
-            ("SMS", "✅ Đang bật" if "sms" in active else "⚪ Chưa cấu hình — SMS_GATEWAY_* hoặc TWILIO_*"),
+            ("SMS", ("✅ Đang bật — " + getattr(notifier.RUNNING.channels["sms"], "provider", "")) if "sms" in active
+             else "⚪ Chưa cấu hình — ESMS_*, SMS_GATEWAY_* hoặc TWILIO_*"),
         ]), unsafe_allow_html=True)
         st.caption("Khai báo trong `.streamlit/secrets.toml` rồi khởi động lại app.")
     c1, c2 = st.columns(2)

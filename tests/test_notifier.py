@@ -162,6 +162,46 @@ def test_sms_gui_qua_dien_thoai_android(monkeypatch=None):
         notifier._post = original
 
 
+def test_esms_gui_dung_tham_so_va_bao_loi_ro_rang():
+    import json as _json
+
+    sent = []
+    responses = [{"CodeResult": "100", "SMSID": "x"}, {"CodeResult": "146", "ErrorMessage": "Sai template"},
+                 {"CodeResult": "100"}]
+
+    def fake_post(url, body, headers, timeout):
+        sent.append((url, _json.loads(body)))
+        return 200, _json.dumps(responses[len(sent) - 1]).encode()
+
+    original, notifier._post = notifier._post, fake_post
+    try:
+        ch = notifier.build_channels({"ESMS_API_KEY": "k", "ESMS_SECRET_KEY": "s", "ESMS_BRANDNAME": "SafeWatch",
+                                      "ESMS_SANDBOX": "1", "SMS_GATEWAY_USER": "u", "SMS_GATEWAY_PASSWORD": "p"})
+        assert [c.provider for c in ch if c.name == "sms"] == ["esms"]  # eSMS được ưu tiên, chỉ 1 kênh SMS
+        esms = ch[0]
+        assert esms.target_for({"phone": "+84 912 345 678"}) == "0912345678"
+        delivery = {"id": 7, "round": 0, "attempts": 0, "kind": "Ngã (không đứng lên lại)", "details": "",
+                    "detected_at": 1_000_000.0, "source": "live"}
+        esms.send("0912345678", delivery)
+        url, body = sent[0]
+        assert url.endswith("SendMultipleMessage_V4_post_json/")
+        assert body["SmsType"] == "2" and body["IsUnicode"] == "0" and body["Sandbox"] == "1"
+        assert body["Brandname"] == "SafeWatch" and body["Phone"] == "0912345678"
+        assert body["RequestId"] == "safewatch-7-1" and body["Content"].isascii()
+        try:
+            esms.send("0912345678", dict(delivery, attempts=1))
+            raise AssertionError("mã 146 phải ném lỗi để Dispatcher thử lại / ghi lỗi")
+        except RuntimeError as e:
+            assert "146" in str(e) and "template" in str(e)
+        assert sent[1][1]["RequestId"] == "safewatch-7-2"  # mỗi lần thử 1 RequestId riêng
+        esms.template = "{code} la ma xac minh dang ky Baotrixemay cua ban"
+        esms.send("0912345678", {"kind": "Tin nhắn thử", "detected_at": 1_000_000.0})
+        content = sent[2][1]["Content"]
+        assert content.endswith(" la ma xac minh dang ky Baotrixemay cua ban") and len(content.split()[0]) == 6
+    finally:
+        notifier._post = original
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0

@@ -498,11 +498,107 @@ class SmsChannel:
             raise RuntimeError(f"SMS ({self.provider}) HTTP {status}: {body[:200].decode(errors='replace')}")
 
 
+ESMS_SEND_URL = "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/"
+ESMS_BALANCE_URL = "https://rest.esms.vn/MainService.svc/json/GetBalance_json"
+# Mã lỗi eSMS hay gặp (developers.esms.vn/esms-api/bang-ma-loi) -> lời giải thích cho người cài đặt
+ESMS_ERRORS = {
+    "99": "yêu cầu không hợp lệ hoặc số điện thoại bị chặn",
+    "101": "sai ApiKey / SecretKey",
+    "103": "tài khoản eSMS không đủ số dư",
+    "104": "brandname chưa đăng ký hoặc chưa kích hoạt",
+    "108": "số điện thoại sai định dạng",
+    "124": "trùng RequestId",
+    "140": "IP máy chạy app chưa được eSMS cho phép — gửi IP cho eSMS",
+    "143": "tài khoản eSMS chưa kích hoạt hoặc bị khoá",
+    "146": "nội dung không khớp mẫu (template) CSKH đã đăng ký với nhà mạng",
+    "177": "nhà mạng của số này chưa đăng ký cho brandname",
+    "201": "nội dung có từ khoá bị chặn",
+}
+
+
+def to_local(phone):
+    """+84912345678 -> 0912345678 (eSMS dùng số trong nước bắt đầu bằng 0)."""
+    e164 = to_e164(phone)
+    if not e164:
+        return None
+    return "0" + e164[3:] if e164.startswith("+84") else e164.lstrip("+")
+
+
+class _SafeDict(dict):
+    def __missing__(self, key):
+        return ""
+
+
+class EsmsChannel:
+    """SMS Brandname chăm sóc khách hàng (CSKH) qua eSMS (esms.vn).
+
+    - Brandname và MẪU NỘI DUNG phải đăng ký trước với eSMS / nhà mạng; nội dung gửi phải khớp mẫu, nếu không eSMS
+      trả mã 146. ESMS_TEMPLATE là mẫu nội dung dùng các chỗ trống {kind} {details} {time} {link} {code}; để trống thì
+      dùng nội dung mặc định (sms_text). Nội dung luôn bỏ dấu (IsUnicode = 0).
+    - ESMS_SANDBOX = "1": gọi API thật nhưng eSMS không gửi tin, không trừ tiền — để kiểm tra kết nối.
+    - Mã 100 = eSMS đã NHẬN lệnh gửi (chưa chắc máy người nhận đã nhận).
+    - RequestId riêng cho TỪNG lần thử: không coi "trùng RequestId" là đã gửi — gửi trùng còn hơn bỏ sót.
+    """
+
+    name = "sms"
+    provider = "esms"
+
+    def __init__(self, api_key, secret_key, brandname, template=None, sandbox=False, timeout=15):
+        self.api_key, self.secret_key, self.brandname = api_key, secret_key, brandname
+        self.template = template or None
+        self.sandbox = bool(sandbox) and str(sandbox).strip() not in ("0", "false", "False", "")
+        self.timeout = timeout
+
+    def target_for(self, contact):
+        return to_local(contact.get("phone"))
+
+    def render(self, alert, ack_url=None):
+        if not self.template:
+            return sms_text(alert, ack_url)
+        fields = _SafeDict(
+            kind=alert.get("kind", ""),
+            details=alert.get("details") or "",
+            time=datetime.fromtimestamp(alert["detected_at"]).strftime("%H:%M %d/%m"),
+            link=ack_url or "",
+            code=_secrets.token_hex(3).upper(),
+        )
+        return strip_accents(self.template.format_map(fields))
+
+    def _call(self, url, payload):
+        status, raw = _post(url, json.dumps(payload).encode(), {"Content-Type": "application/json"}, self.timeout)
+        try:
+            return json.loads(raw.decode("utf-8-sig") or "{}")
+        except ValueError:
+            raise RuntimeError(f"eSMS HTTP {status}: {raw[:200].decode(errors='replace')}") from None
+
+    def send(self, target, alert, ack_url=None):
+        attempt = (alert.get("attempts") or 0) + 1
+        request_id = (f"safewatch-{alert['id']}-{attempt}" if "round" in alert and alert.get("id") is not None
+                      else f"safewatch-test-{_secrets.token_hex(6)}")
+        data = self._call(ESMS_SEND_URL, {
+            "ApiKey": self.api_key, "SecretKey": self.secret_key, "Phone": target,
+            "Content": self.render(alert, ack_url), "Brandname": self.brandname, "SmsType": "2",
+            "IsUnicode": "0", "Sandbox": "1" if self.sandbox else "0", "RequestId": request_id[:50],
+        })
+        code = str(data.get("CodeResult", ""))
+        if code != "100":
+            reason = ESMS_ERRORS.get(code) or data.get("ErrorMessage") or "lỗi không rõ"
+            raise RuntimeError(f"eSMS mã {code or '?'}: {reason}")
+
+    def balance(self):
+        data = self._call(ESMS_BALANCE_URL, {"ApiKey": self.api_key, "SecretKey": self.secret_key})
+        code = str(data.get("CodeResponse", ""))
+        if code != "100":
+            raise RuntimeError(f"eSMS mã {code or '?'}: {ESMS_ERRORS.get(code) or data.get('ErrorMessage') or 'lỗi không rõ'}")
+        return data.get("Balance")
+
+
 # ------------------------------------------------------------------ Cấu hình
 
 CONFIG_KEYS = ["TELEGRAM_BOT_TOKEN", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM",
                "PUBLIC_BASE_URL", "SMS_GATEWAY_URL", "SMS_GATEWAY_USER", "SMS_GATEWAY_PASSWORD",
-               "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM"]
+               "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM",
+               "ESMS_API_KEY", "ESMS_SECRET_KEY", "ESMS_BRANDNAME", "ESMS_TEMPLATE", "ESMS_SANDBOX"]
 
 
 def load_config(secrets_mapping=None):
@@ -529,7 +625,11 @@ def build_channels(config):
             EmailChannel(config["SMTP_HOST"], config.get("SMTP_PORT") or 465, config["SMTP_USER"],
                          config["SMTP_PASSWORD"], config.get("SMTP_FROM"))
         )
-    if config.get("SMS_GATEWAY_USER") and config.get("SMS_GATEWAY_PASSWORD"):
+    # 1 kênh SMS duy nhất, ưu tiên: eSMS (brandname) > điện thoại Android > Twilio
+    if config.get("ESMS_API_KEY") and config.get("ESMS_SECRET_KEY") and config.get("ESMS_BRANDNAME"):
+        channels.append(EsmsChannel(config["ESMS_API_KEY"], config["ESMS_SECRET_KEY"], config["ESMS_BRANDNAME"],
+                                    config.get("ESMS_TEMPLATE"), config.get("ESMS_SANDBOX")))
+    elif config.get("SMS_GATEWAY_USER") and config.get("SMS_GATEWAY_PASSWORD"):
         channels.append(SmsChannel("android", config.get("SMS_GATEWAY_URL"), config["SMS_GATEWAY_USER"],
                                    config["SMS_GATEWAY_PASSWORD"]))
     elif config.get("TWILIO_ACCOUNT_SID") and config.get("TWILIO_AUTH_TOKEN") and config.get("TWILIO_FROM"):
