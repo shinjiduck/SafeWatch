@@ -95,7 +95,7 @@ Chi tiết và cách tính:
 
 ```bash
 # 1. Tải mã nguồn
-git clone https://github.com/shinjiduck/combined-demo.git safewatch
+git clone https://github.com/shinjiduck/SafeWatch.git safewatch
 cd safewatch
 
 # 2. Tạo môi trường Python 3.12
