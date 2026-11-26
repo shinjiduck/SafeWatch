@@ -8,7 +8,7 @@
 <meta property="og:title" content="SafeWatch – Người thân ngã, cả nhà biết ngay">
 <meta property="og:description" content="Phát hiện ngã và cử chỉ cầu cứu qua webcam. Cảnh báo tới người nhà qua Telegram, Email, SMS cho tới khi có người bấm “Tôi đã nhận”.">
 <meta property="og:image" content="img/logo_mark.png">
-<meta name="theme-color" content="#0B2A6B">
+<meta name="theme-color" content="#243E93">
 <link rel="icon" href="img/favicon.png">
 <style>
 @font-face { font-family: "Be Vietnam Pro"; src: url("fonts/BeVietnamPro-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
@@ -17,7 +17,9 @@
 @font-face { font-family: "Be Vietnam Pro"; src: url("fonts/BeVietnamPro-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
 
 :root {
-  --navy: #0B2A6B; --navy-2: #061A47; --blue: #0262C9; --blue-l: #0373E0; --sky: #EFF6FF; --sky-2: #DBEAFE;
+  /* Màu Trường Đại học Kinh tế, Đại học Huế: xanh #243E93 + vàng #EDC332 */
+  --navy: #243E93; --navy-2: #1A2E70; --blue: #243E93; --blue-l: #2F4FB8; --sky: #EEF1FA; --sky-2: #DCE3F7;
+  --gold: #EDC332; --gold-2: #D9AE1E; --gold-tint: #FFF8E1; --on-blue: #DCE3F7;
   --ink: #18181B; --text: #3F3F46; --muted: #71717A; --line: #E4E4E7; --line-2: #D4D4D8;
   --ground: #F5F7FB; --card: #FFFFFF;
   --safe: #15803D; --safe-bg: #ECFDF3; --warn: #B45309; --alarm: #DC2626;
@@ -58,6 +60,10 @@ section { padding: 104px 0; }
 .btn-ghost:hover { border-color: #A1A1AA; background: #FAFAFA; }
 .btn-light { background: #fff; color: var(--navy); }
 .btn-light:hover { background: var(--sky); }
+.btn-gold { background: var(--gold); color: var(--navy-2); }
+.btn-gold:hover { background: var(--gold-2); }
+.btn-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,.55); }
+.btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.08); }
 .btn svg { width: 18px; height: 18px; transition: transform .2s var(--ease); }
 .btn:hover svg { transform: translateX(3px); }
 
@@ -69,23 +75,31 @@ section { padding: 104px 0; }
 .nav.scrolled { border-bottom-color: var(--line); }
 .nav-in { display: flex; align-items: center; gap: 32px; height: 72px; }
 .nav-logo img { height: 38px; width: auto; }
-.nav-links { display: flex; gap: 28px; margin-left: auto; }
-.nav-links a { color: var(--text); text-decoration: none; font-size: .95rem; font-weight: 500; }
+.nav-brand { display: flex; align-items: center; gap: 16px; }
+.nav-school { display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--line); text-decoration: none; }
+.nav-school img { height: 44px; width: 44px; }
+.nav-school span { font-size: .8rem; line-height: 1.3; color: var(--navy); font-weight: 600; white-space: nowrap; }
+.nav-links { display: flex; gap: 24px; margin-left: auto; }
+.nav-links a { color: var(--text); text-decoration: none; font-size: .95rem; font-weight: 500; white-space: nowrap; }
+.nav .btn { white-space: nowrap; }
 .nav-links a:hover { color: var(--ink); }
 .nav .btn { min-height: 42px; padding: 0 1.1rem; font-size: .95rem; }
 
 /* ---------- Hero ---------- */
-.hero { padding: 72px 0 120px; background: linear-gradient(var(--card), var(--card)); }
+.hero { padding: 72px 0 120px; background: var(--navy); color: var(--on-blue); }
+.hero h1 { color: #fff; }
+.hero .lead { color: var(--on-blue); }
+.hero .lead b { color: #fff; }
 .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px; align-items: center; }
-.hero h1 span { color: var(--blue-l); }
+.hero h1 span { color: var(--gold); }
 .hero .lead { margin-top: 22px; }
 .hero-cta { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; }
-.hero-facts { display: flex; gap: 22px; margin-top: 34px; flex-wrap: wrap; color: var(--muted); font-size: .95rem; }
+.hero-facts { display: flex; gap: 22px; margin-top: 34px; flex-wrap: wrap; color: var(--on-blue); font-size: .95rem; }
 .hero-facts span { display: inline-flex; align-items: center; gap: .45rem; }
-.hero-facts svg { width: 18px; height: 18px; color: var(--safe); }
+.hero-facts svg { width: 18px; height: 18px; color: var(--gold); }
 
 /* Màn minh hoạ chuỗi cảnh báo (vòng lặp 12 s). Mặc định = trạng thái CUỐI để tắt hiệu ứng vẫn đủ nội dung. */
-.stage { position: relative; background: var(--ground); border: 1px solid var(--line); border-radius: 18px; padding: 28px 28px 0; }
+.stage { position: relative; background: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 18px; padding: 28px 28px 0; }
 .stage-label { position: absolute; left: 28px; bottom: 14px; font-size: .75rem; color: var(--muted); }
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
 .panel-top { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: var(--muted); margin-bottom: 14px; }
@@ -113,7 +127,7 @@ section { padding: 104px 0; }
 .bar i { display: block; height: 100%; width: 100%; background: #fff; }
 .phone {
   position: relative; width: 290px; margin: -10px -18px -30px auto; background: var(--card); border: 1px solid var(--line);
-  border-radius: 16px; padding: 14px; box-shadow: 0 18px 40px -18px rgba(11,42,107,.35);
+  border-radius: 16px; padding: 14px; box-shadow: 0 18px 40px -18px rgba(26,46,112,.45);
 }
 .msg-head { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
 .msg-head img { width: 22px; height: 22px; }
@@ -149,11 +163,11 @@ section { padding: 104px 0; }
 @keyframes rec { 50% { opacity: .25; } }
 
 /* ---------- Cách hoạt động ---------- */
-.how { background: var(--ground); }
-.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 2px solid var(--navy); }
+.how { background: var(--gold-tint); }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 3px solid var(--gold); }
 .step { padding: 28px 28px 0 0; position: relative; }
-.step + .step { padding-left: 28px; border-left: 1px solid var(--line); }
-.step-n { font-size: .9rem; font-weight: 600; color: var(--blue); font-variant-numeric: tabular-nums; }
+.step + .step { padding-left: 28px; border-left: 1px solid #F0E2B0; }
+.step-n { font-size: .9rem; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
 .step h3 { margin: 10px 0 10px; }
 .step p { font-size: .98rem; }
 
@@ -181,12 +195,12 @@ section { padding: 104px 0; }
 .voice {
   border-left: 0; background: var(--navy); color: #fff; border-radius: 14px; padding: 36px 34px;
 }
-.voice svg { width: 34px; height: 34px; color: #93C5FD; }
+.voice svg { width: 34px; height: 34px; color: var(--gold); }
 .voice q { display: block; font-size: 1.55rem; line-height: 1.4; font-weight: 600; margin: 18px 0 14px; quotes: "“" "”"; }
-.voice p { color: #C7D2FE; font-size: .98rem; }
+.voice p { color: var(--on-blue); font-size: .98rem; }
 
 /* ---------- Số liệu ---------- */
-.proof { background: var(--ground); }
+.proof { background: var(--sky); }
 .nums { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
 .num { padding: 30px 28px; }
 .num + .num { border-left: 1px solid var(--line); }
@@ -201,13 +215,13 @@ section { padding: 104px 0; }
 
 /* ---------- Quyền riêng tư + câu hỏi ---------- */
 .privacy { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
-.privacy div { border-top: 1px solid var(--line-2); padding-top: 22px; }
+.privacy div { border-top: 3px solid var(--gold); padding-top: 22px; }
 .privacy h3 { margin-bottom: 8px; }
 .faq { max-width: 820px; }
 .faq details { border-bottom: 1px solid var(--line); padding: 20px 0; }
 .faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; font-weight: 600; color: var(--ink); font-size: 1.08rem; }
 .faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; font-size: 1.4rem; line-height: 1; color: var(--blue); transition: transform .2s var(--ease); }
+.faq summary::after { content: "+"; font-size: 1.4rem; line-height: 1; color: var(--navy); transition: transform .2s var(--ease); }
 .faq details[open] summary::after { transform: rotate(45deg); }
 .faq details p { margin-top: 12px; max-width: 70ch; }
 
@@ -215,15 +229,18 @@ section { padding: 104px 0; }
 .cta { background: var(--navy); color: #fff; padding: 96px 0; }
 .cta-in { display: grid; grid-template-columns: 1.3fr auto; gap: 40px; align-items: center; }
 .cta h2 { color: #fff; }
-.cta p { color: #C7D2FE; margin-top: 14px; font-size: 1.1rem; }
-.cta-note { color: #93C5FD; font-size: .88rem; margin-top: 12px; }
+.cta p { color: var(--on-blue); margin-top: 14px; font-size: 1.1rem; }
+.cta-note { color: var(--gold) !important; font-size: .88rem !important; margin-top: 12px; }
 footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
 .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; }
 .foot img { height: 34px; width: auto; margin-bottom: 12px; }
+.foot-school { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+.foot-school img { width: 56px; height: 56px; margin: 0; }
+.foot-school span { color: var(--navy); font-weight: 600; font-size: .9rem; line-height: 1.4; }
 .foot h4 { margin: 0 0 10px; color: var(--ink); font-size: .95rem; }
 .foot a { color: var(--text); text-decoration: none; display: block; padding: 3px 0; }
 .foot a:hover { color: var(--blue); }
-.foot-bottom { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); }
+.foot-bottom { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 36px; padding-top: 20px; border-top: 3px solid var(--gold); }
 .sos { color: var(--alarm); font-weight: 600; }
 
 /* ---------- Hiện dần khi cuộn (nội dung luôn hiện nếu JS không chạy) ---------- */
@@ -236,6 +253,9 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
 }
 
 /* ---------- Điện thoại / máy tính bảng ---------- */
+@media (max-width: 1200px) {
+  .nav-school span { display: none; }
+}
 @media (max-width: 960px) {
   section { padding: 76px 0; }
   .hero-grid, .split, .cta-in { grid-template-columns: 1fr; gap: 44px; }
@@ -248,11 +268,16 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
   .num:nth-child(n+3) { border-top: 1px solid var(--line); }
   .privacy, .foot { grid-template-columns: 1fr; gap: 28px; }
   .nav-links { display: none; }
+  .nav-school span { display: none; }
   .nav .btn { margin-left: auto; }
 }
 @media (max-width: 560px) {
   body { font-size: 16px; }
   .wrap { padding: 0 16px; }
+  .nav-logo img { height: 30px; }
+  .nav-school { padding-left: 10px; gap: 0; }
+  .nav-school img { height: 36px; width: 36px; }
+  .nav-brand { gap: 10px; }
   .hero { padding-top: 40px; }
   .stage { padding: 16px 16px 34px; }
   .phone { width: auto; margin: -8px 0 0 12px; }
@@ -274,13 +299,15 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
 <!-- Địa chỉ app SafeWatch: đổi 1 chỗ này là mọi nút "Dùng thử" đổi theo (script cuối trang). -->
 <header class="nav" id="top">
   <div class="wrap nav-in">
-    <a class="nav-logo" href="#top" aria-label="SafeWatch – về đầu trang"><img src="img/logo_light.png" alt="SafeWatch"></a>
+    <div class="nav-brand">
+      <a class="nav-logo" href="#top" aria-label="SafeWatch – về đầu trang"><img src="img/logo_light.png" alt="SafeWatch"></a>
+      <span class="nav-school"><img src="img/logo_truong_sm.png" alt="Logo Trường Đại học Kinh tế, Đại học Huế"><span>Trường Đại học Kinh tế<br>Đại học Huế</span></span>
+    </div>
     <nav class="nav-links" aria-label="Mục chính">
       <a href="#cach-hoat-dong">Cách hoạt động</a>
       <a href="#canh-bao">Chuỗi cảnh báo</a>
       <a href="#so-lieu">Số liệu</a>
       <a href="#rieng-tu">Quyền riêng tư</a>
-      <a href="#hoi-dap">Hỏi đáp</a>
     </nav>
     <a class="btn btn-primary" data-app href="#">Dùng thử</a>
   </div>
@@ -295,9 +322,9 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
         <p class="lead">SafeWatch dùng một webcam thông thường để phát hiện ngã và cử chỉ cầu cứu, rồi nhắn cho người nhà qua
           Telegram, Email, SMS, và tiếp tục nhắc cho tới khi có người bấm <b>“Tôi đã nhận”</b>.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary" data-app href="#">Dùng thử ngay
+          <a class="btn btn-gold" data-app href="#">Dùng thử ngay
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          <a class="btn btn-ghost" href="#cach-hoat-dong">Xem cách hoạt động</a>
+          <a class="btn btn-outline" href="#cach-hoat-dong">Xem cách hoạt động</a>
         </div>
         <div class="hero-facts">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Chỉ cần webcam</span>
@@ -460,7 +487,7 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
         <p>Mở app, cho phép camera, thêm một người thân nhận cảnh báo. Mất chưa tới 5 phút.</p>
         <p class="cta-note">Lần mở đầu tiên có thể mất khoảng 1 phút để hệ thống khởi động.</p>
       </div>
-      <div class="reveal"><a class="btn btn-light" data-app href="#">Mở SafeWatch
+      <div class="reveal"><a class="btn btn-gold" data-app href="#">Mở SafeWatch
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
     </div>
   </section>
@@ -469,7 +496,8 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
 <footer>
   <div class="wrap">
     <div class="foot">
-      <div><img src="img/logo_light.png" alt="SafeWatch"><p>Giám sát an toàn cá nhân bằng AI cho người thân sống một mình.</p></div>
+      <div><img src="img/logo_light.png" alt="SafeWatch"><p>Giám sát an toàn cá nhân bằng AI cho người thân sống một mình.</p>
+        <div class="foot-school"><img src="img/logo_truong_sm.png" alt="Logo Trường Đại học Kinh tế, Đại học Huế"><span>Trường Đại học Kinh tế<br>Đại học Huế</span></div></div>
       <div><h4>Sản phẩm</h4><a data-app href="#">Dùng thử</a><a href="#cach-hoat-dong">Cách hoạt động</a><a href="#so-lieu">Số liệu kiểm định</a></div>
       <div><h4>Tài liệu</h4><a href="https://github.com/shinjiduck/combined-demo">Mã nguồn trên GitHub</a><a href="https://github.com/shinjiduck/combined-demo/blob/main/training/fall_eval/KIEM_DINH_THEO_YEU_CAU_BTC.md">Báo cáo kiểm định</a><a href="#rieng-tu">Quyền riêng tư</a></div>
     </div>
