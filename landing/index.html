@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafeWatch – Giám sát an toàn cho người thân bằng AI</title>
+<meta name="description" content="SafeWatch dùng một webcam thông thường để phát hiện ngã và cử chỉ cầu cứu, rồi nhắn cho người nhà cho tới khi có người xác nhận đã nhận.">
+<meta property="og:title" content="SafeWatch – Người thân ngã, cả nhà biết ngay">
+<meta property="og:description" content="Phát hiện ngã và cử chỉ cầu cứu qua webcam. Cảnh báo tới người nhà qua Telegram, Email, SMS cho tới khi có người bấm “Tôi đã nhận”.">
+<meta property="og:image" content="img/logo_mark.png">
+<meta name="theme-color" content="#0B2A6B">
+<link rel="icon" href="img/favicon.png">
+<style>
+@font-face { font-family: "Be Vietnam Pro"; src: url("fonts/BeVietnamPro-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Be Vietnam Pro"; src: url("fonts/BeVietnamPro-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Be Vietnam Pro"; src: url("fonts/BeVietnamPro-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Be Vietnam Pro"; src: url("fonts/BeVietnamPro-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+
+:root {
+  --navy: #0B2A6B; --navy-2: #061A47; --blue: #0262C9; --blue-l: #0373E0; --sky: #EFF6FF; --sky-2: #DBEAFE;
+  --ink: #18181B; --text: #3F3F46; --muted: #71717A; --line: #E4E4E7; --line-2: #D4D4D8;
+  --ground: #F5F7FB; --card: #FFFFFF;
+  --safe: #15803D; --safe-bg: #ECFDF3; --warn: #B45309; --alarm: #DC2626;
+  --r: 10px; --wrap: 1160px;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; font-family: "Be Vietnam Pro", -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 17px; line-height: 1.6;
+  color: var(--text); background: var(--card); -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--blue); text-underline-offset: 3px; }
+::selection { background: var(--sky-2); color: var(--navy-2); }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { color: var(--ink); line-height: 1.2; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.3rem, 4.6vw, 3.6rem); font-weight: 700; }
+h2 { font-size: clamp(1.75rem, 3.1vw, 2.5rem); font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 600; letter-spacing: -.01em; }
+p { margin: 0; }
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+.lead { font-size: 1.15rem; color: var(--text); max-width: 60ch; }
+section { padding: 104px 0; }
+.sec-head { max-width: 720px; margin-bottom: 52px; }
+.sec-head p { margin-top: 16px; font-size: 1.1rem; }
+
+/* ---------- Nút ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: .55rem; justify-content: center; min-height: 50px; padding: 0 1.4rem;
+  border-radius: 10px; font: inherit; font-weight: 600; font-size: 1rem; text-decoration: none; cursor: pointer;
+  border: 1px solid transparent; transition: background-color .15s ease-out, border-color .15s ease-out, transform .12s ease-out;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary { background: var(--navy); color: #fff; }
+.btn-primary:hover { background: var(--navy-2); }
+.btn-ghost { background: var(--card); color: var(--ink); border-color: var(--line-2); }
+.btn-ghost:hover { border-color: #A1A1AA; background: #FAFAFA; }
+.btn-light { background: #fff; color: var(--navy); }
+.btn-light:hover { background: var(--sky); }
+.btn svg { width: 18px; height: 18px; transition: transform .2s var(--ease); }
+.btn:hover svg { transform: translateX(3px); }
+
+/* ---------- Thanh điều hướng ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.96); border-bottom: 1px solid transparent;
+  transition: border-color .2s ease-out;
+}
+.nav.scrolled { border-bottom-color: var(--line); }
+.nav-in { display: flex; align-items: center; gap: 32px; height: 72px; }
+.nav-logo img { height: 38px; width: auto; }
+.nav-links { display: flex; gap: 28px; margin-left: auto; }
+.nav-links a { color: var(--text); text-decoration: none; font-size: .95rem; font-weight: 500; }
+.nav-links a:hover { color: var(--ink); }
+.nav .btn { min-height: 42px; padding: 0 1.1rem; font-size: .95rem; }
+
+/* ---------- Hero ---------- */
+.hero { padding: 72px 0 120px; background: linear-gradient(var(--card), var(--card)); }
+.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 64px; align-items: center; }
+.hero h1 span { color: var(--blue-l); }
+.hero .lead { margin-top: 22px; }
+.hero-cta { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; }
+.hero-facts { display: flex; gap: 22px; margin-top: 34px; flex-wrap: wrap; color: var(--muted); font-size: .95rem; }
+.hero-facts span { display: inline-flex; align-items: center; gap: .45rem; }
+.hero-facts svg { width: 18px; height: 18px; color: var(--safe); }
+
+/* Màn minh hoạ chuỗi cảnh báo (vòng lặp 12 s). Mặc định = trạng thái CUỐI để tắt hiệu ứng vẫn đủ nội dung. */
+.stage { position: relative; background: var(--ground); border: 1px solid var(--line); border-radius: 18px; padding: 28px 28px 0; }
+.stage-label { position: absolute; left: 28px; bottom: 14px; font-size: .75rem; color: var(--muted); }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.panel-top { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: var(--muted); margin-bottom: 14px; }
+.panel-top b { color: var(--ink); font-weight: 600; }
+.cam {
+  position: relative; height: 150px; border-radius: 8px; background: #1F2937; overflow: hidden; margin-bottom: 14px;
+}
+.cam::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 2px, transparent 2px 4px); }
+.cam-rec { position: absolute; top: 10px; left: 12px; font-size: .72rem; color: #E5E7EB; display: flex; align-items: center; gap: .4rem; z-index: 2; }
+.cam-rec i { width: 7px; height: 7px; border-radius: 50%; background: #EF4444; }
+/* khung xương đơn giản: đứng -> nằm */
+.fig { position: absolute; left: 50%; bottom: 18px; width: 70px; height: 110px; margin-left: -35px; transform-origin: 50% 100%;
+       transform: rotate(-88deg) translateY(-6px); }
+.fig svg { width: 100%; height: 100%; }
+.status { position: relative; height: 74px; }
+.st { position: absolute; inset: 0; display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; border: 1px solid; opacity: 0; }
+.st svg { width: 22px; height: 22px; flex: none; }
+.st b { display: block; font-size: 1rem; line-height: 1.3; }
+.st small { font-size: .82rem; }
+.st-safe { background: var(--safe-bg); border-color: #ABEFC6; color: #14532D; }
+.st-verify { background: var(--warn); border-color: #92400E; color: #fff; }
+.st-sent { background: var(--alarm); border-color: #B91C1C; color: #fff; }
+.st-ack { background: var(--safe-bg); border-color: #ABEFC6; color: #14532D; opacity: 1; }
+.bar { position: absolute; left: 14px; right: 14px; bottom: 7px; height: 3px; border-radius: 3px; background: rgba(255,255,255,.35); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: #fff; }
+.phone {
+  position: relative; width: 290px; margin: -10px -18px -30px auto; background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px; box-shadow: 0 18px 40px -18px rgba(11,42,107,.35);
+}
+.msg-head { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+.msg-head img { width: 22px; height: 22px; }
+.msg-head b { color: var(--ink); font-weight: 600; }
+.msg { font-size: .88rem; color: var(--ink); line-height: 1.5; background: var(--ground); border-radius: 10px; padding: 10px 12px; }
+.msg-btn { margin-top: 8px; text-align: center; font-size: .85rem; font-weight: 600; color: var(--blue); border: 1px solid var(--line); border-radius: 8px; padding: 7px; }
+.stamp {
+  position: absolute; right: 14px; top: -20px; transform: rotate(-8deg); border: 3px solid var(--safe); color: var(--safe);
+  border-radius: 8px; padding: 4px 12px; font-weight: 700; letter-spacing: .08em; font-size: .95rem; text-align: center;
+  background: rgba(255,255,255,.92); line-height: 1.2;
+}
+.stamp small { display: block; letter-spacing: 0; font-size: .7rem; font-weight: 600; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fig { animation: fig 12s var(--ease) infinite; }
+  .st-safe { animation: s-safe 12s infinite; }
+  .st-verify { animation: s-verify 12s infinite; }
+  .st-sent { animation: s-sent 12s infinite; }
+  .st-ack { animation: s-ack 12s infinite; }
+  .bar i { animation: bar 12s linear infinite; }
+  .phone { animation: phone 12s var(--ease) infinite; }
+  .stamp { animation: stamp 12s var(--ease) infinite; }
+  .cam-rec i { animation: rec 1.2s ease-in-out infinite; }
+}
+@keyframes fig { 0%, 16% { transform: rotate(0) translateY(0); } 22%, 96% { transform: rotate(-88deg) translateY(-6px); } 100% { transform: rotate(0); } }
+@keyframes s-safe { 0%, 17% { opacity: 1; } 19%, 98% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes s-verify { 0%, 18% { opacity: 0; } 20%, 47% { opacity: 1; } 49%, 100% { opacity: 0; } }
+@keyframes s-sent { 0%, 48% { opacity: 0; } 50%, 72% { opacity: 1; } 74%, 100% { opacity: 0; } }
+@keyframes s-ack { 0%, 73% { opacity: 0; } 75%, 97% { opacity: 1; } 99%, 100% { opacity: 0; } }
+@keyframes bar { 0%, 20% { width: 0; } 48%, 100% { width: 100%; } }
+@keyframes phone { 0%, 50% { opacity: 0; transform: translateY(24px); } 55%, 96% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes stamp { 0%, 74% { opacity: 0; transform: rotate(-8deg) scale(1.8); } 78%, 96% { opacity: 1; transform: rotate(-8deg) scale(1); } 100% { opacity: 0; } }
+@keyframes rec { 50% { opacity: .25; } }
+
+/* ---------- Cách hoạt động ---------- */
+.how { background: var(--ground); }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 2px solid var(--navy); }
+.step { padding: 28px 28px 0 0; position: relative; }
+.step + .step { padding-left: 28px; border-left: 1px solid var(--line); }
+.step-n { font-size: .9rem; font-weight: 600; color: var(--blue); font-variant-numeric: tabular-nums; }
+.step h3 { margin: 10px 0 10px; }
+.step p { font-size: .98rem; }
+
+/* ---------- Chuỗi cảnh báo ---------- */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center; }
+.split.rev > :first-child { order: 2; }
+.checks { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 16px; }
+.checks li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; }
+.checks svg { width: 22px; height: 22px; color: var(--blue); margin-top: 3px; }
+.checks b { color: var(--ink); font-weight: 600; }
+.shot { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--ground); }
+.shot-pair { position: relative; padding-bottom: 60px; }
+.shot-pair .back { width: 82%; }
+.shot-pair .front { position: absolute; right: 0; bottom: 0; width: 52%; box-shadow: 0 18px 40px -20px rgba(11,42,107,.35); }
+.round { display: flex; gap: 8px; margin-top: 26px; flex-wrap: wrap; }
+.round span { font-size: .85rem; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+.round span b { color: var(--navy); }
+
+/* ---------- Mất hình không bao giờ là an toàn ---------- */
+.states { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 28px; }
+.state { display: flex; gap: 12px; align-items: flex-start; padding: 16px; border: 1px solid var(--line); border-radius: var(--r); background: var(--card); }
+.state svg { width: 22px; height: 22px; color: var(--muted); flex: none; margin-top: 2px; }
+.state b { display: block; color: var(--ink); font-weight: 600; font-size: 1rem; }
+.state small { font-size: .9rem; color: var(--muted); }
+.voice {
+  border-left: 0; background: var(--navy); color: #fff; border-radius: 14px; padding: 36px 34px;
+}
+.voice svg { width: 34px; height: 34px; color: #93C5FD; }
+.voice q { display: block; font-size: 1.55rem; line-height: 1.4; font-weight: 600; margin: 18px 0 14px; quotes: "“" "”"; }
+.voice p { color: #C7D2FE; font-size: .98rem; }
+
+/* ---------- Số liệu ---------- */
+.proof { background: var(--ground); }
+.nums { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.num { padding: 30px 28px; }
+.num + .num { border-left: 1px solid var(--line); }
+.num b { display: block; font-size: 2.6rem; font-weight: 700; color: var(--navy); letter-spacing: -.03em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.num span { display: block; font-weight: 600; color: var(--ink); margin-top: 10px; }
+.num small { display: block; color: var(--muted); font-size: .88rem; margin-top: 6px; line-height: 1.5; }
+.proof-note { margin-top: 22px; font-size: .95rem; color: var(--muted); max-width: 80ch; }
+.browser { margin-top: 56px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--card); }
+.browser-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: #FAFAFA; }
+.browser-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line-2); }
+.browser-bar span { margin-left: 10px; font-size: .8rem; color: var(--muted); }
+
+/* ---------- Quyền riêng tư + câu hỏi ---------- */
+.privacy { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+.privacy div { border-top: 1px solid var(--line-2); padding-top: 22px; }
+.privacy h3 { margin-bottom: 8px; }
+.faq { max-width: 820px; }
+.faq details { border-bottom: 1px solid var(--line); padding: 20px 0; }
+.faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; font-weight: 600; color: var(--ink); font-size: 1.08rem; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font-size: 1.4rem; line-height: 1; color: var(--blue); transition: transform .2s var(--ease); }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { margin-top: 12px; max-width: 70ch; }
+
+/* ---------- Lời mời dùng thử + chân trang ---------- */
+.cta { background: var(--navy); color: #fff; padding: 96px 0; }
+.cta-in { display: grid; grid-template-columns: 1.3fr auto; gap: 40px; align-items: center; }
+.cta h2 { color: #fff; }
+.cta p { color: #C7D2FE; margin-top: 14px; font-size: 1.1rem; }
+.cta-note { color: #93C5FD; font-size: .88rem; margin-top: 12px; }
+footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
+.foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; }
+.foot img { height: 34px; width: auto; margin-bottom: 12px; }
+.foot h4 { margin: 0 0 10px; color: var(--ink); font-size: .95rem; }
+.foot a { color: var(--text); text-decoration: none; display: block; padding: 3px 0; }
+.foot a:hover { color: var(--blue); }
+.foot-bottom { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); }
+.sos { color: var(--alarm); font-weight: 600; }
+
+/* ---------- Hiện dần khi cuộn (nội dung luôn hiện nếu JS không chạy) ---------- */
+.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.js .reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+  .btn, .btn svg, .faq summary::after { transition: none; }
+}
+
+/* ---------- Điện thoại / máy tính bảng ---------- */
+@media (max-width: 960px) {
+  section { padding: 76px 0; }
+  .hero-grid, .split, .cta-in { grid-template-columns: 1fr; gap: 44px; }
+  .split.rev > :first-child { order: 0; }
+  .steps { grid-template-columns: 1fr 1fr; border-top: 0; }
+  .step, .step + .step { padding: 22px 0 22px 0; border-left: 0; border-top: 2px solid var(--navy); }
+  .steps .step:nth-child(even) { padding-left: 22px; }
+  .nums { grid-template-columns: 1fr 1fr; }
+  .num:nth-child(3) { border-left: 0; }
+  .num:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .privacy, .foot { grid-template-columns: 1fr; gap: 28px; }
+  .nav-links { display: none; }
+  .nav .btn { margin-left: auto; }
+}
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  .hero { padding-top: 40px; }
+  .stage { padding: 16px 16px 34px; }
+  .phone { width: auto; margin: -8px 0 0 12px; }
+  .stage-label { left: 16px; bottom: 10px; }
+  .hero { padding-bottom: 72px; }
+  .steps, .states { grid-template-columns: 1fr; }
+  .steps .step:nth-child(even) { padding-left: 0; }
+  .nums { grid-template-columns: 1fr; }
+  .num + .num { border-left: 0; border-top: 1px solid var(--line); }
+  .shot-pair .back { width: 100%; }
+  .shot-pair .front { width: 62%; }
+  .voice q { font-size: 1.3rem; }
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add("js");</script>
+
+<!-- Địa chỉ app SafeWatch: đổi 1 chỗ này là mọi nút "Dùng thử" đổi theo (script cuối trang). -->
+<header class="nav" id="top">
+  <div class="wrap nav-in">
+    <a class="nav-logo" href="#top" aria-label="SafeWatch – về đầu trang"><img src="img/logo_light.png" alt="SafeWatch"></a>
+    <nav class="nav-links" aria-label="Mục chính">
+      <a href="#cach-hoat-dong">Cách hoạt động</a>
+      <a href="#canh-bao">Chuỗi cảnh báo</a>
+      <a href="#so-lieu">Số liệu</a>
+      <a href="#rieng-tu">Quyền riêng tư</a>
+      <a href="#hoi-dap">Hỏi đáp</a>
+    </nav>
+    <a class="btn btn-primary" data-app href="#">Dùng thử</a>
+  </div>
+</header>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>Người thân bị ngã, <span>cả nhà biết ngay.</span></h1>
+        <p class="lead">SafeWatch dùng một webcam thông thường để phát hiện ngã và cử chỉ cầu cứu, rồi nhắn cho người nhà qua
+          Telegram, Email, SMS, và tiếp tục nhắc cho tới khi có người bấm <b>“Tôi đã nhận”</b>.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" data-app href="#">Dùng thử ngay
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost" href="#cach-hoat-dong">Xem cách hoạt động</a>
+        </div>
+        <div class="hero-facts">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Chỉ cần webcam</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Chạy trên trình duyệt</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Không lưu hình ảnh</span>
+        </div>
+      </div>
+
+      <div class="stage" role="img" aria-label="Minh hoạ: SafeWatch phát hiện ngã, xác minh 30 giây, gửi cảnh báo tới điện thoại người nhà và người nhà bấm Đã nhận">
+        <div class="panel">
+          <div class="panel-top"><b>Camera 1 · Phòng khách</b><span>SafeWatch</span></div>
+          <div class="cam">
+            <div class="cam-rec"><i></i>Đang giám sát</div>
+            <div class="fig"><svg viewBox="0 0 70 110" fill="none" stroke="#93C5FD" stroke-width="4" stroke-linecap="round">
+              <circle cx="35" cy="14" r="9" fill="#93C5FD" stroke="none"/><path d="M35 24v42M35 34 17 52M35 34l18 18M35 66l-14 38M35 66l14 38"/></svg></div>
+          </div>
+          <div class="status">
+            <div class="st st-safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg><div><b>An toàn</b><small>Không phát hiện ngã hay cầu cứu</small></div></div>
+            <div class="st st-verify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><div><b>Phát hiện ngã · đang xác minh</b><small>Tự đứng dậy trong 30 s thì không báo</small></div><div class="bar"><i></i></div></div>
+            <div class="st st-sent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><div><b>Đã gửi cảnh báo</b><small>Telegram · Email · SMS — chờ xác nhận</small></div></div>
+            <div class="st st-ack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/></svg><div><b>Đã có người nhận</b><small>Chuỗi cảnh báo dừng lại</small></div></div>
+          </div>
+        </div>
+        <div class="phone">
+          <div class="msg-head"><img src="img/favicon.png" alt=""><b>SafeWatch</b> · vừa xong</div>
+          <div class="msg"><b>Phát hiện ngã, chưa thấy đứng dậy</b><br>Phòng khách · 14:02<br>Hãy gọi kiểm tra người thân.</div>
+          <div class="msg-btn">Đã nhận</div>
+          <div class="stamp">ĐÃ NHẬN<small>14:03 · Lan</small></div>
+        </div>
+        <span class="stage-label">Minh hoạ</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CÁCH HOẠT ĐỘNG ================= -->
+  <section class="how" id="cach-hoat-dong">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Bốn bước, không cần thiết bị đặc biệt</h2>
+        <p>Đặt webcam ở góc phòng, mở SafeWatch trên trình duyệt. Phần còn lại hệ thống tự làm.</p>
+      </div>
+      <div class="steps reveal">
+        <div class="step"><div class="step-n">01</div><h3>Camera quan sát</h3><p>Webcam đặt cao khoảng 2 m, chéo góc phòng. AI đọc khung xương 33 điểm của cơ thể, không cần nhận mặt.</p></div>
+        <div class="step"><div class="step-n">02</div><h3>Nhận ra sự cố</h3><p>Model phát hiện cú ngã từ chuỗi chuyển động 1,5 giây. Cử chỉ tay cầu cứu cũng được nhận ra.</p></div>
+        <div class="step"><div class="step-n">03</div><h3>Xác minh 30 giây</h3><p>Người ngã tự đứng dậy được thì không báo động, tránh làm phiền cả nhà vì những lần trượt chân nhẹ.</p></div>
+        <div class="step"><div class="step-n">04</div><h3>Báo người nhà</h3><p>Gửi Telegram, Email, SMS tới người liên hệ. Chưa ai xác nhận thì nhắc lại và chuyển cho người kế tiếp.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CHUỖI CẢNH BÁO ================= -->
+  <section id="canh-bao">
+    <div class="wrap split">
+      <div class="reveal">
+        <h2>Không dừng ở “đã gửi”</h2>
+        <p class="lead" style="margin-top:16px">Một tin nhắn không ai đọc thì không cứu được ai. SafeWatch chỉ coi cảnh báo là xong khi có
+          một người thật bấm xác nhận.</p>
+        <ul class="checks">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg><div><b>Gửi nhiều kênh cùng lúc.</b> Telegram có nút “Đã nhận” ngay trong tin, email có nút lớn, SMS có đường link.</div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg><div><b>Gửi lỗi thì thử lại</b> sau 5, 10, 20, 40, 60 giây.</div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg><div><b>60 giây chưa ai nhận</b> thì nhắc lại và chuyển tiếp cho người liên hệ kế tiếp, tối đa 5 vòng.</div></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg><div><b>Ghi lại ai nhận, qua kênh nào, lúc nào</b> — xem lại và xuất bảng thời gian bất cứ lúc nào.</div></li>
+        </ul>
+        <div class="round"><span>Vòng 1 · <b>người ưu tiên 1</b></span><span>Vòng 2 · <b>+ người thứ 2</b></span><span>… tới vòng 5</span></div>
+      </div>
+      <div class="shot-pair reveal">
+        <img class="shot back" src="img/app-email.png" alt="Email cảnh báo của SafeWatch với nút Tôi đã nhận cảnh báo" loading="lazy" width="1360" height="1800">
+        <img class="shot front" src="img/app-ack.png" alt="Trang xác nhận ĐÃ NHẬN sau khi người nhà bấm nút" loading="lazy" width="1280" height="1440">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MẤT HÌNH ================= -->
+  <section style="padding-top:0">
+    <div class="wrap split rev">
+      <div class="reveal">
+        <h2>Không thấy rõ thì không bao giờ báo “an toàn”</h2>
+        <p class="lead" style="margin-top:16px">Camera bị che hay người đi khuất là lúc dễ bỏ sót nhất. SafeWatch nói rõ mình đang không nhìn thấy
+          gì, thay vì im lặng.</p>
+        <div class="states">
+          <div class="state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 9.9a3 3 0 1 0 4.2 4.2M2 2l20 20M6.6 6.6A13.5 13.5 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/></svg><div><b>Mất tín hiệu camera</b><small>Báo ngay, đang đếm giờ sau ngã vẫn tiếp tục</small></div></div>
+          <div class="state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M2 2l20 20"/></svg><div><b>Không có người</b><small>Ghi rõ người rời khung hình bên nào</small></div></div>
+          <div class="state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M5 9l-3 3 3 3M19 9l3 3-3 3"/></svg><div><b>Đứng quá gần</b><small>Nhắc lùi ra 2–3 m để thấy đủ cơ thể</small></div></div>
+          <div class="state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h18"/></svg><div><b>Ngã sau vật cản</b><small>Tụt xuống nhanh rồi khuất sau giường, sofa vẫn bị coi là nghi ngã</small></div></div>
+        </div>
+      </div>
+      <div class="voice reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>
+        <q>Xin mời quý vị rời xa camera một chút.</q>
+        <p>Khi người dùng đứng quá gần hoặc bị khuất, SafeWatch nhắc bằng giọng nói tiếng Việt để camera nhìn thấy đủ, không cần ai
+          phải chỉnh lại thiết bị.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SỐ LIỆU ================= -->
+  <section class="proof" id="so-lieu">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <h2>Được kiểm định trên dữ liệu chưa từng thấy</h2>
+        <p>Mọi con số dưới đây chấm trên dữ liệu model không được xem lúc huấn luyện, tách theo người và phiên quay, phát lại qua đúng
+          phần mềm SafeWatch.</p>
+      </div>
+      <div class="nums reveal">
+        <div class="num"><b>94%</b><span>ca ngã được phát hiện</span><small>121 trên 129 ca ngã thật của bộ Le2i, 9 người, 6 căn phòng</small></div>
+        <div class="num"><b>105<span style="display:inline;font-size:1.3rem;color:var(--muted);font-weight:600">/129</span></b><span>khi bị che 30% khung hình</span><small>Giả lập đồ đạc chắn phía dưới camera</small></div>
+        <div class="num"><b>9/giờ</b><span>cảnh báo nhầm khi sinh hoạt</span><small>5 giờ video sinh hoạt thật (Charades). Model cũ: 61/giờ</small></div>
+        <div class="num"><b>1,1 s</b><span>từ lúc báo động tới lúc gửi</span><small>Trung vị trên 52 cảnh báo thật</small></div>
+      </div>
+      <p class="proof-note reveal">Cử chỉ cầu cứu có bộ lọc: 1,9 lần báo nhầm/giờ (chưa lọc: 132/giờ). Cách tính và dữ liệu chi tiết công
+        khai trong <a href="https://github.com/shinjiduck/combined-demo/blob/main/training/fall_eval/KIEM_DINH_THEO_YEU_CAU_BTC.md">tài liệu kiểm định</a>.</p>
+      <div class="browser reveal">
+        <div class="browser-bar"><i></i><i></i><i></i><span>SafeWatch · Tổng quan</span></div>
+        <img src="img/app-dashboard.png" alt="Trang Tổng quan của SafeWatch: số báo động, số lần tự đứng dậy, thời gian người nhà xác nhận và biểu đồ sự cố theo ngày" loading="lazy" width="2560" height="1600">
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= QUYỀN RIÊNG TƯ ================= -->
+  <section id="rieng-tu">
+    <div class="wrap">
+      <div class="sec-head reveal"><h2>Camera trong nhà, nên quyền riêng tư phải đi trước</h2></div>
+      <div class="privacy reveal">
+        <div><h3>Không lưu hình ảnh</h3><p>Hình từ camera chỉ dùng để đọc tư thế cơ thể rồi bỏ đi. Không ghi video, không chụp ảnh.</p></div>
+        <div><h3>Cảnh báo không kèm hình</h3><p>Tin nhắn tới người nhà chỉ gồm loại sự cố, thời điểm và khu vực. Không có ảnh hay video đính kèm.</p></div>
+        <div><h3>Chỉ người bạn chọn</h3><p>Cảnh báo chỉ tới những người liên hệ bạn thêm vào, theo thứ tự ưu tiên bạn đặt, tắt được từng người.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HỎI ĐÁP ================= -->
+  <section style="padding-top:0" id="hoi-dap">
+    <div class="wrap">
+      <div class="sec-head reveal"><h2>Câu hỏi thường gặp</h2></div>
+      <div class="faq reveal">
+        <details><summary>Cần chuẩn bị gì để dùng SafeWatch?</summary>
+          <p>Một webcam (webcam laptop hoặc webcam USB) và trình duyệt Chrome, Edge hoặc Firefox. Bấm “Dùng thử”, cho phép trình duyệt
+            dùng camera là bắt đầu. Để phát hiện tốt nhất, đặt camera cao khoảng 2 m, chéo góc phòng, thấy được vùng sàn.</p></details>
+        <details><summary>Người nhà nhận cảnh báo bằng cách nào?</summary>
+          <p>Qua Telegram (có nút “Đã nhận” ngay trong tin nhắn), Email và SMS. Mỗi người liên hệ chọn kênh của mình. Ai bấm xác nhận
+            trước thì chuỗi cảnh báo dừng lại cho cả nhà.</p></details>
+        <details><summary>Ngã rồi tự đứng dậy thì có bị báo không?</summary>
+          <p>Không. Sau khi phát hiện ngã, SafeWatch theo dõi thêm 30 giây (chỉnh được). Người đó đứng dậy được thì hệ thống chỉ ghi
+            vào nhật ký, không gửi cảnh báo.</p></details>
+        <details><summary>Nhà có nhiều người thì sao?</summary>
+          <p>Phiên bản hiện tại tối ưu cho một người trong khung hình. Chế độ theo dõi tối đa 3 người đang ở dạng thử nghiệm, có thể
+            bật trong phần Cấu hình.</p></details>
+        <details><summary>Mất mạng internet thì sao?</summary>
+          <p>Hệ thống vẫn phát hiện và giữ cảnh báo trong hàng chờ, có mạng lại sẽ gửi ngay. Phiên bản thiết bị riêng có module 4G
+            để nhắn tin và gọi điện khi mất internet đang được phát triển.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DÙNG THỬ ================= -->
+  <section class="cta">
+    <div class="wrap cta-in">
+      <div class="reveal">
+        <h2>Thử SafeWatch ngay trên trình duyệt</h2>
+        <p>Mở app, cho phép camera, thêm một người thân nhận cảnh báo. Mất chưa tới 5 phút.</p>
+        <p class="cta-note">Lần mở đầu tiên có thể mất khoảng 1 phút để hệ thống khởi động.</p>
+      </div>
+      <div class="reveal"><a class="btn btn-light" data-app href="#">Mở SafeWatch
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div><img src="img/logo_light.png" alt="SafeWatch"><p>Giám sát an toàn cá nhân bằng AI cho người thân sống một mình.</p></div>
+      <div><h4>Sản phẩm</h4><a data-app href="#">Dùng thử</a><a href="#cach-hoat-dong">Cách hoạt động</a><a href="#so-lieu">Số liệu kiểm định</a></div>
+      <div><h4>Tài liệu</h4><a href="https://github.com/shinjiduck/combined-demo">Mã nguồn trên GitHub</a><a href="https://github.com/shinjiduck/combined-demo/blob/main/training/fall_eval/KIEM_DINH_THEO_YEU_CAU_BTC.md">Báo cáo kiểm định</a><a href="#rieng-tu">Quyền riêng tư</a></div>
+    </div>
+    <div class="foot-bottom"><span>© 2026 SafeWatch</span><span class="sos">Khẩn cấp: gọi 115</span></div>
+  </div>
+</footer>
+
+<script>
+  // Địa chỉ app SafeWatch (Streamlit). Đổi tại đây khi app có tên miền mới.
+  const APP_URL = "https://combined-demo-6rgvtaykttthgysxzssla3.streamlit.app/";
+  document.querySelectorAll("[data-app]").forEach(a => { a.href = APP_URL; a.target = "_blank"; a.rel = "noopener"; });
+
+  // Viền dưới thanh điều hướng khi đã cuộn
+  const nav = document.querySelector(".nav");
+  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 8);
+  onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+
+  // Hiện dần từng phần khi cuộn tới (mỗi phần 1 lần)
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    }), { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+    document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll(".reveal").forEach(el => el.classList.add("in"));
+  }
+</script>
+</body>
+</html>
