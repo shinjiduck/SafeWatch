@@ -155,4 +155,4 @@ with tab_storage, card("set_storage"):
     st.session_state["save_video"] = st.checkbox(
         "Lưu video lúc xảy ra sự cố", value=st.session_state["save_video"], disabled=True
     )
-    st.caption("Chưa hỗ trợ trong bản demo — cần thêm dung lượng lưu trữ và luồng ghi video riêng.")
+    st.caption("Lưu ảnh / video lúc xảy ra sự cố: chưa hỗ trợ.")

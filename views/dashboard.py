@@ -88,7 +88,7 @@ per_hour = recent.assign(Giờ=recent["dt"].dt.hour).groupby("Giờ").size().rei
 per_hour = per_hour.rename("Số lần").reset_index()
 chart = (
     alt.Chart(per_hour)
-    .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, color="#6366F1")
+    .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, color="#0373E0")
     .encode(
         x=alt.X("Giờ:O", title="Giờ", axis=alt.Axis(labelAngle=0, grid=False, **AXIS)),
         y=alt.Y("Số lần:Q", title=None, axis=alt.Axis(tickMinStep=1, **AXIS)),

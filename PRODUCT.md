@@ -8,10 +8,10 @@ web
 
 ## Users
 
-Two audiences weigh equally (confirmed 2026-11-25):
+SafeWatch is a real product, not a competition demo (user, 2026-11-26). The UI must not use "demo" wording.
 
 - **Family caregivers**: children or relatives of an elderly person living at home. They keep the page open on a laptop, or open it on a phone from the link in an SMS / Telegram / email alert. Their job is to see that the person is safe, get alerted when they are not, and confirm "I got it" so the alert chain stops.
-- **Competition judges (BTC)** at the demo. They need to see the alert chain working end to end, the verification of fall events, the safe state when vision is lost, and the evaluation numbers behind every claim.
+- **Evaluators** (organisers, partners) review the alert chain, fall verification, the safe state on vision loss, and the evaluation numbers. They see the same product; nothing is built just for show.
 
 ## Product Purpose
 
@@ -26,7 +26,7 @@ The alert does not stop at "sent". It keeps retrying (5/10/20/40/60 s), forwards
 - Streamlit multipage web app (`main.py`, `views/`), webcam via WebRTC in the browser, background notifier thread.
 - The camera sits about 2 m high in a room corner. The app tells the person to step back when they are too close, and shows "không có người" (nobody in view) and vanish/occlusion states.
 - Acknowledge link `/?ack=<token>` opened from phone messages.
-- The demo is often projected; daily use is on a laptop or phone.
+- Daily use is on a laptop or phone; it is sometimes shown on a projector.
 - The interface language is Vietnamese.
 
 ## Capabilities and Constraints
@@ -34,13 +34,13 @@ The alert does not stop at "sent". It keeps retrying (5/10/20/40/60 s), forwards
 - One camera (browser webcam). Multi-person tracking is experimental and off by default.
 - Channels: Telegram, Email, SMS (eSMS brandname / Android gateway / Twilio).
 - Streamlit limits the DOM: styling goes through `theme.py` CSS injection, `.streamlit/config.toml`, and keyed containers (`st-key-*`). Native Streamlit widgets must stay usable.
-- CPU is constrained on the demo machine; the UI must not add heavy client work.
+- CPU is constrained on typical home machines; the UI must not add heavy client work.
 
 ## Brand Commitments
 
-- Name **SafeWatch** and the shield logo (`assets/logo*.png`) stay.
+- Name **SafeWatch** and the logo (blue shield with an eye watching over a person; source `assets/logo_source.png`, 2026-11-26) stay. Tagline: "Giám sát an toàn cá nhân bằng AI".
 - Light background (user requirement). Buttons must read clearly as buttons.
-- The previous indigo colour is not binding.
+- Colours follow the logo: navy `#0B2A6B` and blue `#0262C9`/`#0373E0`.
 
 ## Evidence on Hand
 

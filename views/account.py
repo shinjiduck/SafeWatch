@@ -1,4 +1,4 @@
-"""Trang Tài khoản của tôi — demo không có auth thật (không có đăng nhập/
+"""Trang Tài khoản của tôi — chưa có đăng nhập thật (không có đăng nhập/
 đăng ký/nhiều user), nên đây là 1 hồ sơ tĩnh duy nhất lưu vào file JSON."""
 
 import streamlit as st
@@ -52,4 +52,4 @@ with st.form("profile_form"):
         st.success("Đã lưu hồ sơ.")
         st.rerun()
 
-st.caption("Đăng nhập, đổi mật khẩu, xác thực 2 bước: chưa có trong bản demo (1 hồ sơ duy nhất, lưu trên máy).")
+st.caption("Đăng nhập nhiều tài khoản, đổi mật khẩu, xác thực 2 bước: chưa hỗ trợ. Hiện dùng 1 hồ sơ, lưu trên máy.")

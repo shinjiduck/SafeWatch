@@ -1,5 +1,5 @@
-# Chủ đề SafeWatch: dashboard sáng. Nền xám nhạt, khung + thanh bên trắng, màu chính = chàm của logo (nút chính,
-# mục menu đang chọn, công tắc). Đỏ / cam / xanh lá dành riêng cho trạng thái (theme.py), không dùng cho nút.
+# Chủ đề SafeWatch: dashboard sáng. Nền xám nhạt, khung + thanh bên trắng, màu chính = navy của logo (nút chính,
+# công tắc); xanh của khiên cho icon / liên kết. Đỏ / cam / xanh lá dành riêng cho trạng thái (theme.py), không dùng cho nút.
 [client]
 toolbarMode = "minimal"
 
@@ -8,11 +8,11 @@ enableStaticServing = true
 
 [theme]
 base = "light"
-primaryColor = "#4F46E5"
+primaryColor = "#0B2A6B"
 backgroundColor = "#F3F4F7"
 secondaryBackgroundColor = "#F4F4F5"
 textColor = "#18181B"
-linkColor = "#4338CA"
+linkColor = "#0262C9"
 borderColor = "#E4E4E7"
 showWidgetBorder = true
 baseRadius = "0.5rem"
@@ -46,5 +46,5 @@ weight = 700
 backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F4F4F5"
 textColor = "#27272A"
-primaryColor = "#4F46E5"
+primaryColor = "#0B2A6B"
 borderColor = "#E4E4E7"

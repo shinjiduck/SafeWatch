@@ -1,5 +1,5 @@
 """Trang Camera & lắp đặt — camera đang dùng, cài đặt hình ảnh (gom từ trang Cấu hình về đây cho đúng chỗ) và
-hướng dẫn đặt camera. Bản demo chỉ có 1 camera: webcam của trình duyệt đang mở trang."""
+hướng dẫn đặt camera. Hiện hỗ trợ 1 camera: webcam của trình duyệt đang mở trang."""
 
 import streamlit as st
 
@@ -30,7 +30,7 @@ with left:
             unsafe_allow_html=True,
         )
         st.page_link("views/live_view.py", label="Mở giám sát trực tiếp")
-    st.caption("Bản demo dùng 1 camera. Thêm IP camera / nhiều camera cần phần thu hình riêng — chưa hỗ trợ.")
+    st.caption("Phiên bản hiện tại hỗ trợ 1 camera (webcam qua trình duyệt). IP camera và nhiều camera cùng lúc: chưa hỗ trợ.")
 
     section("Cài đặt hình ảnh")
     with card("cam_settings"):

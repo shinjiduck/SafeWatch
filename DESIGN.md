@@ -1,6 +1,6 @@
 # Design
 
-SafeWatch is an Operate surface: a monitoring and alerting dashboard used by family caregivers (laptop and phone) and shown to judges at demos. The chosen direction is the **category standard done carefully**: a neutral, light dashboard at the craft level of Stripe, Vercel and Linear. It has no themed material world. The tool should disappear into the task.
+SafeWatch is an Operate surface: a monitoring and alerting dashboard used by family caregivers on laptop and phone. The chosen direction is the **category standard done carefully**: a neutral, light dashboard at the craft level of Stripe, Vercel and Linear. It has no themed material world. The tool should disappear into the task.
 
 Source of truth: `theme.py` (tokens, CSS, helpers) and `.streamlit/config.toml` (Streamlit theme, fonts). Pages build only from `theme.py` helpers.
 
@@ -9,6 +9,10 @@ Source of truth: `theme.py` (tokens, CSS, helpers) and `.streamlit/config.toml` 
 Strategy: Restrained with a brand accent. The grey ground sets off white panels. The logo indigo carries actions and the current location. State colours appear only where they mean state.
 
 Revision (2026-11-25): the first neutral-only pass read "like a document" to the user. Indigo primary, nav icons, header icon and KPI icons were added back.
+
+Revision (2026-11-26, logo): new logo `Logo 2.png` (blue shield with an eye and a protected person). Accents moved from indigo to the logo's navy and blue. Assets: `logo_light.png` (horizontal lockup), `logo_icon.png`, `logo_mark.png`, `favicon.png`, `logo_full.png`, `logo_source.png`.
+
+Revision (2026-11-26): the bright `#4F46E5` blocks read as "nhựa" (plastic). Bright indigo now lives only in the logo, primary actions use deep indigo, radii are smaller (8px panels, 6px badges and chips), and resting shadows are gone.
 
 | Role | Token | Value |
 |---|---|---|
@@ -20,7 +24,9 @@ Revision (2026-11-25): the first neutral-only pass read "like a document" to the
 | Text | `COLOR_NAVY` | `#18181B` |
 | Secondary text | `COLOR_TEXT` | `#3F3F46` |
 | Muted text (≥4.5:1 on white) | `COLOR_TEXT_MUTED` | `#71717A` |
-| Brand indigo (logo): primary buttons, active nav, header icon, toggles, focus | `COLOR_BRAND` | `#4F46E5` |
+| Logo navy ("Safe"): primary buttons, toggles, segmented control, avatar | `COLOR_BRAND` | `#0B2A6B` (hover `#061A47`) |
+| Logo blue (shield, one step darker for contrast): icons (active nav, header), links, focus ring, caret | `COLOR_ACCENT` | `#0262C9` |
+| Logo gradient `#0373E0`–`#23BFFD`: **only in the logo** (and the single-series chart `#0373E0`) | — | — |
 
 State colours are reserved. Each always comes with a label and an icon, never colour alone:
 
@@ -33,7 +39,7 @@ State colours are reserved. Each always comes with a label and an icon, never co
 
 Grey never means "safe". Losing vision must not display as safe.
 
-Charts (Altair): alarm `#DC2626`, self-recovered `#2563EB` (CVD-checked), single series `#6366F1`. Grid `#F4F4F5`, axis labels `#71717A`.
+Charts (Altair): alarm `#DC2626`, self-recovered `#2563EB` (CVD-checked), single series `#0373E0`. Grid `#F4F4F5`, axis labels `#71717A`.
 
 ## Typography
 
@@ -55,13 +61,13 @@ Every page starts with a **top bar**: a breadcrumb `SafeWatch › group › page
 
 ## Components
 
-- **Page header**: 44px indigo icon square (white line icon), then title and a one-line subtitle. No eyebrow label.
-- **Stat strip**: `kpi_card` cells placed in `st.columns` merge into one bordered panel with hairline dividers. These become horizontal dividers once the columns stack on a phone. Each cell has a small tinted icon coloured by meaning (`tone`), a label, a value and a note.
+- **Page header**: 52px white square with a hairline border and an accent-indigo line icon, then title and a one-line subtitle. No eyebrow label.
+- **Stat strip**: `kpi_card` cells placed in `st.columns` merge into one bordered panel with hairline dividers. These become horizontal dividers once the columns stack on a phone. Each cell has a small line icon coloured by meaning (`tone`, no tinted tile), a label, a value and a note.
 - **Status banner** (`status_banner_html`): full border plus tint, or solid fill for states that need action, with a leading line icon. No side stripe, no glow.
-- **Panels** (`card(key)` / `card_html`). Every page groups its content in panels; loose text on the ground reads as a document: white, 1px hairline, radius 12px, shadow `0 1px 2px rgba(24,24,27,.04)`.
-- **Buttons**: primary is solid indigo `#4F46E5` with white text (hover `#4338CA`). Secondary is white with a `#D4D4D8` border. Page links look like secondary buttons. Height 40px, radius 8px.
+- **Panels** (`card(key)` / `card_html`). Every page groups its content in panels; loose text on the ground reads as a document: white, 1px hairline, radius 8px, no shadow (hover only darkens the border).
+- **Buttons**: primary is solid deep indigo `#312E81` with white text (hover `#1E1B4B`), with no shadow. Secondary is white with a `#D4D4D8` border. Page links look like secondary buttons. Height 40px, radius 8px.
 - **Badges**: pill with a dot and the label, tinted by state.
-- **Sidebar nav**: white rail. Every item has a line icon (CSS mask, by page path). The active item has an indigo tint `#EEF2FF` with an indigo icon and label. Group labels are sentence case and muted.
+- **Sidebar nav**: white rail. Every item has a line icon (CSS mask, by page path). The active item has a grey `#F4F4F5` fill, an ink label and an accent-indigo icon. Group labels are sentence case and muted.
 - **Camera control** (streamlit-webrtc): buttons are translated to Vietnamese ("Bắt đầu giám sát", "Dừng", "Chọn camera") and inherit the indigo primary colour.
 
 ## Motion

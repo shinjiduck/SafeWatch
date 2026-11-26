@@ -28,8 +28,9 @@ COLOR_NAVY = "#18181B"  # chữ chính / nút chính (giữ tên cũ cho các tr
 COLOR_TEXT = "#3F3F46"
 COLOR_TEXT_MUTED = "#71717A"
 # Màu logo — chỉ dùng cho liên kết / focus / vùng chọn
-COLOR_BRAND = "#4F46E5"
-COLOR_BRAND_DARK = "#4338CA"
+COLOR_BRAND = "#0B2A6B"  # navy của chữ "Safe" trong logo: nút chính, công tắc
+COLOR_BRAND_DARK = "#061A47"
+COLOR_ACCENT = "#0262C9"  # xanh của khiên logo (đậm hơn 1 bậc cho đủ tương phản): icon / liên kết / focus
 COLOR_BLUE = "#2563EB"
 # Trạng thái
 COLOR_SAFE = "#15803D"
@@ -47,12 +48,12 @@ LEVELS = {
     "emergency": ("sw-lv-emergency", COLOR_EMERGENCY, "#FEF2F2", "#B91C1C"),
     "nodata": ("sw-lv-nodata", COLOR_NODATA, "#F4F4F5", "#3F3F46"),
     "idle": ("sw-lv-idle", "#A1A1AA", "#F4F4F5", "#52525B"),
-    "info": ("sw-lv-info", COLOR_BRAND, "#EEF2FF", "#3730A3"),
+    "info": ("sw-lv-info", COLOR_ACCENT, "#EFF6FF", "#1E40AF"),
 }
 
 # Giữ cho tương thích lời gọi cũ (tone=...) — giao diện mới không còn ô biểu tượng màu.
 TONES = {  # (nền nhạt, màu nét) — màu icon theo ý nghĩa của chỉ số
-    "indigo": ("#EEF2FF", "#4F46E5"), "violet": ("#F5F3FF", "#7C3AED"), "emerald": ("#ECFDF5", "#059669"),
+    "indigo": ("#EFF6FF", "#0262C9"), "violet": ("#F5F3FF", "#7C3AED"), "emerald": ("#ECFDF5", "#059669"),
     "amber": ("#FFFBEB", "#D97706"), "rose": ("#FFF1F2", "#E11D48"), "sky": ("#F0F9FF", "#0284C7"),
     "slate": ("#F4F4F5", "#52525B"),
 }
@@ -110,7 +111,7 @@ def svg(name, size=20, color="currentColor", stroke=2):
 
 
 
-_SHADOW_SM = "0 1px 2px rgba(24,24,27,.04)"
+_SHADOW_SM = "none"
 
 
 def _mask_url(name):
@@ -130,7 +131,7 @@ _NAV_ICON_CSS = "\n".join(
        for path, icon in _NAV_ICONS.items()]
 )
 _SHADOW_BTN = "0 1px 2px rgba(24,24,27,.10)"
-_FOCUS = f"0 0 0 2px {COLOR_CARD}, 0 0 0 4px {COLOR_BRAND}"
+_FOCUS = f"0 0 0 2px {COLOR_CARD}, 0 0 0 4px {COLOR_ACCENT}"
 
 _CSS = f"""
 <style>
@@ -141,8 +142,8 @@ html, body, .stApp {{ -webkit-font-smoothing: antialiased; text-rendering: optim
 .block-container {{ padding-top: 2.4rem; padding-bottom: 4rem; max-width: 1280px; }}
 
 /* ---------- Bề mặt trình duyệt: vùng chọn, con trỏ, focus, thanh cuộn ---------- */
-::selection {{ background: #E0E7FF; color: #1E1B4B; }}
-.stApp {{ caret-color: {COLOR_BRAND}; scrollbar-color: {COLOR_BORDER_STRONG} transparent; scrollbar-width: thin; }}
+::selection {{ background: #DBEAFE; color: #061A47; }}
+.stApp {{ caret-color: {COLOR_ACCENT}; scrollbar-color: {COLOR_BORDER_STRONG} transparent; scrollbar-width: thin; }}
 ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
 ::-webkit-scrollbar-thumb {{ background: {COLOR_BORDER_STRONG}; border-radius: 10px; border: 3px solid {COLOR_BG}; }}
 ::-webkit-scrollbar-track {{ background: transparent; }}
@@ -151,20 +152,23 @@ a {{ text-underline-offset: 3px; }}
 
 /* ---------- Thanh bên: lớp trung tính thứ 2 ---------- */
 [data-testid="stSidebar"] {{ border-right: 1px solid {COLOR_BORDER}; }}
-[data-testid="stSidebarHeader"] {{ padding-bottom: .5rem; }}
+[data-testid="stSidebarHeader"] {{ padding-bottom: .75rem; height: auto; }}
+/* logo mới (khiên + chữ) cần cao hơn mặc định của st.logo để thấy rõ con mắt trên khiên */
+[data-testid="stSidebarLogo"], [data-testid="stSidebarHeader"] [data-testid="stLogo"] {{ height: 2.9rem !important; max-width: 100%; }}
+[data-testid="stHeader"] [data-testid="stLogo"] {{ height: 2.2rem !important; }}
 [data-testid="stSidebarNavLink"] {{
     border-radius: 8px; margin: 0; padding: 0 .75rem; height: 2.45rem; line-height: 2.45rem; border: 1px solid transparent;
     transition: background-color .15s ease-out, border-color .15s ease-out;
 }}
 [data-testid="stSidebarNavLink"] p {{ font-size: 1rem; color: {COLOR_TEXT}; font-weight: 500; }}
 [data-testid="stSidebarNavLink"]:hover {{ background: {COLOR_SUBTLE} !important; }}
-[data-testid="stSidebarNavLink"][aria-current="page"] {{ background: #EEF2FF !important; }}
-[data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: #3730A3; font-weight: 600; }}
+[data-testid="stSidebarNavLink"][aria-current="page"] {{ background: {COLOR_SUBTLE} !important; }}
+[data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: {COLOR_NAVY}; font-weight: 600; }}
 [data-testid="stSidebarNavLink"]::before {{
     content: ""; width: 18px; height: 18px; flex: none; margin-right: .65rem; background-color: #71717A;
     -webkit-mask: var(--sw-ico) center / contain no-repeat; mask: var(--sw-ico) center / contain no-repeat;
 }}
-[data-testid="stSidebarNavLink"][aria-current="page"]::before {{ background-color: {COLOR_BRAND}; }}
+[data-testid="stSidebarNavLink"][aria-current="page"]::before {{ background-color: {COLOR_ACCENT}; }}
 {_NAV_ICON_CSS}
 [data-testid="stNavSectionHeader"] {{ margin-top: .9rem; }}
 [data-testid="stSidebarNavItems"] li {{ margin: 0 !important; }}
@@ -199,7 +203,7 @@ a {{ text-underline-offset: 3px; }}
 .sw-crumbs .sep {{ color: #A1A1AA; }}
 .sw-topmeta {{ display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; font-size: .9rem; color: {COLOR_TEXT}; }}
 .sw-chip {{
-    display: inline-flex; align-items: center; gap: .45rem; padding: .32rem .8rem; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: .45rem; padding: .32rem .8rem; border-radius: 6px;
     background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; font-size: .88rem; color: {COLOR_TEXT}; white-space: nowrap;
     text-decoration: none !important; transition: border-color .15s ease-out, background-color .15s ease-out;
 }}
@@ -209,7 +213,7 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 .sw-chip-alert .sw-dot {{ background: {COLOR_EMERGENCY}; animation: sw-ping 1.6s ease-out infinite; }}
 .sw-hero {{ margin: 0 0 1.9rem 0; display: flex; gap: 1.1rem; align-items: center; }}
 .sw-hero-icon {{
-    width: 52px; height: 52px; border-radius: 12px; flex: none; color: #FFFFFF; background: {COLOR_BRAND};
+    width: 52px; height: 52px; border-radius: 8px; flex: none; color: {COLOR_ACCENT}; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER};
     display: flex; align-items: center; justify-content: center;
 }}
 .sw-hero-title {{
@@ -222,7 +226,7 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 
 /* ---------- Dải chỉ số: các cột chứa .sw-kpi ghép thành 1 khung, ngăn bằng vạch mảnh ---------- */
 [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) {{
-    gap: 0 !important; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 12px;
+    gap: 0 !important; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 8px;
     box-shadow: {_SHADOW_SM}; overflow: hidden;
 }}
 [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) > [data-testid="stColumn"] + [data-testid="stColumn"] {{
@@ -231,7 +235,7 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 .sw-kpi {{ padding: 1.2rem 1.4rem 1.25rem; min-height: 118px; }}
 [data-testid="stMarkdownContainer"]:has(> .sw-kpi, > .sw-banner, > .sw-card) {{ margin-bottom: 0 !important; }}
 .sw-kpi-label {{ font-size: .95rem; color: {COLOR_TEXT}; font-weight: 500; display: flex; align-items: center; gap: .5rem; }}
-.sw-kpi-ico {{ width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex: none; }}
+.sw-kpi-ico {{ width: 20px; height: 20px; background: none !important; display: flex; align-items: center; justify-content: center; flex: none; }}
 .sw-kpi-value {{
     font-size: 2.1rem; font-weight: 600; color: {COLOR_NAVY}; line-height: 1.15; letter-spacing: -.025em; margin-top: .45rem;
     font-variant-numeric: tabular-nums;
@@ -240,17 +244,17 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 
 /* ---------- Khung nội dung (st.container(key="swbox_...")) ---------- */
 [class*="st-key-swbox"] {{
-    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER} !important; border-radius: 12px !important;
+    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER} !important; border-radius: 8px !important;
     box-shadow: {_SHADOW_SM}; padding: 1.1rem 1.25rem !important;
 }}
 .sw-card {{
-    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 12px; padding: .25rem 1.25rem;
+    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 8px; padding: .25rem 1.25rem;
     box-shadow: {_SHADOW_SM};
 }}
 
 /* ---------- Banner trạng thái (trạng thái là thông tin số 1 — đọc được từ xa) ---------- */
 .sw-banner {{
-    border-radius: 12px; padding: 1.05rem 1.2rem; display: flex; gap: .85rem; align-items: flex-start; border: 1px solid;
+    border-radius: 8px; padding: 1.05rem 1.2rem; display: flex; gap: .85rem; align-items: flex-start; border: 1px solid;
 }}
 .sw-banner-icon {{ flex: none; margin-top: .15rem; }}
 .sw-banner-title {{ font-size: 1.55rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.25; }}
@@ -264,7 +268,7 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 .sw-lv-idle {{ background: {COLOR_CARD}; border-color: {COLOR_BORDER}; color: {COLOR_NAVY}; }}
 .sw-lv-idle .sw-banner-icon {{ color: {COLOR_TEXT_MUTED}; }}
 .sw-lv-idle .sw-banner-sub {{ color: {COLOR_TEXT_MUTED}; }}
-.sw-lv-info {{ background: #EEF2FF; border-color: #C7D2FE; color: #312E81; }}
+.sw-lv-info {{ background: #EFF6FF; border-color: #BFDBFE; color: #1E3A8A; }}
 .sw-lv-info .sw-banner-icon {{ color: {COLOR_BRAND}; }}
 /* cần hành động: màu đặc, chữ trắng (tương phản ≥ 4.5:1) */
 .sw-lv-monitoring {{ background: {COLOR_MONITORING}; border-color: #92400E; color: #FFFFFF; }}
@@ -283,7 +287,7 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 
 /* ---------- Huy hiệu: chấm màu + chữ ---------- */
 .sw-badge {{
-    display: inline-flex; align-items: center; gap: .4rem; padding: .16rem .6rem .16rem .5rem; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: .4rem; padding: .16rem .6rem .16rem .5rem; border-radius: 6px;
     font-size: .84rem; font-weight: 500; white-space: nowrap; line-height: 1.4;
 }}
 .sw-badge::before {{ content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }}
@@ -308,7 +312,7 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
     box-shadow: none; font-weight: 600;
 }}
 [data-testid="stBaseButton-primary"]:hover {{ background: {COLOR_BRAND_DARK} !important; }}
-[data-testid="stBaseButton-primary"]:active {{ background: #3730A3 !important; }}
+[data-testid="stBaseButton-primary"]:active {{ background: #061A47 !important; }}
 [data-testid="stBaseButton-secondary"] {{
     background: {COLOR_CARD} !important; border: 1px solid {COLOR_BORDER_STRONG} !important; color: {COLOR_NAVY} !important;
     box-shadow: {_SHADOW_SM};
@@ -328,17 +332,17 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 [data-testid="stPageLink-NavLink"] p {{ color: {COLOR_NAVY}; font-weight: 500; }}
 
 /* ---------- Thành phần khác ---------- */
-[data-testid="stExpander"] details {{ background: {COLOR_CARD}; border-radius: 12px; border-color: {COLOR_BORDER}; }}
+[data-testid="stExpander"] details {{ background: {COLOR_CARD}; border-radius: 8px; border-color: {COLOR_BORDER}; }}
 [data-testid="stExpander"] summary p {{ font-weight: 500; }}
 [data-testid="stExpander"] summary:hover p {{ color: {COLOR_NAVY}; }}
-[data-testid="stDataFrame"] {{ border: 1px solid {COLOR_BORDER}; border-radius: 12px; overflow: hidden; }}
+[data-testid="stDataFrame"] {{ border: 1px solid {COLOR_BORDER}; border-radius: 8px; overflow: hidden; }}
 [data-testid="stTab"] p {{ font-weight: 500; }}
 [data-testid="stTab"][aria-selected="true"] p {{ font-weight: 600; }}
 [data-testid="stAlert"] {{ border-radius: 10px; }}
 [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {{ color: {COLOR_TEXT_MUTED} !important; opacity: 1; }}
 [data-testid="stMetricValue"] {{ font-variant-numeric: tabular-nums; }}
 hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
-[data-testid="stForm"] {{ background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 12px; padding: 1.25rem 1.4rem; }}
+[data-testid="stForm"] {{ background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 8px; padding: 1.25rem 1.4rem; }}
 [data-testid="stBaseButton-primaryFormSubmit"] {{
     background: {COLOR_BRAND} !important; border: 1px solid {COLOR_BRAND_DARK} !important; color: #FFFFFF !important;
     border-radius: 8px !important; min-height: 40px; font-weight: 600;
@@ -378,7 +382,7 @@ hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
     transition: border-color .18s ease-out, box-shadow .18s ease-out;
 }}
 [class*="st-key-swbox"]:hover, .sw-card:hover {{
-    border-color: {COLOR_BORDER_STRONG} !important; box-shadow: 0 4px 14px -6px rgba(24,24,27,.10);
+    border-color: {COLOR_BORDER_STRONG} !important;
 }}
 /* ô chỉ số: nền ửng chàm nhạt khi rê chuột, icon nhích nhẹ */
 [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) > [data-testid="stColumn"] {{
@@ -396,10 +400,10 @@ hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
     transition: background-color .15s ease-out, border-color .15s ease-out, transform .15s ease-out, box-shadow .15s ease-out !important;
 }}
 [data-testid="stBaseButton-primary"]:hover, [data-testid="stBaseButton-primaryFormSubmit"]:hover {{
-    box-shadow: 0 4px 12px -4px rgba(79,70,229,.45) !important;
+    box-shadow: none !important;
 }}
 [data-testid="stBaseButton-secondary"]:hover, [data-testid="stPageLink-NavLink"]:hover {{
-    box-shadow: 0 3px 8px -4px rgba(24,24,27,.18) !important;
+    box-shadow: none !important;
 }}
 [data-testid="stBaseButton-primary"]:active, [data-testid="stBaseButton-secondary"]:active,
 [data-testid="stPageLink-NavLink"]:active, [data-testid="stBaseButton-primaryFormSubmit"]:active {{
@@ -408,7 +412,7 @@ hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
 
 /* menu: icon trượt nhẹ khi rê, mục đang chọn đổi màu mượt */
 [data-testid="stSidebarNavLink"]::before {{ transition: background-color .15s ease-out, transform .2s cubic-bezier(.16,1,.3,1); }}
-[data-testid="stSidebarNavLink"]:hover::before {{ transform: translateX(2px); background-color: {COLOR_BRAND}; }}
+[data-testid="stSidebarNavLink"]:hover::before {{ transform: translateX(2px); background-color: {COLOR_ACCENT}; }}
 
 /* thanh tiến độ xác minh sau ngã chạy mượt */
 [data-testid="stProgress"] [role="progressbar"] > div > div {{ transition: width .3s linear; }}
@@ -429,8 +433,8 @@ hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
    Dấu tick vẽ dần (500 ms) rồi con dấu "ĐÃ NHẬN" đóng xuống. Trạng thái mặc định là trạng thái CUỐI (keyframes
    chỉ có "from") -> tắt hiệu ứng vẫn thấy đủ dấu tick + con dấu. */
 .sw-ack {{
-    max-width: 580px; margin: 2vh auto 0; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 16px;
-    padding: 2.2rem 2rem 1.6rem; text-align: center; box-shadow: 0 12px 32px -16px rgba(24,24,27,.18);
+    max-width: 580px; margin: 2vh auto 0; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 10px;
+    padding: 2.2rem 2rem 1.6rem; text-align: center; 
 }}
 .sw-ack-mark {{ width: 84px; height: 84px; margin: 0 auto 1rem; color: {COLOR_SAFE}; }}
 .sw-ack-mark circle {{ transform: rotate(-90deg); transform-origin: 42px 42px; stroke-dasharray: 239; stroke-dashoffset: 0; animation: sw-draw-ring .55s cubic-bezier(.65,0,.35,1) both; }}
@@ -456,7 +460,7 @@ hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
 
 /* ---------- Trạng thái trống: dạy bước tiếp theo, không chỉ "không có gì" ---------- */
 .sw-empty {{
-    display: flex; gap: 1rem; align-items: center; padding: 1.2rem 1.3rem; border-radius: 12px;
+    display: flex; gap: 1rem; align-items: center; padding: 1.2rem 1.3rem; border-radius: 8px;
     background: {COLOR_CARD}; border: 1px dashed {COLOR_BORDER_STRONG};
 }}
 .sw-empty-icon {{
