@@ -94,8 +94,8 @@ Chi tiết và cách tính:
 ### Các bước
 
 ```bash
-# 1. Tải mã nguồn (nhánh đang phát triển)
-git clone -b fix/perf-and-observation-safety https://github.com/shinjiduck/combined-demo.git safewatch
+# 1. Tải mã nguồn
+git clone https://github.com/shinjiduck/combined-demo.git safewatch
 cd safewatch
 
 # 2. Tạo môi trường Python 3.12
