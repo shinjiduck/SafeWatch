@@ -9,20 +9,40 @@
 """
 
 import os
+import time
 
-import streamlit as st
+# Múi giờ của app = giờ Việt Nam (UTC+7) ở MỌI nơi chạy. Streamlit Cloud / Docker mặc định UTC -> giờ hiển thị trong
+# bảng, email, Telegram, SMS bị lệch 7 tiếng. Chuỗi POSIX "ICT-7" = UTC+7, không cần cơ sở dữ liệu múi giờ của máy
+# (image Docker slim thường thiếu). Đổi được bằng biến môi trường SAFEWATCH_TZ. Windows không có time.tzset ->
+# giữ giờ của máy (máy ở VN đã đúng).
+os.environ["TZ"] = os.environ.get("SAFEWATCH_TZ", "ICT-7")
+if hasattr(time, "tzset"):
+    time.tzset()
 
-import notifier
-import profile_store
+import base64  # noqa: E402
+
+import streamlit as st  # noqa: E402
+
+import notifier  # noqa: E402
+import profile_store  # noqa: E402
 from theme import APP_NAME, ack_page_html, inject_global_theme, render_sidebar_profile, sidebar_status_html
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# Logo / favicon đi qua static serving (/app/static/...), không qua /media/: trên Streamlit Cloud, đường /media/ của
-# server Starlette lỗi nén gzip ("Expected ASGI message 'http.response.start'") -> ảnh logo bị vỡ.
-st.set_page_config(page_title=APP_NAME, page_icon="/app/static/brand/favicon.png", layout="wide")
+
+
+@st.cache_data
+def _data_uri(name):
+    """Ảnh trong assets/ -> data URI. Logo / favicon nhúng thẳng vào trang: trên Streamlit Cloud, đường /media/ lỗi
+    nén gzip của server Starlette, còn /app/static/... tính từ gốc tên miền không tới được app (Cloud chạy app dưới
+    1 đường dẫn con) -> cả hai cách đều ra ảnh vỡ."""
+    with open(os.path.join(ROOT, "assets", name), "rb") as f:
+        return "data:image/png;base64," + base64.b64encode(f.read()).decode()
+
+
+st.set_page_config(page_title=APP_NAME, page_icon=_data_uri("favicon.png"), layout="wide")
 inject_global_theme()
-st.logo("/app/static/brand/logo_light.png", size="large", icon_image="/app/static/brand/logo_icon.png")
+st.logo(_data_uri("logo_light_sm.png"), size="large", icon_image=_data_uri("logo_icon_sm.png"))
 
 
 @st.cache_resource

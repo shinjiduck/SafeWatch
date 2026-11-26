@@ -60,6 +60,16 @@ def get_alert_recipients():
     return [dict(zip(keys, row)) for row in get_contacts() if row[6]]
 
 
+def update_contact(contact_id, name, relationship, phone, email, priority, telegram_chat_id=None):
+    """Sửa toàn bộ thông tin 1 người liên hệ (giữ nguyên trạng thái bật/tắt nhận cảnh báo)."""
+    with _get_connection() as conn:
+        conn.execute(
+            "UPDATE contacts SET name = ?, relationship = ?, phone = ?, email = ?, priority = ?, telegram_chat_id = ? "
+            "WHERE id = ?",
+            (name, relationship, phone, email, priority, telegram_chat_id or None, contact_id),
+        )
+
+
 def set_telegram_chat_id(contact_id, chat_id):
     with _get_connection() as conn:
         conn.execute("UPDATE contacts SET telegram_chat_id = ? WHERE id = ?", (chat_id or None, contact_id))

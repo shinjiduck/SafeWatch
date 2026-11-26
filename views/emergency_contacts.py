@@ -1,7 +1,9 @@
-"""Trang Người liên hệ khẩn cấp — CRUD thật (lưu SQLite qua contacts.py).
-Thứ tự ưu tiên quyết định ai nhận cảnh báo trước và ai được chuyển tiếp khi
-người trước chưa xác nhận (xem notifier.py). Kênh gửi thật: Telegram (cần
-Chat ID) và Email."""
+"""Trang Người liên hệ khẩn cấp — thêm / sửa / xoá thật (lưu SQLite qua contacts.py).
+Thứ tự ưu tiên quyết định ai nhận cảnh báo trước và ai được chuyển tiếp khi người trước chưa xác nhận
+(xem notifier.py). Kênh gửi: Telegram (cần Chat ID), Email, SMS (số điện thoại)."""
+
+import re
+from html import escape
 
 import streamlit as st
 
@@ -10,6 +12,11 @@ from theme import badge_html, card, empty_html, page_header, rows_html
 
 contacts.init_db()
 
+RELATIONSHIPS = ["Người thân chính", "Người giám hộ", "Cơ sở y tế", "Khác"]
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+PHONE_RE = re.compile(r"^\+?[\d\s.\-()]{8,20}$")
+KEYS = ["id", "name", "relationship", "phone", "email", "priority", "notify_enabled", "telegram_chat_id"]
+
 page_header(
     "Người liên hệ",
     "Cảnh báo gửi tới người ưu tiên 1 trước; chưa ai xác nhận thì gửi lại và chuyển tiếp lần lượt cho người kế "
@@ -17,59 +24,144 @@ page_header(
     icon="📞",
 )
 
+s = st.session_state
+_flash = s.pop("_contacts_flash", None)
+if _flash:
+    st.toast(_flash, icon="✅")
+
+
+def validate(name, phone, email, telegram_chat_id):
+    """Danh sách lỗi nhập liệu (rỗng = hợp lệ)."""
+    errors = []
+    if not name.strip():
+        errors.append("Cần nhập họ và tên.")
+    if not phone.strip():
+        errors.append("Cần nhập số điện thoại.")
+    elif not PHONE_RE.match(phone.strip()):
+        errors.append("Số điện thoại chưa đúng dạng (VD: 0912 345 678 hoặc +84912345678).")
+    if email.strip() and not EMAIL_RE.match(email.strip()):
+        errors.append("Email chưa đúng dạng (VD: ten@gmail.com).")
+    if telegram_chat_id.strip() and not re.fullmatch(r"-?\d{5,20}", telegram_chat_id.strip()):
+        errors.append("Telegram Chat ID chỉ gồm chữ số (Chat ID của nhóm có dấu - ở đầu).")
+    return errors
+
+
+def contact_fields(prefix, current=None):
+    """Các ô nhập dùng chung cho form Thêm và form Sửa. current = người liên hệ đang sửa (dict)."""
+    cur = current or {}
+    rel = cur.get("relationship")
+    options = RELATIONSHIPS + ([rel] if rel and rel not in RELATIONSHIPS else [])
+    c1, c2 = st.columns(2)
+    with c1:
+        name = st.text_input("Họ và tên", value=cur.get("name", ""), key=f"{prefix}_name")
+        relationship = st.selectbox("Quan hệ", options, index=options.index(rel) if rel in options else 0,
+                                    key=f"{prefix}_rel")
+        telegram_chat_id = st.text_input("Telegram Chat ID", value=cur.get("telegram_chat_id") or "", key=f"{prefix}_tg",
+                                         help="Nhắn /start cho bot SafeWatch để nhận Chat ID.")
+    with c2:
+        phone = st.text_input("Số điện thoại", value=cur.get("phone") or "", key=f"{prefix}_phone")
+        email = st.text_input("Email", value=cur.get("email") or "", key=f"{prefix}_email")
+        priority = st.slider("Mức ưu tiên (1 = nhận cảnh báo đầu tiên)", 1, 5, int(cur.get("priority") or 1),
+                             key=f"{prefix}_prio")
+    return name, relationship, phone, email, priority, telegram_chat_id
+
+
+# ------------------------------------------------------------------ thêm người liên hệ
 rows = contacts.get_contacts()
 with st.expander("+ Thêm người liên hệ", expanded=not rows):
     with st.form("add_contact_form", clear_on_submit=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            name = st.text_input("Họ và tên")
-            relationship = st.selectbox("Quan hệ", ["Người thân chính", "Người giám hộ", "Cơ sở y tế", "Khác"])
-            telegram_chat_id = st.text_input("Telegram Chat ID", help="Nhắn /start cho bot để nhận Chat ID.")
-        with c2:
-            phone = st.text_input("Số điện thoại")
-            email = st.text_input("Email")
-        priority = st.slider("Mức ưu tiên (1 = ưu tiên cao nhất)", 1, 5, 1)
-        submitted = st.form_submit_button("Lưu người liên hệ", type="primary")
-        if submitted:
-            if not name or not phone:
-                st.error("Cần ít nhất Họ tên và Số điện thoại.")
+        name, relationship, phone, email, priority, tg = contact_fields("add")
+        if st.form_submit_button("Lưu người liên hệ", type="primary"):
+            errors = validate(name, phone, email, tg)
+            if errors:
+                for e in errors:
+                    st.error(e)
             else:
-                contacts.add_contact(name, relationship, phone, email, priority, telegram_chat_id.strip())
-                st.success(f"Đã thêm {name}.")
+                contacts.add_contact(name.strip(), relationship, phone.strip(), email.strip(), priority, tg.strip())
+                s["_contacts_flash"] = f"Đã thêm {name.strip()}."
                 st.rerun()
 
 if not rows:
     st.markdown(empty_html("Chưa có ai nhận cảnh báo", "Thêm ít nhất 1 người thân ở mục “Thêm người liên hệ” phía "
                            "trên. Không có người nhận thì cảnh báo không tới được ai.", icon="users", tone="rose"),
                 unsafe_allow_html=True)
-else:
-    for contact_id, name, relationship, phone, email, priority, notify_enabled, telegram_chat_id in rows:
-        with card(f"contact_{contact_id}"):
-            col1, col2, col3 = st.columns([3, 2, 1])
-            with col1:
-                kenh = [k for k, v in (("Telegram", telegram_chat_id), ("Email", email), ("SMS", phone)) if v]
-                chips = (" ".join(badge_html("safe" if notify_enabled else "idle", k) for k in kenh)
-                         or badge_html("emergency", "Chưa có kênh nhận"))
-                st.markdown(
-                    f'<div class="sw-alert-head"><span class="sw-alert-kind">{name}</span>'
-                    f'{badge_html("info", f"Ưu tiên {priority}")}</div>'
-                    f'<div class="sw-alert-meta">{relationship or "—"}</div><div style="margin-top:.6rem">{chips}</div>',
-                    unsafe_allow_html=True,
-                )
-            with col2:
-                st.markdown(rows_html([("Điện thoại", phone or "—"), ("Email", email or "—")]), unsafe_allow_html=True)
-                new_chat_id = st.text_input(
-                    "Telegram Chat ID", value=telegram_chat_id or "", key=f"tg_{contact_id}", label_visibility="collapsed",
-                    placeholder="Telegram Chat ID",
-                )
-                if new_chat_id.strip() != (telegram_chat_id or ""):
-                    contacts.set_telegram_chat_id(contact_id, new_chat_id.strip())
-                    st.rerun()
-            with col3:
-                new_enabled = st.toggle("Nhận cảnh báo", value=bool(notify_enabled), key=f"notify_{contact_id}")
-                if new_enabled != bool(notify_enabled):
-                    contacts.set_notify_enabled(contact_id, new_enabled)
-                    st.rerun()
-                if st.button("Xoá", key=f"delete_{contact_id}"):
-                    contacts.delete_contact(contact_id)
-                    st.rerun()
+
+
+def show_edit(c):
+    """Form sửa toàn bộ thông tin, điền sẵn giá trị hiện tại."""
+    cid = c["id"]
+    st.markdown(f'<div class="sw-alert-kind">Sửa thông tin: {escape(c["name"])}</div>', unsafe_allow_html=True)
+    with st.form(f"edit_contact_{cid}"):
+        name, relationship, phone, email, priority, tg = contact_fields(f"edit{cid}", c)
+        b1, b2, _ = st.columns([1.3, 1, 3])
+        save = b1.form_submit_button("Lưu thay đổi", type="primary", width="stretch")
+        cancel = b2.form_submit_button("Huỷ", width="stretch")
+    if save:
+        errors = validate(name, phone, email, tg)
+        if errors:
+            for e in errors:
+                st.error(e)
+            return
+        contacts.update_contact(cid, name.strip(), relationship, phone.strip(), email.strip(), priority, tg.strip())
+        s.pop("_editing_contact", None)
+        s["_contacts_flash"] = f"Đã lưu thay đổi cho {name.strip()}."
+        st.rerun()
+    if cancel:
+        s.pop("_editing_contact", None)
+        st.rerun()
+
+
+def show_view(c):
+    """Thông tin 1 người liên hệ + bật/tắt nhận cảnh báo + Sửa / Xoá (xoá phải xác nhận)."""
+    cid = c["id"]
+    col1, col2, col3 = st.columns([3, 2.2, 1.4])
+    with col1:
+        kenh = [k for k, v in (("Telegram", c["telegram_chat_id"]), ("Email", c["email"]), ("SMS", c["phone"])) if v]
+        chips = (" ".join(badge_html("safe" if c["notify_enabled"] else "idle", k) for k in kenh)
+                 or badge_html("emergency", "Chưa có kênh nhận"))
+        prio = badge_html("info", f"Ưu tiên {c['priority']}")
+        st.markdown(
+            f'<div class="sw-alert-head"><span class="sw-alert-kind">{escape(c["name"])}</span>{prio}</div>'
+            f'<div class="sw-alert-meta">{escape(c["relationship"] or "—")}</div>'
+            f'<div style="margin-top:.6rem">{chips}</div>',
+            unsafe_allow_html=True,
+        )
+    with col2:
+        st.markdown(rows_html([("Điện thoại", escape(c["phone"] or "—")), ("Email", escape(c["email"] or "—")),
+                               ("Telegram", escape(c["telegram_chat_id"] or "Chưa có"))]), unsafe_allow_html=True)
+    with col3:
+        new_enabled = st.toggle("Nhận cảnh báo", value=bool(c["notify_enabled"]), key=f"notify_{cid}")
+        if new_enabled != bool(c["notify_enabled"]):
+            contacts.set_notify_enabled(cid, new_enabled)
+            s["_contacts_flash"] = f"Đã {'bật' if new_enabled else 'tắt'} nhận cảnh báo cho {c['name']}."
+            st.rerun()
+        if s.get("_deleting_contact") == cid:
+            st.caption(f"Xoá {c['name']}? Không hoàn tác được.")
+            y, n = st.columns(2)
+            if y.button("Xoá", key=f"confirm_del_{cid}", type="primary", width="stretch"):
+                contacts.delete_contact(cid)
+                s.pop("_deleting_contact", None)
+                s["_contacts_flash"] = f"Đã xoá {c['name']}."
+                st.rerun()
+            if n.button("Huỷ", key=f"cancel_del_{cid}", width="stretch"):
+                s.pop("_deleting_contact", None)
+                st.rerun()
+        else:
+            e1, e2 = st.columns(2)
+            if e1.button("Sửa", key=f"edit_{cid}", width="stretch"):
+                s["_editing_contact"] = cid
+                s.pop("_deleting_contact", None)
+                st.rerun()
+            if e2.button("Xoá", key=f"delete_{cid}", width="stretch"):
+                s["_deleting_contact"] = cid
+                s.pop("_editing_contact", None)
+                st.rerun()
+
+
+for row in rows:
+    contact = dict(zip(KEYS, row))
+    with card(f"contact_{contact['id']}"):
+        if s.get("_editing_contact") == contact["id"]:
+            show_edit(contact)
+        else:
+            show_view(contact)
