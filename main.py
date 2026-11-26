@@ -18,9 +18,11 @@ from theme import APP_NAME, ack_page_html, inject_global_theme, render_sidebar_p
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
-st.set_page_config(page_title=APP_NAME, page_icon=os.path.join(ROOT, "assets", "favicon.png"), layout="wide")
+# Logo / favicon đi qua static serving (/app/static/...), không qua /media/: trên Streamlit Cloud, đường /media/ của
+# server Starlette lỗi nén gzip ("Expected ASGI message 'http.response.start'") -> ảnh logo bị vỡ.
+st.set_page_config(page_title=APP_NAME, page_icon="/app/static/brand/favicon.png", layout="wide")
 inject_global_theme()
-st.logo(os.path.join(ROOT, "assets", "logo_light.png"), size="large", icon_image=os.path.join(ROOT, "assets", "logo_icon.png"))
+st.logo("/app/static/brand/logo_light.png", size="large", icon_image="/app/static/brand/logo_icon.png")
 
 
 @st.cache_resource
