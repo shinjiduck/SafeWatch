@@ -14,7 +14,7 @@ import streamlit as st
 
 import notifier
 import profile_store
-from theme import APP_NAME, inject_global_theme, render_sidebar_profile, sidebar_status_html
+from theme import APP_NAME, ack_page_html, inject_global_theme, render_sidebar_profile, sidebar_status_html
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,13 +36,14 @@ def start_notifier():
 
 notifier.RUNNING = start_notifier()
 
-# Link xác nhận trong email / SMS: <PUBLIC_BASE_URL>/?ack=<mã>
+# Link xác nhận trong email / SMS / Telegram: <PUBLIC_BASE_URL>/?ack=<mã> -> trang xác nhận riêng (thay cho trang
+# thường ở lần chạy này). Bỏ tham số khỏi URL để tải lại trang không xác nhận lần nữa.
+_ack_view = None
 _ack_token = st.query_params.get("ack")
 if _ack_token:
-    if notifier.ack(_ack_token, by="(link xác nhận)", via="web-link"):
-        st.success("Đã ghi nhận: bạn đã nhận được cảnh báo. Cảm ơn bạn!")
-    else:
-        st.info("Cảnh báo này đã được xác nhận trước đó, hoặc mã xác nhận không hợp lệ.")
+    _first = notifier.ack(_ack_token, by="(link xác nhận)", via="web-link")
+    _alert = notifier.get_alert_by_token(_ack_token)
+    _ack_view = ("new" if _first else "already" if _alert else "invalid", _alert)
     st.query_params.clear()
 
 if "user_name" not in st.session_state:
@@ -83,5 +84,11 @@ with st.sidebar:
         name=st.session_state.get("user_name", "Người dùng"),
         role=profile_store.load_profile()["role"],
     )
+
+if _ack_view is not None:
+    st.markdown(ack_page_html(*_ack_view), unsafe_allow_html=True)
+    _, mid, _ = st.columns([1, 1.2, 1])
+    mid.page_link("views/alerts.py", label="Xem tất cả cảnh báo")
+    st.stop()
 
 nav.run()

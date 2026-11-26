@@ -6,7 +6,7 @@ import os
 
 import streamlit as st
 
-from theme import kpi_card, page_header
+from theme import card, kpi_card, page_header
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EVAL = os.path.join(ROOT, "training", "fall_eval")
@@ -80,8 +80,8 @@ DOCS = [
     ("Nhiều người", "KIEM_DINH_NHIEU_NGUOI.md"),
 ]
 tabs = st.tabs([t for t, _ in DOCS])
-for tab, (_, name) in zip(tabs, DOCS):
-    with tab:
+for n, (tab, (_, name)) in enumerate(zip(tabs, DOCS)):
+    with tab, card(f"doc_{n}"):
         text = read(name)
         if text is None:
             st.info(f"Chưa có tài liệu {name}.")

@@ -29,7 +29,8 @@ import framing
 import multi_person
 import contacts
 import notifier
-from theme import card_html, kpi_card, page_header, rows_html, sidebar_status_html, status_banner_html, steps_html
+from theme import (badge_html, card, card_html, kpi_card, page_header, rows_html, sidebar_status_html,
+                   status_banner_html, steps_html)
 from webrtc_processor import DetectionVideoProcessor
 
 engine.ensure_settings_defaults()
@@ -117,7 +118,12 @@ cam_width, cam_height = engine.CAMERA_RESOLUTIONS.get(s["camera_resolution"], (6
 
 video_col, panel_col = st.columns([3, 2], gap="large")
 
-with video_col:
+with video_col, card("video"):
+    st.markdown(
+        '<div class="sw-alert-head"><span class="sw-alert-kind">Camera 1 · Webcam của bạn</span>'
+        f'{badge_html("info", s["camera_resolution"])}</div>',
+        unsafe_allow_html=True,
+    )
     webrtc_ctx = webrtc_streamer(
         key="safewatch-live",
         video_processor_factory=processor_factory,
@@ -129,8 +135,15 @@ with video_col:
         },
         # Hàng đợi 1 frame: luôn xử lý frame mới nhất, chấp nhận rớt frame cũ thay vì trễ dồn.
         video_receiver_size=1,
+        translations={
+            "start": "Bắt đầu giám sát", "stop": "Dừng", "select_device": "Chọn camera",
+            "media_api_not_available": "Trình duyệt không hỗ trợ camera",
+            "device_ask_permission": "Hãy cho phép trình duyệt dùng camera",
+            "device_not_available": "Không tìm thấy camera", "device_access_denied": "Trình duyệt đã chặn camera",
+            "select_camera": "Chọn camera",
+        },
     )
-    st.caption("Bấm **START** để bắt đầu · đổi cấu hình thì **STOP** rồi START lại để áp dụng.")
+    st.caption("Đổi cấu hình thì bấm **Dừng** rồi **Bắt đầu giám sát** lại để áp dụng.")
 
 with panel_col:
     status_banner_placeholder = st.empty()
@@ -187,14 +200,14 @@ def setup_warnings():
 
 def render_idle():
     status_banner_placeholder.markdown(
-        status_banner_html("idle", "Chưa giám sát", "Bấm START dưới khung camera để bắt đầu theo dõi."),
+        status_banner_html("idle", "Chưa giám sát", "Bấm Bắt đầu giám sát dưới khung camera."),
         unsafe_allow_html=True,
     )
     with detail_placeholder.container(border=True, key="swbox_quickstart"):
         st.markdown("**Bắt đầu nhanh**")
         st.markdown(
             steps_html([
-                ("Bấm START và cho phép trình duyệt dùng camera", "Chờ vài giây để hệ thống khởi động."),
+                ("Bấm Bắt đầu giám sát và cho phép dùng camera", "Chờ vài giây để hệ thống khởi động."),
                 ("Đặt camera cao ~2 m, chéo góc phòng, cách ~3 m",
                  "Thấy được toàn thân và vùng sàn — xem trang Camera & lắp đặt."),
                 ("Kiểm tra người nhận cảnh báo", "Ít nhất 1 người liên hệ có Telegram / email / số điện thoại."),
@@ -228,7 +241,7 @@ if st.session_state.get("sidebar_status_placeholder") is not None:
 pending_voice = None
 while webrtc_ctx.state.playing:
     # Lời nhắc giọng nói: vòng trước đã xoá player cũ, giờ mới tạo player mới -> trình duyệt coi là phần tử mới
-    # và tự phát (autoplay được vì người dùng đã bấm START trên trang).
+    # và tự phát (autoplay được vì người dùng đã bấm Bắt đầu trên trang).
     if pending_voice:
         with voice_placeholder.container():
             st.caption(f"Đang nhắc: {framing.VOICE_TEXT[pending_voice]}")
@@ -241,6 +254,12 @@ while webrtc_ctx.state.playing:
 
     processor = webrtc_ctx.video_processor
     if processor is None:
+        # Đang bắt tay WebRTC / nạp model: nói rõ đang chờ gì thay vì để banner cũ "Chưa giám sát".
+        status_banner_placeholder.markdown(
+            status_banner_html("info", "Đang kết nối camera…", "Trình duyệt đang gửi hình lên hệ thống, mất vài giây.",
+                               icon="radio"),
+            unsafe_allow_html=True,
+        )
         time.sleep(0.2)
         continue
 

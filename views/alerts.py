@@ -11,7 +11,7 @@ import streamlit as st
 
 import contacts
 import notifier
-from theme import badge_html, card, kpi_card, page_header, section
+from theme import badge_html, card, empty_html, kpi_card, page_header, section
 
 notifier.init_db()
 
@@ -22,8 +22,14 @@ STATUS_TEXT = {
 }
 DELIVERY_TEXT = {"pending": "Đang chờ gửi", "sent": "Đã gửi", "failed": "Lỗi — sẽ thử lại", "cancelled": "Đã huỷ"}
 CHANNEL_TEXT = {"telegram": "Telegram", "email": "Email", "sms": "SMS"}
+VIA_TEXT = {"web-ui": "Nút trên web", "web-link": "Link trong tin nhắn", "telegram": "Telegram"}
 
 page_header("Cảnh báo", "Cảnh báo gửi tới người liên hệ và việc xác nhận đã nhận.", icon="🔔")
+
+# Phản hồi sau khi bấm xác nhận (trang chạy lại nên toast phải hiện ở lần chạy sau)
+_flash = st.session_state.pop("_alerts_flash", None)
+if _flash:
+    st.toast(_flash, icon="✅")
 
 dispatcher = notifier.RUNNING
 channel_names = sorted(dispatcher.channels) if dispatcher else []
@@ -42,19 +48,25 @@ def fmt_s(value):
 def open_alerts():
     pending = [a for a in notifier.get_alerts(limit=500) if a["acked_at"] is None]
     if not pending:
-        st.success("Không có cảnh báo nào đang chờ xác nhận.")
+        st.markdown(empty_html("Không có cảnh báo nào đang chờ", "Mọi cảnh báo đều đã có người nhận. Khi có sự cố mới, "
+                               "cảnh báo sẽ hiện ở đây kèm nút xác nhận."), unsafe_allow_html=True)
         return
     for a in pending[:3]:
         level, text = STATUS_TEXT.get(a["status"], ("monitoring", a["status"]))
         with card(f"alert_{a['id']}"):
             c1, c2 = st.columns([4, 1.4], vertical_alignment="center")
             with c1:
-                st.markdown(f"{badge_html(level, text)} &nbsp; **{a['kind']}**", unsafe_allow_html=True)
-                st.caption(f"Phát hiện {fmt_time(a['detected_at'])} · {a['details'] or ''} · vòng gửi "
-                           f"{a['current_round'] + 1}/{notifier.MAX_ROUNDS}")
+                meta = (f"Phát hiện {fmt_time(a['detected_at'])} · {a['details'] or ''} · vòng gửi "
+                        f"{a['current_round'] + 1}/{notifier.MAX_ROUNDS}")
+                st.markdown(
+                    f'<div class="sw-alert-head">{badge_html(level, text)}<span class="sw-alert-kind">{a["kind"]}</span>'
+                    f'</div><div class="sw-alert-meta">{meta}</div>',
+                    unsafe_allow_html=True,
+                )
             with c2:
                 if st.button("Tôi đã nhận", key=f"ack_{a['id']}", type="primary", width="stretch"):
                     notifier.ack(a["ack_token"], by="(trên web)", via="web-ui")
+                    st.session_state["_alerts_flash"] = f"Đã xác nhận cảnh báo #{a['id']}. Đã dừng gửi tiếp."
                     st.rerun()
     if len(pending) > 3:
         c1, c2 = st.columns([4, 1.4], vertical_alignment="center")
@@ -62,6 +74,7 @@ def open_alerts():
         if c2.button(f"Xác nhận tất cả ({len(pending)})", width="stretch"):
             for a in pending:
                 notifier.ack(a["ack_token"], by="(trên web, xác nhận hàng loạt)", via="web-ui")
+            st.session_state["_alerts_flash"] = f"Đã xác nhận {len(pending)} cảnh báo."
             st.rerun()
 
 
@@ -71,7 +84,8 @@ open_alerts()
 section("Cảnh báo gần đây")
 alerts = notifier.get_alerts(limit=200)
 if not alerts:
-    st.info("Chưa có cảnh báo nào.")
+    st.markdown(empty_html("Chưa có cảnh báo nào", "Thử chuỗi cảnh báo bằng nút Giả lập sự kiện ngã ở cuối trang.",
+                           icon="bell", tone="indigo"), unsafe_allow_html=True)
 else:
     table = pd.DataFrame(
         [
@@ -80,7 +94,7 @@ else:
                 "Loại": a["kind"],
                 "Phát hiện lúc": fmt_time(a["detected_at"]),
                 "Trạng thái": STATUS_TEXT.get(a["status"], ("", a["status"]))[1],
-                "Xác nhận bởi": f"{a['acked_by'] or ''} ({a['acked_via']})" if a["acked_via"] else "—",
+                "Xác nhận qua": VIA_TEXT.get(a["acked_via"], a["acked_via"]) if a["acked_via"] else "—",
                 "Nguồn": "Giả lập" if a["source"] == "simulated" else "Camera",
             }
             for a in alerts

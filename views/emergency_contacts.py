@@ -6,7 +6,7 @@ Chat ID) và Email."""
 import streamlit as st
 
 import contacts
-from theme import badge_html, card, page_header
+from theme import badge_html, card, empty_html, page_header, rows_html
 
 contacts.init_db()
 
@@ -29,7 +29,7 @@ with st.expander("+ Thêm người liên hệ", expanded=not rows):
             phone = st.text_input("Số điện thoại")
             email = st.text_input("Email")
         priority = st.slider("Mức ưu tiên (1 = ưu tiên cao nhất)", 1, 5, 1)
-        submitted = st.form_submit_button("Lưu người liên hệ")
+        submitted = st.form_submit_button("Lưu người liên hệ", type="primary")
         if submitted:
             if not name or not phone:
                 st.error("Cần ít nhất Họ tên và Số điện thoại.")
@@ -39,20 +39,25 @@ with st.expander("+ Thêm người liên hệ", expanded=not rows):
                 st.rerun()
 
 if not rows:
-    st.info("Chưa có người liên hệ khẩn cấp nào. Thêm ít nhất 1 người ở trên.")
+    st.markdown(empty_html("Chưa có ai nhận cảnh báo", "Thêm ít nhất 1 người thân ở mục “Thêm người liên hệ” phía "
+                           "trên. Không có người nhận thì cảnh báo không tới được ai.", icon="users", tone="rose"),
+                unsafe_allow_html=True)
 else:
     for contact_id, name, relationship, phone, email, priority, notify_enabled, telegram_chat_id in rows:
         with card(f"contact_{contact_id}"):
             col1, col2, col3 = st.columns([3, 2, 1])
             with col1:
-                st.markdown(f"**{name}** &nbsp; {badge_html('info', f'Ưu tiên {priority}')}", unsafe_allow_html=True)
-                st.caption(relationship or "—")
                 kenh = [k for k, v in (("Telegram", telegram_chat_id), ("Email", email), ("SMS", phone)) if v]
-                st.markdown(" ".join(badge_html("safe" if notify_enabled else "idle", k) for k in kenh) or
-                            badge_html("emergency", "Chưa có kênh nhận"), unsafe_allow_html=True)
+                chips = (" ".join(badge_html("safe" if notify_enabled else "idle", k) for k in kenh)
+                         or badge_html("emergency", "Chưa có kênh nhận"))
+                st.markdown(
+                    f'<div class="sw-alert-head"><span class="sw-alert-kind">{name}</span>'
+                    f'{badge_html("info", f"Ưu tiên {priority}")}</div>'
+                    f'<div class="sw-alert-meta">{relationship or "—"}</div><div style="margin-top:.6rem">{chips}</div>',
+                    unsafe_allow_html=True,
+                )
             with col2:
-                st.caption(f"SĐT: {phone or '—'}")
-                st.caption(f"Email: {email or '—'}")
+                st.markdown(rows_html([("Điện thoại", phone or "—"), ("Email", email or "—")]), unsafe_allow_html=True)
                 new_chat_id = st.text_input(
                     "Telegram Chat ID", value=telegram_chat_id or "", key=f"tg_{contact_id}", label_visibility="collapsed",
                     placeholder="Telegram Chat ID",

@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 import event_log
-from theme import kpi_card, page_header
+from theme import empty_html, kpi_card, page_header
 
 event_log.init_db()
 page_header("Nhật ký", "Mọi sự cố và thay đổi trạng thái hệ thống đã ghi lại.", icon="📋")
@@ -50,14 +50,17 @@ with tab_events:
         view = view[view["Kết quả"] == result]
     st.caption(f"{len(view)} sự kiện")
     if view.empty:
-        st.info("Không có sự kiện nào khớp bộ lọc.")
+        st.markdown(empty_html("Không có sự kiện nào khớp bộ lọc", "Thử chọn khoảng thời gian dài hơn hoặc nhóm "
+                               "“Tất cả”.", icon="list", tone="slate"), unsafe_allow_html=True)
     else:
         st.dataframe(view[["Thời gian", "Sự kiện", "Kết quả", "Chi tiết"]], width="stretch", hide_index=True)
 
 with tab_system:
     status_rows = event_log.get_status_log(limit=1000)
     if not status_rows:
-        st.info("Chưa có ghi nhận nào.")
+        st.markdown(empty_html("Chưa có ghi nhận hệ thống", "Mất / khôi phục camera và lúc không thấy người sẽ "
+                               "được ghi ở đây khi bắt đầu giám sát.", icon="activity", tone="slate"),
+                    unsafe_allow_html=True)
     else:
         st.dataframe(pd.DataFrame(status_rows, columns=["Thời gian", "Trạng thái", "Chi tiết"]), width="stretch",
                      hide_index=True)

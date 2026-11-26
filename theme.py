@@ -1,56 +1,60 @@
 """Design tokens + CSS + thành phần giao diện dùng chung cho toàn app SafeWatch — 1 nơi duy nhất định nghĩa
-màu / chữ / thẻ để các trang không lệch nhau. Trang nào cũng dựng bằng các hàm ở đây (page_header, kpi_card,
-card, status_banner_html...), không tự viết HTML riêng. Màu nền / nút / thanh bên: .streamlit/config.toml.
+màu / chữ / khung để các trang không lệch nhau. Trang nào cũng dựng bằng các hàm ở đây (page_header, kpi_card,
+card, status_banner_html...), không tự viết HTML riêng. Màu nền / nút / font: .streamlit/config.toml.
 
-Phong cách: sáng, phẳng, viền mảnh, biểu tượng nét (SVG) thay emoji — không chuyển màu / phát sáng.
+Phong cách: dashboard sáng, trung tính, chuẩn mực (mức hoàn thiện kiểu Stripe / Vercel / Linear).
+- 1 họ chữ: Be Vietnam Pro (tự host trong static/fonts, dấu tiếng Việt chuẩn), số dạng bảng (tabular).
+- Nền xám rất nhạt, khung trắng viền mảnh; thanh bên là lớp trung tính thứ 2 (xám đậm hơn 1 bậc).
+- Nút chính màu mực (gần đen), nút phụ trắng viền. Màu chàm của logo chỉ cho liên kết, viền focus, vùng chọn.
+- Không ô icon trang trí, không vạch màu 1 bên, không phát sáng / chuyển màu.
 
-Màu trạng thái có nghĩa cố định trong toàn app:
-  xanh lá = an toàn · cam = đang theo dõi sau ngã · đỏ = khẩn cấp · xám = chưa đủ dữ liệu / chưa giám sát
+Màu trạng thái có nghĩa cố định trong toàn app, luôn đi kèm chữ + biểu tượng (không dùng màu đơn độc):
+  xanh lá = an toàn · hổ phách = đang theo dõi sau ngã · đỏ = khẩn cấp · xám = chưa đủ dữ liệu / chưa giám sát
 (xám KHÔNG BAO GIỜ được dùng cho "an toàn" — yêu cầu BTC: mất hình không được hiện là an toàn).
-Trạng thái bình thường (an toàn, chưa đủ dữ liệu) dùng nền nhạt; trạng thái cần hành động (theo dõi sau ngã,
-khẩn cấp) dùng màu đặc để nổi bật. Màu thương hiệu (nút, điểm nhấn) là CHÀM — không dùng đỏ cho nút.
+Trạng thái bình thường dùng nền nhạt + viền; trạng thái cần hành động (theo dõi sau ngã, khẩn cấp) dùng màu đặc.
 """
 
 import re
 
 import streamlit as st
 
-COLOR_SAFE = "#16A34A"
-COLOR_MONITORING = "#EA580C"
-COLOR_EMERGENCY = "#DC2626"
-COLOR_NODATA = "#475569"
-COLOR_NAVY = "#0F172A"
+# Trung tính (thang kẽm, hơi lạnh)
+COLOR_BG = "#F3F4F7"
+COLOR_CARD = "#FFFFFF"
+COLOR_SUBTLE = "#F4F4F5"
+COLOR_BORDER = "#E4E4E7"
+COLOR_BORDER_STRONG = "#D4D4D8"
+COLOR_NAVY = "#18181B"  # chữ chính / nút chính (giữ tên cũ cho các trang đang import)
+COLOR_TEXT = "#3F3F46"
+COLOR_TEXT_MUTED = "#71717A"
+# Màu logo — chỉ dùng cho liên kết / focus / vùng chọn
 COLOR_BRAND = "#4F46E5"
 COLOR_BRAND_DARK = "#4338CA"
 COLOR_BLUE = "#2563EB"
-COLOR_BG = "#F8FAFC"
-COLOR_CARD = "#FFFFFF"
-COLOR_BORDER = "#E2E8F0"
-COLOR_TEXT = "#334155"
-COLOR_TEXT_MUTED = "#64748B"
+# Trạng thái
+COLOR_SAFE = "#15803D"
+COLOR_MONITORING = "#B45309"
+COLOR_EMERGENCY = "#DC2626"
+COLOR_NODATA = "#52525B"
 
 APP_NAME = "SafeWatch"
 APP_TAGLINE = "Giám sát an toàn cá nhân bằng AI"
 
 LEVELS = {
     # level: (lớp CSS banner, màu chính, nền nhạt, chữ trên nền nhạt)
-    "safe": ("sw-lv-safe", COLOR_SAFE, "#DCFCE7", "#166534"),
-    "monitoring": ("sw-lv-monitoring", COLOR_MONITORING, "#FFEDD5", "#9A3412"),
-    "emergency": ("sw-lv-emergency", COLOR_EMERGENCY, "#FEE2E2", "#991B1B"),
-    "nodata": ("sw-lv-nodata", COLOR_NODATA, "#E2E8F0", "#334155"),
-    "idle": ("sw-lv-idle", "#94A3B8", "#F1F5F9", "#475569"),
-    "info": ("sw-lv-info", COLOR_BRAND, "#E0E7FF", "#3730A3"),
+    "safe": ("sw-lv-safe", COLOR_SAFE, "#ECFDF3", "#166534"),
+    "monitoring": ("sw-lv-monitoring", COLOR_MONITORING, "#FFF7E6", "#92400E"),
+    "emergency": ("sw-lv-emergency", COLOR_EMERGENCY, "#FEF2F2", "#B91C1C"),
+    "nodata": ("sw-lv-nodata", COLOR_NODATA, "#F4F4F5", "#3F3F46"),
+    "idle": ("sw-lv-idle", "#A1A1AA", "#F4F4F5", "#52525B"),
+    "info": ("sw-lv-info", COLOR_BRAND, "#EEF2FF", "#3730A3"),
 }
 
-# Tông màu cho ô biểu tượng (nền nhạt, nét đậm)
-TONES = {
-    "indigo": ("#EEF2FF", "#4F46E5"),
-    "violet": ("#F5F3FF", "#7C3AED"),
-    "emerald": ("#ECFDF5", "#059669"),
-    "amber": ("#FFFBEB", "#D97706"),
-    "rose": ("#FFF1F2", "#E11D48"),
-    "sky": ("#F0F9FF", "#0284C7"),
-    "slate": ("#F1F5F9", "#475569"),
+# Giữ cho tương thích lời gọi cũ (tone=...) — giao diện mới không còn ô biểu tượng màu.
+TONES = {  # (nền nhạt, màu nét) — màu icon theo ý nghĩa của chỉ số
+    "indigo": ("#EEF2FF", "#4F46E5"), "violet": ("#F5F3FF", "#7C3AED"), "emerald": ("#ECFDF5", "#059669"),
+    "amber": ("#FFFBEB", "#D97706"), "rose": ("#FFF1F2", "#E11D48"), "sky": ("#F0F9FF", "#0284C7"),
+    "slate": ("#F4F4F5", "#52525B"),
 }
 
 # Biểu tượng nét 24x24 (theo phong cách Lucide, giấy phép ISC). Dùng: svg("bell").
@@ -105,168 +109,364 @@ def svg(name, size=20, color="currentColor", stroke=2):
             f'style="display:block">{inner}</svg>')
 
 
-_SHADOW_SM = "0 1px 2px rgba(16,24,40,.05)"
-_SHADOW_MD = "0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04)"
+
+_SHADOW_SM = "0 1px 2px rgba(24,24,27,.04)"
+
+
+def _mask_url(name):
+    """ICONS[name] -> data URI SVG dùng làm mask (icon menu tô màu bằng background-color)."""
+    from urllib.parse import quote
+    body = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" '
+            f'stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>')
+    return f'url("data:image/svg+xml;utf8,{quote(body)}")'
+
+
+# Icon menu bên trái theo đường dẫn trang (trang mặc định Trực tiếp không có đường dẫn -> icon mặc định = video).
+_NAV_ICONS = {"alerts": "bell", "history": "list", "emergency_contacts": "users", "camera_management": "camera",
+              "settings": "settings", "dashboard": "chart", "evaluation": "flask", "account": "user"}
+_NAV_ICON_CSS = "\n".join(
+    [f'[data-testid="stSidebarNavLink"] {{ --sw-ico: {_mask_url("video")}; }}']
+    + [f'[data-testid="stSidebarNavLink"][href$="/{path}"] {{ --sw-ico: {_mask_url(icon)}; }}'
+       for path, icon in _NAV_ICONS.items()]
+)
+_SHADOW_BTN = "0 1px 2px rgba(24,24,27,.10)"
+_FOCUS = f"0 0 0 2px {COLOR_CARD}, 0 0 0 4px {COLOR_BRAND}"
 
 _CSS = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+/* Font khai báo ở .streamlit/config.toml ([[theme.fontFaces]]) — ở đây chỉ tinh chỉnh hiển thị. */
+html, body, .stApp {{ -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }}
+.stApp {{ background: {COLOR_BG}; color: {COLOR_NAVY}; }}
+[data-testid="stHeader"] {{ background: transparent; height: 2.6rem; }}
+.block-container {{ padding-top: 2.4rem; padding-bottom: 4rem; max-width: 1280px; }}
 
-/* Font chỉ đặt ở gốc (kế thừa xuống), không dùng selector rộng — tránh đè font icon của Streamlit. */
-html, body, .stApp {{ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-size: 16px; }}
-.stApp {{ background: {COLOR_BG}; color: {COLOR_TEXT}; }}
-[data-testid="stHeader"] {{ background: rgba(248,250,252,.85); backdrop-filter: blur(6px); }}
-.block-container {{ padding-top: 4.4rem; padding-bottom: 3rem; max-width: 1240px; }}
+/* ---------- Bề mặt trình duyệt: vùng chọn, con trỏ, focus, thanh cuộn ---------- */
+::selection {{ background: #E0E7FF; color: #1E1B4B; }}
+.stApp {{ caret-color: {COLOR_BRAND}; scrollbar-color: {COLOR_BORDER_STRONG} transparent; scrollbar-width: thin; }}
+::-webkit-scrollbar {{ width: 10px; height: 10px; }}
+::-webkit-scrollbar-thumb {{ background: {COLOR_BORDER_STRONG}; border-radius: 10px; border: 3px solid {COLOR_BG}; }}
+::-webkit-scrollbar-track {{ background: transparent; }}
+a {{ text-underline-offset: 3px; }}
+:focus-visible {{ outline: none; box-shadow: {_FOCUS} !important; border-radius: 8px; }}
 
-/* ---------- Thanh bên (trắng) ---------- */
+/* ---------- Thanh bên: lớp trung tính thứ 2 ---------- */
 [data-testid="stSidebar"] {{ border-right: 1px solid {COLOR_BORDER}; }}
-[data-testid="stSidebarNavLink"] {{ border-radius: 8px; margin: 1px 0; padding-left: .75rem; }}
-[data-testid="stSidebarNavLink"] p {{ font-size: .94rem; color: {COLOR_TEXT}; font-weight: 500; }}
-[data-testid="stSidebarNavLink"]:hover {{ background: #F1F5F9 !important; }}
-[data-testid="stSidebarNavLink"][aria-current="page"] {{ background: #EEF2FF !important; box-shadow: inset 3px 0 0 {COLOR_BRAND}; }}
-[data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: {COLOR_BRAND_DARK}; font-weight: 700; }}
+[data-testid="stSidebarHeader"] {{ padding-bottom: .5rem; }}
+[data-testid="stSidebarNavLink"] {{
+    border-radius: 8px; margin: 0; padding: 0 .75rem; height: 2.45rem; line-height: 2.45rem; border: 1px solid transparent;
+    transition: background-color .15s ease-out, border-color .15s ease-out;
+}}
+[data-testid="stSidebarNavLink"] p {{ font-size: 1rem; color: {COLOR_TEXT}; font-weight: 500; }}
+[data-testid="stSidebarNavLink"]:hover {{ background: {COLOR_SUBTLE} !important; }}
+[data-testid="stSidebarNavLink"][aria-current="page"] {{ background: #EEF2FF !important; }}
+[data-testid="stSidebarNavLink"][aria-current="page"] p {{ color: #3730A3; font-weight: 600; }}
+[data-testid="stSidebarNavLink"]::before {{
+    content: ""; width: 18px; height: 18px; flex: none; margin-right: .65rem; background-color: #71717A;
+    -webkit-mask: var(--sw-ico) center / contain no-repeat; mask: var(--sw-ico) center / contain no-repeat;
+}}
+[data-testid="stSidebarNavLink"][aria-current="page"]::before {{ background-color: {COLOR_BRAND}; }}
+{_NAV_ICON_CSS}
+[data-testid="stNavSectionHeader"] {{ margin-top: .9rem; }}
+[data-testid="stSidebarNavItems"] li {{ margin: 0 !important; }}
 [data-testid="stNavSectionHeader"] p {{
-    font-size: .7rem !important; letter-spacing: .08em; text-transform: uppercase; color: #94A3B8 !important; font-weight: 700;
+    font-size: .82rem !important; color: {COLOR_TEXT_MUTED} !important; font-weight: 600; letter-spacing: 0;
+    text-transform: none;
 }}
 .sw-side-status {{
-    display: flex; align-items: center; gap: .55rem; padding: .55rem .75rem; border-radius: 10px;
-    font-size: .86rem; font-weight: 600; border: 1px solid;
+    display: flex; align-items: center; gap: .6rem; padding: .6rem .75rem; border-radius: 8px;
+    font-size: .95rem; font-weight: 600; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; color: {COLOR_NAVY};
 }}
+.sw-side-status small {{ display: block; font-weight: 400; color: {COLOR_TEXT_MUTED}; font-size: .84rem; }}
 .sw-dot {{ width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }}
-.sw-dot-live {{ animation: sw-glow 1.8s infinite; }}
-@keyframes sw-glow {{ 0%, 100% {{ box-shadow: 0 0 0 0 rgba(22,163,74,.45); }} 50% {{ box-shadow: 0 0 0 5px rgba(22,163,74,0); }} }}
+.sw-dot-live {{ animation: sw-live 2s ease-in-out infinite; }}
+@keyframes sw-live {{ 0%, 100% {{ opacity: 1; }} 50% {{ opacity: .35; }} }}
 .sw-profile {{ display: flex; align-items: center; gap: .65rem; }}
 .sw-avatar {{
-    width: 36px; height: 36px; border-radius: 50%; flex: none; color: {COLOR_BRAND_DARK}; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; background: #EEF2FF; border: 1px solid #C7D2FE;
+    width: 34px; height: 34px; border-radius: 50%; flex: none; color: {COLOR_CARD}; font-weight: 600; font-size: .9rem;
+    display: flex; align-items: center; justify-content: center; background: {COLOR_BRAND};
 }}
-.sw-profile-name {{ font-weight: 600; font-size: .92rem; color: {COLOR_NAVY}; }}
-.sw-profile-role {{ font-size: .78rem; color: {COLOR_TEXT_MUTED}; }}
+.sw-profile-name {{ font-weight: 600; font-size: .98rem; color: {COLOR_NAVY}; }}
+.sw-profile-role {{ font-size: .85rem; color: {COLOR_TEXT_MUTED}; }}
+[data-testid="stSidebar"] hr {{ margin: 1rem 0; }}
 
-/* ---------- Tiêu đề trang ---------- */
-.sw-hero {{
-    display: flex; gap: .9rem; align-items: center; padding: 0 0 1.1rem 0; margin: 0 0 1.5rem 0;
-    border-bottom: 1px solid {COLOR_BORDER};
+/* ---------- Tiêu đề trang + mục ---------- */
+.sw-topbar {{
+    display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding-bottom: .85rem; margin-bottom: 1.4rem; border-bottom: 1px solid {COLOR_BORDER};
 }}
+.sw-crumbs {{ display: flex; align-items: center; gap: .45rem; font-size: .92rem; color: {COLOR_TEXT_MUTED}; }}
+.sw-crumbs b {{ color: {COLOR_NAVY}; font-weight: 600; }}
+.sw-crumbs .sep {{ color: #A1A1AA; }}
+.sw-topmeta {{ display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; font-size: .9rem; color: {COLOR_TEXT}; }}
+.sw-chip {{
+    display: inline-flex; align-items: center; gap: .45rem; padding: .32rem .8rem; border-radius: 999px;
+    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; font-size: .88rem; color: {COLOR_TEXT}; white-space: nowrap;
+    text-decoration: none !important; transition: border-color .15s ease-out, background-color .15s ease-out;
+}}
+a.sw-chip:hover {{ border-color: {COLOR_BORDER_STRONG}; background: {COLOR_SUBTLE}; }}
+.sw-chip-alert {{ background: #FEF2F2; border-color: #FECACA; color: #B91C1C !important; font-weight: 600; }}
+a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
+.sw-chip-alert .sw-dot {{ background: {COLOR_EMERGENCY}; animation: sw-ping 1.6s ease-out infinite; }}
+.sw-hero {{ margin: 0 0 1.9rem 0; display: flex; gap: 1.1rem; align-items: center; }}
 .sw-hero-icon {{
-    width: 44px; height: 44px; border-radius: 12px; flex: none; color: {COLOR_BRAND};
-    display: flex; align-items: center; justify-content: center; background: #EEF2FF; border: 1px solid #E0E7FF;
+    width: 52px; height: 52px; border-radius: 12px; flex: none; color: #FFFFFF; background: {COLOR_BRAND};
+    display: flex; align-items: center; justify-content: center;
 }}
-.sw-hero-title {{ font-size: 1.6rem; font-weight: 750; color: {COLOR_NAVY}; line-height: 1.2; letter-spacing: -.015em; }}
-.sw-hero-sub {{ color: {COLOR_TEXT_MUTED}; font-size: .92rem; margin-top: .2rem; }}
-.sw-section {{ font-size: 1rem; font-weight: 700; color: {COLOR_NAVY}; margin: 1.6rem 0 .7rem 0; }}
+.sw-hero-title {{
+    font-size: 2.05rem; font-weight: 700; color: {COLOR_NAVY}; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance;
+}}
+.sw-hero-sub {{ color: {COLOR_TEXT_MUTED}; font-size: 1.02rem; margin-top: .3rem; max-width: 80ch; line-height: 1.5; }}
+.sw-section {{
+    font-size: 1.22rem; font-weight: 600; color: {COLOR_NAVY}; margin: 2.4rem 0 .85rem 0; letter-spacing: -.005em;
+}}
 
-/* ---------- Thẻ chỉ số ---------- */
-.sw-kpi {{
-    display: flex; gap: .85rem; align-items: flex-start; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER};
-    border-radius: 12px; padding: 1rem 1.1rem; box-shadow: {_SHADOW_SM}; min-height: 104px;
+/* ---------- Dải chỉ số: các cột chứa .sw-kpi ghép thành 1 khung, ngăn bằng vạch mảnh ---------- */
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) {{
+    gap: 0 !important; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 12px;
+    box-shadow: {_SHADOW_SM}; overflow: hidden;
 }}
-.sw-kpi-icon {{
-    width: 40px; height: 40px; border-radius: 10px; flex: none; display: flex; align-items: center; justify-content: center;
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) > [data-testid="stColumn"] + [data-testid="stColumn"] {{
+    border-left: 1px solid {COLOR_BORDER};
 }}
-.sw-kpi-label {{ font-size: .8rem; color: {COLOR_TEXT_MUTED}; font-weight: 600; }}
-.sw-kpi-value {{ font-size: 1.5rem; font-weight: 750; color: {COLOR_NAVY}; line-height: 1.25; letter-spacing: -.015em; margin-top: .1rem; }}
-.sw-kpi-sub {{ font-size: .77rem; color: {COLOR_TEXT_MUTED}; margin-top: .1rem; }}
+.sw-kpi {{ padding: 1.2rem 1.4rem 1.25rem; min-height: 118px; }}
+[data-testid="stMarkdownContainer"]:has(> .sw-kpi, > .sw-banner, > .sw-card) {{ margin-bottom: 0 !important; }}
+.sw-kpi-label {{ font-size: .95rem; color: {COLOR_TEXT}; font-weight: 500; display: flex; align-items: center; gap: .5rem; }}
+.sw-kpi-ico {{ width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex: none; }}
+.sw-kpi-value {{
+    font-size: 2.1rem; font-weight: 600; color: {COLOR_NAVY}; line-height: 1.15; letter-spacing: -.025em; margin-top: .45rem;
+    font-variant-numeric: tabular-nums;
+}}
+.sw-kpi-sub {{ font-size: .88rem; color: {COLOR_TEXT_MUTED}; margin-top: .25rem; }}
 
-/* ---------- Thẻ nội dung (st.container(key="swbox_...")) ---------- */
+/* ---------- Khung nội dung (st.container(key="swbox_...")) ---------- */
 [class*="st-key-swbox"] {{
     background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER} !important; border-radius: 12px !important;
-    box-shadow: {_SHADOW_SM}; padding: 1rem 1.15rem !important;
+    box-shadow: {_SHADOW_SM}; padding: 1.1rem 1.25rem !important;
 }}
 .sw-card {{
-    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 12px; padding: .35rem 1.1rem;
+    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 12px; padding: .25rem 1.25rem;
     box-shadow: {_SHADOW_SM};
 }}
 
-/* ---------- Banner trạng thái lớn ---------- */
+/* ---------- Banner trạng thái (trạng thái là thông tin số 1 — đọc được từ xa) ---------- */
 .sw-banner {{
-    border-radius: 12px; padding: 1.05rem 1.2rem; display: flex; gap: .9rem; align-items: center; border: 1px solid;
+    border-radius: 12px; padding: 1.05rem 1.2rem; display: flex; gap: .85rem; align-items: flex-start; border: 1px solid;
 }}
-.sw-banner-icon {{
-    width: 46px; height: 46px; border-radius: 12px; flex: none; display: flex; align-items: center; justify-content: center;
-}}
-.sw-banner-title {{ font-size: 1.2rem; font-weight: 750; letter-spacing: -.005em; }}
-.sw-banner-sub {{ font-size: .9rem; margin-top: .15rem; }}
-/* trạng thái bình thường: nền nhạt + vạch màu */
-.sw-lv-safe {{ background: #F0FDF4; border-color: #BBF7D0; box-shadow: inset 4px 0 0 {COLOR_SAFE}; color: #14532D; }}
-.sw-lv-safe .sw-banner-icon {{ background: #DCFCE7; color: {COLOR_SAFE}; }}
+.sw-banner-icon {{ flex: none; margin-top: .15rem; }}
+.sw-banner-title {{ font-size: 1.55rem; font-weight: 700; letter-spacing: -.015em; line-height: 1.25; }}
+.sw-banner-sub {{ font-size: 1rem; margin-top: .25rem; line-height: 1.5; }}
+.sw-lv-safe {{ background: #ECFDF3; border-color: #ABEFC6; color: #14532D; }}
+.sw-lv-safe .sw-banner-icon {{ color: {COLOR_SAFE}; }}
 .sw-lv-safe .sw-banner-sub {{ color: #166534; }}
-.sw-lv-nodata {{ background: #F8FAFC; border-color: #CBD5E1; box-shadow: inset 4px 0 0 #64748B; color: #1E293B; }}
-.sw-lv-nodata .sw-banner-icon {{ background: #E2E8F0; color: #475569; }}
-.sw-lv-nodata .sw-banner-sub {{ color: #475569; }}
-.sw-lv-idle {{ background: {COLOR_CARD}; border: 1px dashed #CBD5E1; color: {COLOR_NAVY}; }}
-.sw-lv-idle .sw-banner-icon {{ background: #F1F5F9; color: #64748B; }}
+.sw-lv-nodata {{ background: {COLOR_SUBTLE}; border-color: {COLOR_BORDER_STRONG}; color: {COLOR_NAVY}; }}
+.sw-lv-nodata .sw-banner-icon {{ color: {COLOR_NODATA}; }}
+.sw-lv-nodata .sw-banner-sub {{ color: {COLOR_TEXT}; }}
+.sw-lv-idle {{ background: {COLOR_CARD}; border-color: {COLOR_BORDER}; color: {COLOR_NAVY}; }}
+.sw-lv-idle .sw-banner-icon {{ color: {COLOR_TEXT_MUTED}; }}
 .sw-lv-idle .sw-banner-sub {{ color: {COLOR_TEXT_MUTED}; }}
-.sw-lv-info {{ background: #EEF2FF; border-color: #C7D2FE; box-shadow: inset 4px 0 0 {COLOR_BRAND}; color: #312E81; }}
-.sw-lv-info .sw-banner-icon {{ background: #E0E7FF; color: {COLOR_BRAND}; }}
-/* trạng thái cần hành động: màu đặc */
-.sw-lv-monitoring {{ background: {COLOR_MONITORING}; border-color: #C2410C; color: #FFFFFF; }}
-.sw-lv-emergency {{ background: {COLOR_EMERGENCY}; border-color: #B91C1C; color: #FFFFFF; animation: sw-pulse 1.4s infinite; }}
-.sw-lv-monitoring .sw-banner-icon, .sw-lv-emergency .sw-banner-icon {{ background: rgba(255,255,255,.18); color: #FFFFFF; }}
-.sw-lv-monitoring .sw-banner-sub, .sw-lv-emergency .sw-banner-sub {{ color: rgba(255,255,255,.92); }}
-@keyframes sw-pulse {{ 0%, 100% {{ box-shadow: 0 0 0 0 rgba(220,38,38,.45); }} 50% {{ box-shadow: 0 0 0 10px rgba(220,38,38,0); }} }}
+.sw-lv-info {{ background: #EEF2FF; border-color: #C7D2FE; color: #312E81; }}
+.sw-lv-info .sw-banner-icon {{ color: {COLOR_BRAND}; }}
+/* cần hành động: màu đặc, chữ trắng (tương phản ≥ 4.5:1) */
+.sw-lv-monitoring {{ background: {COLOR_MONITORING}; border-color: #92400E; color: #FFFFFF; }}
+.sw-lv-emergency {{ background: {COLOR_EMERGENCY}; border-color: #B91C1C; color: #FFFFFF; }}
+.sw-lv-monitoring .sw-banner-icon, .sw-lv-emergency .sw-banner-icon {{ color: #FFFFFF; }}
+.sw-lv-monitoring .sw-banner-sub, .sw-lv-emergency .sw-banner-sub {{ color: rgba(255,255,255,.94); }}
 
 /* ---------- Dòng chi tiết (nhãn: giá trị) ---------- */
 .sw-row {{
-    display: flex; justify-content: space-between; gap: 1rem; padding: .62rem 0;
-    border-bottom: 1px solid #F1F5F9; font-size: .92rem;
+    display: flex; justify-content: space-between; gap: 1rem; padding: .7rem 0;
+    border-bottom: 1px solid {COLOR_SUBTLE}; font-size: 1rem;
 }}
 .sw-row:last-child {{ border-bottom: none; }}
-.sw-row-label {{ color: {COLOR_TEXT_MUTED}; }}
-.sw-row-value {{ color: {COLOR_NAVY}; font-weight: 600; text-align: right; }}
+.sw-row-label {{ color: {COLOR_TEXT_MUTED}; white-space: nowrap; }}
+.sw-row-value {{ color: {COLOR_NAVY}; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }}
 
-/* ---------- Huy hiệu ---------- */
+/* ---------- Huy hiệu: chấm màu + chữ ---------- */
 .sw-badge {{
-    display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .55rem; border-radius: 6px;
-    font-size: .74rem; font-weight: 600; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: .4rem; padding: .16rem .6rem .16rem .5rem; border-radius: 999px;
+    font-size: .84rem; font-weight: 500; white-space: nowrap; line-height: 1.4;
 }}
+.sw-badge::before {{ content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }}
 
 /* ---------- Các bước hướng dẫn ---------- */
-.sw-step {{ display: flex; gap: .8rem; align-items: flex-start; padding: .5rem 0; }}
+.sw-step {{ display: flex; gap: .8rem; align-items: flex-start; padding: .55rem 0; }}
 .sw-step-num {{
-    width: 26px; height: 26px; border-radius: 50%; color: {COLOR_BRAND_DARK}; flex: none; font-size: .8rem; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; background: #EEF2FF; border: 1px solid #C7D2FE;
+    width: 24px; height: 24px; border-radius: 50%; color: {COLOR_NAVY}; flex: none; font-size: .78rem; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; background: {COLOR_CARD};
+    border: 1px solid {COLOR_BORDER_STRONG}; font-variant-numeric: tabular-nums;
 }}
-.sw-step-text {{ font-size: .93rem; color: {COLOR_NAVY}; font-weight: 600; }}
-.sw-step-text small {{ color: {COLOR_TEXT_MUTED}; display: block; font-weight: 400; margin-top: .1rem; }}
+.sw-step-text {{ font-size: 1rem; color: {COLOR_NAVY}; font-weight: 500; line-height: 1.45; }}
+.sw-step-text small {{ color: {COLOR_TEXT_MUTED}; display: block; font-weight: 400; margin-top: .15rem; font-size: .9rem; }}
 
 /* ---------- Nút ---------- */
 [data-testid="stBaseButton-primary"], [data-testid="stBaseButton-secondary"], [data-testid="stPageLink-NavLink"] {{
-    border-radius: 8px !important; min-height: 40px; font-weight: 600; transition: background .12s, border-color .12s, box-shadow .12s;
+    border-radius: 8px !important; min-height: 40px; font-weight: 500;
+    transition: background-color .15s ease-out, border-color .15s ease-out, color .15s ease-out;
 }}
 [data-testid="stBaseButton-primary"] {{
     background: {COLOR_BRAND} !important; border: 1px solid {COLOR_BRAND_DARK} !important; color: #FFFFFF !important;
-    box-shadow: 0 1px 2px rgba(16,24,40,.12), inset 0 1px 0 rgba(255,255,255,.12);
+    box-shadow: none; font-weight: 600;
 }}
 [data-testid="stBaseButton-primary"]:hover {{ background: {COLOR_BRAND_DARK} !important; }}
-[data-testid="stBaseButton-primary"]:active, [data-testid="stBaseButton-secondary"]:active {{ transform: translateY(1px); }}
-[data-testid="stBaseButton-primary"]:focus-visible, [data-testid="stBaseButton-secondary"]:focus-visible {{
-    box-shadow: 0 0 0 3px rgba(79,70,229,.3) !important;
-}}
+[data-testid="stBaseButton-primary"]:active {{ background: #3730A3 !important; }}
 [data-testid="stBaseButton-secondary"] {{
-    background: #FFFFFF !important; border: 1px solid #CBD5E1 !important; color: {COLOR_NAVY} !important; box-shadow: {_SHADOW_SM};
+    background: {COLOR_CARD} !important; border: 1px solid {COLOR_BORDER_STRONG} !important; color: {COLOR_NAVY} !important;
+    box-shadow: {_SHADOW_SM};
 }}
-[data-testid="stBaseButton-secondary"]:hover {{ background: #F8FAFC !important; border-color: #94A3B8 !important; }}
+[data-testid="stBaseButton-secondary"]:hover {{ background: {COLOR_SUBTLE} !important; border-color: #A1A1AA !important; }}
+[data-testid="stBaseButton-primary"]:disabled, [data-testid="stBaseButton-secondary"]:disabled {{
+    background: {COLOR_SUBTLE} !important; border-color: {COLOR_BORDER} !important; color: #A1A1AA !important; box-shadow: none;
+}}
+[data-testid="stBaseButton-primary"]:focus-visible, [data-testid="stBaseButton-secondary"]:focus-visible,
+[data-testid="stPageLink-NavLink"]:focus-visible {{ box-shadow: {_FOCUS} !important; }}
 /* liên kết trang trông như nút phụ */
 [data-testid="stPageLink-NavLink"] {{
-    background: #FFFFFF; border: 1px solid #CBD5E1; box-shadow: {_SHADOW_SM}; padding: .35rem .9rem !important;
+    background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER_STRONG}; box-shadow: {_SHADOW_SM}; padding: .4rem .95rem !important;
     display: inline-flex !important; width: auto !important;
 }}
-[data-testid="stPageLink-NavLink"]:hover {{ background: #F8FAFC; border-color: #94A3B8; }}
-[data-testid="stPageLink-NavLink"] p {{ color: {COLOR_BRAND_DARK}; font-weight: 600; }}
+[data-testid="stPageLink-NavLink"]:hover {{ background: {COLOR_SUBTLE}; border-color: #A1A1AA; }}
+[data-testid="stPageLink-NavLink"] p {{ color: {COLOR_NAVY}; font-weight: 500; }}
 
 /* ---------- Thành phần khác ---------- */
-[data-testid="stExpander"] details {{ background: {COLOR_CARD}; border-radius: 12px; border-color: {COLOR_BORDER}; box-shadow: {_SHADOW_SM}; }}
-[data-testid="stExpander"] summary p {{ font-weight: 600; }}
-[data-testid="stDataFrame"] {{ border: 1px solid {COLOR_BORDER}; border-radius: 12px; overflow: hidden; box-shadow: {_SHADOW_SM}; }}
-[data-testid="stTab"] p {{ font-weight: 600; }}
+[data-testid="stExpander"] details {{ background: {COLOR_CARD}; border-radius: 12px; border-color: {COLOR_BORDER}; }}
+[data-testid="stExpander"] summary p {{ font-weight: 500; }}
+[data-testid="stExpander"] summary:hover p {{ color: {COLOR_NAVY}; }}
+[data-testid="stDataFrame"] {{ border: 1px solid {COLOR_BORDER}; border-radius: 12px; overflow: hidden; }}
+[data-testid="stTab"] p {{ font-weight: 500; }}
+[data-testid="stTab"][aria-selected="true"] p {{ font-weight: 600; }}
 [data-testid="stAlert"] {{ border-radius: 10px; }}
-hr {{ margin: .8rem 0; border-color: {COLOR_BORDER}; }}
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {{ color: {COLOR_TEXT_MUTED} !important; opacity: 1; }}
+[data-testid="stMetricValue"] {{ font-variant-numeric: tabular-nums; }}
+hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
+[data-testid="stForm"] {{ background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 12px; padding: 1.25rem 1.4rem; }}
+[data-testid="stBaseButton-primaryFormSubmit"] {{
+    background: {COLOR_BRAND} !important; border: 1px solid {COLOR_BRAND_DARK} !important; color: #FFFFFF !important;
+    border-radius: 8px !important; min-height: 40px; font-weight: 600;
+}}
+[data-testid="stBaseButton-primaryFormSubmit"]:hover {{ background: {COLOR_BRAND_DARK} !important; }}
+[data-testid="stBaseButton-secondaryFormSubmit"] {{
+    background: {COLOR_CARD} !important; border: 1px solid {COLOR_BORDER_STRONG} !important; border-radius: 8px !important; min-height: 40px;
+}}
+[data-testid="stMarkdownContainer"] code {{ color: {COLOR_TEXT}; background: {COLOR_SUBTLE}; border-radius: 4px; }}
+.sw-alert-head {{ display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }}
+.sw-alert-kind {{ font-weight: 600; font-size: 1.12rem; color: {COLOR_NAVY}; }}
+.sw-alert-meta {{ color: {COLOR_TEXT_MUTED}; font-size: .95rem; margin-top: .35rem; font-variant-numeric: tabular-nums; }}
 
 @media (max-width: 640px) {{
-    .block-container {{ padding-left: 1rem; padding-right: 1rem; }}
-    .sw-hero-title {{ font-size: 1.3rem; }}
-    .sw-banner {{ padding: .9rem; }} .sw-banner-title {{ font-size: 1.05rem; }}
+    .block-container {{ padding-left: 1rem; padding-right: 1rem; padding-top: 3rem; }}
+    .sw-hero {{ margin-bottom: 1.25rem; }}
+    .sw-hero-title {{ font-size: 1.55rem; }}
+    .sw-hero-icon {{ width: 44px; height: 44px; }}
+    .sw-topmeta .sw-date {{ display: none; }}
+    .sw-banner {{ padding: .9rem 1rem; }} .sw-banner-title {{ font-size: 1.3rem; }}
+    /* cột xếp chồng -> vạch ngăn nằm ngang */
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) > [data-testid="stColumn"] + [data-testid="stColumn"] {{
+        border-left: none; border-top: 1px solid {COLOR_BORDER};
+    }}
+    .sw-kpi {{ min-height: 0; padding: .85rem 1rem; }}
+    .sw-kpi-value {{ font-size: 1.7rem; }}
+}}
+/* ================= Hiệu ứng — ngắn (150–300 ms), báo trạng thái / phản hồi thao tác, chỉ CSS (không tốn CPU) =========
+   Chỉ gắn hiệu ứng "vào trang" cho khung trang (dựng 1 lần mỗi lần chuyển trang). KHÔNG gắn cho banner / ô chỉ số:
+   trang Trực tiếp vẽ lại chúng mỗi 0,3 s, hiệu ứng vào sẽ chạy lại liên tục. */
+@keyframes sw-enter {{ from {{ opacity: 0; transform: translateY(6px); }} to {{ opacity: 1; transform: none; }} }}
+[data-testid="stMainBlockContainer"] {{ animation: sw-enter .32s cubic-bezier(.16,1,.3,1) both; }}
+[data-testid="stTabPanel"] {{ animation: sw-enter .25s cubic-bezier(.16,1,.3,1) both; }}
+
+/* khung trắng: viền đậm dần khi rê chuột */
+[class*="st-key-swbox"], .sw-card, [data-testid="stExpander"] details, [data-testid="stForm"] {{
+    transition: border-color .18s ease-out, box-shadow .18s ease-out;
+}}
+[class*="st-key-swbox"]:hover, .sw-card:hover {{
+    border-color: {COLOR_BORDER_STRONG} !important; box-shadow: 0 4px 14px -6px rgba(24,24,27,.10);
+}}
+/* ô chỉ số: nền ửng chàm nhạt khi rê chuột, icon nhích nhẹ */
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) > [data-testid="stColumn"] {{
+    transition: background-color .18s ease-out;
+}}
+[data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] .sw-kpi) > [data-testid="stColumn"]:hover {{
+    background: #FAFAFF;
+}}
+.sw-kpi-ico {{ transition: transform .2s cubic-bezier(.16,1,.3,1); }}
+.sw-kpi:hover .sw-kpi-ico {{ transform: scale(1.08); }}
+
+/* nút: nhấc nhẹ khi rê, lún khi bấm */
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-secondary"], [data-testid="stPageLink-NavLink"],
+[data-testid="stBaseButton-primaryFormSubmit"], [data-testid="stBaseButton-secondaryFormSubmit"] {{
+    transition: background-color .15s ease-out, border-color .15s ease-out, transform .15s ease-out, box-shadow .15s ease-out !important;
+}}
+[data-testid="stBaseButton-primary"]:hover, [data-testid="stBaseButton-primaryFormSubmit"]:hover {{
+    box-shadow: 0 4px 12px -4px rgba(79,70,229,.45) !important;
+}}
+[data-testid="stBaseButton-secondary"]:hover, [data-testid="stPageLink-NavLink"]:hover {{
+    box-shadow: 0 3px 8px -4px rgba(24,24,27,.18) !important;
+}}
+[data-testid="stBaseButton-primary"]:active, [data-testid="stBaseButton-secondary"]:active,
+[data-testid="stPageLink-NavLink"]:active, [data-testid="stBaseButton-primaryFormSubmit"]:active {{
+    transform: translateY(0) scale(.98); box-shadow: none !important;
+}}
+
+/* menu: icon trượt nhẹ khi rê, mục đang chọn đổi màu mượt */
+[data-testid="stSidebarNavLink"]::before {{ transition: background-color .15s ease-out, transform .2s cubic-bezier(.16,1,.3,1); }}
+[data-testid="stSidebarNavLink"]:hover::before {{ transform: translateX(2px); background-color: {COLOR_BRAND}; }}
+
+/* thanh tiến độ xác minh sau ngã chạy mượt */
+[data-testid="stProgress"] [role="progressbar"] > div > div {{ transition: width .3s linear; }}
+
+/* cảnh báo chưa ai nhận: chấm đỏ nhấp nháy (= đang cần người xác nhận) */
+@keyframes sw-ping {{ 0% {{ box-shadow: 0 0 0 0 rgba(220,38,38,.55); }} 80%, 100% {{ box-shadow: 0 0 0 6px rgba(220,38,38,0); }} }}
+.sw-badge-emergency::before {{ animation: sw-ping 1.6s ease-out infinite; }}
+/* banner khẩn cấp: icon còi rung nhẹ theo nhịp */
+@keyframes sw-ring {{ 0%, 70%, 100% {{ transform: rotate(0); }} 76% {{ transform: rotate(-12deg); }} 84% {{ transform: rotate(10deg); }} 92% {{ transform: rotate(-6deg); }} }}
+.sw-lv-emergency .sw-banner-icon {{ animation: sw-ring 1.8s ease-in-out infinite; transform-origin: 50% 20%; }}
+/* đang theo dõi sau ngã: icon đồng hồ "thở" */
+@keyframes sw-breathe {{ 0%, 100% {{ opacity: 1; }} 50% {{ opacity: .55; }} }}
+.sw-lv-monitoring .sw-banner-icon {{ animation: sw-breathe 1.6s ease-in-out infinite; }}
+/* đang kết nối camera: icon sóng "thở" (đang chờ, chưa phải lỗi) */
+.sw-lv-info .sw-banner-icon {{ animation: sw-breathe 1.2s ease-in-out infinite; }}
+
+/* ---------- Khoảnh khắc chính: xác nhận đã nhận cảnh báo (mở từ link trong tin nhắn) ----------
+   Dấu tick vẽ dần (500 ms) rồi con dấu "ĐÃ NHẬN" đóng xuống. Trạng thái mặc định là trạng thái CUỐI (keyframes
+   chỉ có "from") -> tắt hiệu ứng vẫn thấy đủ dấu tick + con dấu. */
+.sw-ack {{
+    max-width: 580px; margin: 2vh auto 0; background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 16px;
+    padding: 2.2rem 2rem 1.6rem; text-align: center; box-shadow: 0 12px 32px -16px rgba(24,24,27,.18);
+}}
+.sw-ack-mark {{ width: 84px; height: 84px; margin: 0 auto 1rem; color: {COLOR_SAFE}; }}
+.sw-ack-mark circle {{ transform: rotate(-90deg); transform-origin: 42px 42px; stroke-dasharray: 239; stroke-dashoffset: 0; animation: sw-draw-ring .55s cubic-bezier(.65,0,.35,1) both; }}
+.sw-ack-mark path {{ stroke-dasharray: 48; stroke-dashoffset: 0; animation: sw-draw-tick .35s .45s cubic-bezier(.65,0,.35,1) both; }}
+@keyframes sw-draw-ring {{ from {{ stroke-dashoffset: 239; }} }}
+@keyframes sw-draw-tick {{ from {{ stroke-dashoffset: 48; }} }}
+.sw-ack-mark.sw-ack-warn {{ color: {COLOR_MONITORING}; }}
+.sw-ack-title {{ font-size: 1.75rem; font-weight: 700; color: {COLOR_NAVY}; letter-spacing: -.02em; line-height: 1.25; }}
+.sw-ack-sub {{ font-size: 1.02rem; color: {COLOR_TEXT}; margin: .5rem auto 0; max-width: 44ch; line-height: 1.55; }}
+.sw-stamp {{
+    display: inline-flex; flex-direction: column; align-items: center; margin: 1.3rem 0 .4rem; padding: .45rem 1.3rem .4rem;
+    border: 3px solid {COLOR_SAFE}; border-radius: 10px; color: {COLOR_SAFE}; transform: rotate(-5deg);
+    font-weight: 700; letter-spacing: .1em; font-size: 1.15rem; line-height: 1.2;
+    animation: sw-stamp .5s .75s cubic-bezier(.16,1,.3,1) both;
+}}
+.sw-stamp small {{ letter-spacing: .02em; font-size: .8rem; font-weight: 600; font-variant-numeric: tabular-nums; }}
+@keyframes sw-stamp {{ from {{ opacity: 0; transform: rotate(-5deg) scale(1.7); }} }}
+.sw-ack .sw-card {{ text-align: left; margin-top: 1.1rem; box-shadow: none; }}
+.sw-ack-next {{
+    margin-top: 1.1rem; padding: .8rem 1rem; border-radius: 10px; background: #FFF7E6; color: #92400E;
+    font-size: .95rem; text-align: left; display: flex; gap: .6rem; align-items: flex-start;
+}}
+
+/* ---------- Trạng thái trống: dạy bước tiếp theo, không chỉ "không có gì" ---------- */
+.sw-empty {{
+    display: flex; gap: 1rem; align-items: center; padding: 1.2rem 1.3rem; border-radius: 12px;
+    background: {COLOR_CARD}; border: 1px dashed {COLOR_BORDER_STRONG};
+}}
+.sw-empty-icon {{
+    width: 44px; height: 44px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center;
+}}
+.sw-empty-title {{ font-weight: 600; font-size: 1.05rem; color: {COLOR_NAVY}; }}
+.sw-empty-sub {{ color: {COLOR_TEXT_MUTED}; font-size: .95rem; margin-top: .15rem; }}
+
+@media (prefers-reduced-motion: reduce) {{
+    *, *::before {{ animation: none !important; transition: none !important; }}
 }}
 </style>
 """
@@ -295,10 +495,10 @@ def render_sidebar_profile(name="Người dùng", role=""):
 def sidebar_status_html(system_online):
     """Ô trạng thái giám sát ở sidebar — trang Trực tiếp cập nhật liên tục trong vòng lặp webcam."""
     if system_online:
-        return ('<div class="sw-side-status" style="background:#F0FDF4;border-color:#BBF7D0;color:#166534;">'
-                '<span class="sw-dot sw-dot-live" style="background:#16A34A;"></span>Đang giám sát</div>')
-    return ('<div class="sw-side-status" style="background:#F8FAFC;border-color:#E2E8F0;color:#475569;">'
-            '<span class="sw-dot" style="background:#94A3B8;"></span>Chưa giám sát</div>')
+        return (f'<div class="sw-side-status"><span class="sw-dot sw-dot-live" style="background:{COLOR_SAFE};"></span>'
+                '<div>Đang giám sát<small>Camera đang hoạt động</small></div></div>')
+    return ('<div class="sw-side-status"><span class="sw-dot" style="background:#A1A1AA;"></span>'
+            '<div>Chưa giám sát<small>Mở trang Trực tiếp và bấm Bắt đầu</small></div></div>')
 
 
 # ------------------------------------------------------------------ khối dùng chung trong trang
@@ -317,13 +517,45 @@ def fmt_duration(seconds):
     return f"{seconds / 86400:.0f} ngày"
 
 
+# Tiêu đề trang -> (nhóm menu, tên mục) cho dòng đường dẫn ở đầu trang.
+_CRUMBS = {
+    "Giám sát trực tiếp": ("Giám sát", "Trực tiếp"), "Cảnh báo": ("Giám sát", "Cảnh báo"),
+    "Nhật ký": ("Giám sát", "Nhật ký"), "Người liên hệ": ("Thiết lập", "Người liên hệ"),
+    "Camera & lắp đặt": ("Thiết lập", "Camera & lắp đặt"), "Cấu hình": ("Thiết lập", "Cấu hình"),
+    "Tổng quan": ("Báo cáo", "Tổng quan"), "Kiểm định": ("Báo cáo", "Kiểm định"), "Hồ sơ": ("Tài khoản", "Hồ sơ"),
+}
+_WEEKDAYS = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
+
+
+def _pending_alerts():
+    """Số cảnh báo chưa ai xác nhận (đọc DB của notifier); lỗi thì coi như 0 — không làm hỏng tiêu đề trang."""
+    try:
+        import notifier
+        return sum(1 for a in notifier.get_alerts(limit=500) if a["acked_at"] is None)
+    except Exception:  # noqa: BLE001
+        return 0
+
+
+def topbar_html(title):
+    from datetime import datetime
+    group, item = _CRUMBS.get(title, (None, title))
+    crumbs = ['<span>SafeWatch</span>'] + ([f'<span>{group}</span>'] if group else []) + [f'<b>{item}</b>']
+    sep = '<span class="sep">›</span>'
+    now = datetime.now()
+    meta = [f'<span class="sw-chip sw-date">{svg("clock", 15)}{_WEEKDAYS[now.weekday()]}, {now:%d/%m/%Y}</span>']
+    pending = _pending_alerts()
+    if pending:
+        meta.insert(0, f'<a class="sw-chip sw-chip-alert" href="alerts" target="_self"><span class="sw-dot"></span>'
+                       f'{pending} cảnh báo chờ xác nhận</a>')
+    return (f'<div class="sw-topbar"><nav class="sw-crumbs" aria-label="Vị trí">{sep.join(crumbs)}</nav>'
+            f'<div class="sw-topmeta">{"".join(meta)}</div></div>')
+
+
 def page_header(title, subtitle="", icon="shield"):
+    """Đầu trang: thanh đường dẫn + ngày + cảnh báo chờ, rồi ô icon thương hiệu + tiêu đề + 1 dòng mô tả."""
     sub = f'<div class="sw-hero-sub">{subtitle}</div>' if subtitle else ""
-    st.markdown(
-        f'<div class="sw-hero"><div class="sw-hero-icon">{svg(icon, 22)}</div><div>'
-        f'<div class="sw-hero-title">{title}</div>{sub}</div></div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(topbar_html(title) + f'<div class="sw-hero"><div class="sw-hero-icon">{svg(icon or "shield", 26, stroke=2.1)}</div>'
+                f'<div><div class="sw-hero-title">{title}</div>{sub}</div></div>', unsafe_allow_html=True)
 
 
 def section(title):
@@ -334,19 +566,21 @@ _EMOJI_PREFIX = re.compile(r"^(\S+)\s+(.*)$")
 
 
 def kpi_html(label, value, sub="", icon=None, tone="indigo"):
-    if icon is None:  # nhãn kiểu "📷 Camera" -> tách emoji thành ô biểu tượng
-        m = _EMOJI_PREFIX.match(label)
-        if m and not m.group(1)[0].isalnum():
-            icon, label = m.group(1), m.group(2)
-    bg, fg = TONES.get(tone, TONES["indigo"])
-    icon_html = f'<div class="sw-kpi-icon" style="background:{bg};color:{fg};">{svg(icon, 20)}</div>' if icon else ""
+    """1 ô chỉ số: [icon màu theo ý nghĩa] nhãn · giá trị · ghi chú. Đặt nhiều ô trong st.columns -> CSS ghép
+    thành 1 dải liền. Nhãn kiểu "📷 Camera" (cũ) -> emoji tách thành icon nét."""
+    m = _EMOJI_PREFIX.match(str(label))
+    if m and not m.group(1)[0].isalnum():
+        icon, label = icon or m.group(1), m.group(2)
+    bg, fg = TONES.get(tone or "indigo", TONES["indigo"])
+    icon_html = (f'<span class="sw-kpi-ico" style="background:{bg};color:{fg};">{svg(icon, 16, stroke=2.2)}</span>'
+                 if icon else "")
     sub_html = f'<div class="sw-kpi-sub">{sub}</div>' if sub else ""
-    return (f'<div class="sw-kpi">{icon_html}<div><div class="sw-kpi-label">{label}</div>'
-            f'<div class="sw-kpi-value">{value}</div>{sub_html}</div></div>')
+    return (f'<div class="sw-kpi"><div class="sw-kpi-label">{icon_html}{label}</div>'
+            f'<div class="sw-kpi-value">{value}</div>{sub_html}</div>')
 
 
 def kpi_card(label, value, sub="", placeholder=None, icon=None, tone="indigo"):
-    """Thẻ chỉ số (HTML thuần — dùng được trong vòng lặp cập nhật qua placeholder)."""
+    """Ô chỉ số (HTML thuần — dùng được trong vòng lặp cập nhật qua placeholder)."""
     target = placeholder if placeholder is not None else st
     target.markdown(kpi_html(label, value, sub, icon, tone), unsafe_allow_html=True)
 
@@ -367,14 +601,59 @@ _LEVEL_ICON = {"safe": "check", "monitoring": "clock", "emergency": "siren", "no
 def status_banner_html(level, title, subtitle="", icon=None):
     """level: safe | monitoring | emergency | nodata | idle | info."""
     css = LEVELS[level][0]
-    return (f'<div class="sw-banner {css}"><div class="sw-banner-icon">{svg(icon or _LEVEL_ICON[level], 24)}</div>'
+    return (f'<div class="sw-banner {css}" role="status"><div class="sw-banner-icon">'
+            f'{svg(icon or _LEVEL_ICON[level], 24)}</div>'
             f'<div><div class="sw-banner-title">{title}</div><div class="sw-banner-sub">{subtitle}</div></div></div>')
+
+
+def empty_html(title, subtitle="", icon="check", tone="emerald"):
+    """Trạng thái trống: icon + 1 câu nói rõ tình hình + việc nên làm tiếp."""
+    bg, fg = TONES.get(tone, TONES["emerald"])
+    sub = f'<div class="sw-empty-sub">{subtitle}</div>' if subtitle else ""
+    return (f'<div class="sw-empty"><div class="sw-empty-icon" style="background:{bg};color:{fg};">{svg(icon, 22)}</div>'
+            f'<div><div class="sw-empty-title">{title}</div>{sub}</div></div>')
+
+
+_ACK_MARK = ('<svg class="sw-ack-mark{cls}" viewBox="0 0 84 84" fill="none" stroke="currentColor" stroke-width="5" '
+             'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="42" cy="42" r="38"/>'
+             '<path d="{path}"/></svg>')
+
+
+def ack_page_html(result, alert=None):
+    """Trang mở từ link "Tôi đã nhận" trong tin nhắn. result: 'new' (lần xác nhận đầu) | 'already' | 'invalid'."""
+    from datetime import datetime
+
+    def t(ts):
+        return "—" if not ts else datetime.fromtimestamp(ts).strftime("%H:%M:%S · %d/%m/%Y")
+
+    if result == "invalid" or alert is None:
+        mark = _ACK_MARK.format(cls=" sw-ack-warn", path="M42 24v22M42 58v.5")
+        return (f'<div class="sw-ack">{mark}<div class="sw-ack-title">Không tìm thấy cảnh báo</div>'
+                '<div class="sw-ack-sub">Mã xác nhận trong đường link không đúng hoặc đã bị xoá. Hãy mở link mới nhất '
+                'trong tin nhắn, hoặc xem danh sách ở trang Cảnh báo.</div></div>')
+    mark = _ACK_MARK.format(cls="", path="M27 43l10 10 20-21")
+    stamp_time = datetime.fromtimestamp(alert["acked_at"]).strftime("%H:%M · %d/%m") if alert.get("acked_at") else ""
+    rows = rows_html([("Cảnh báo", f'#{alert["id"]} · {alert["kind"]}'), ("Phát hiện lúc", t(alert["detected_at"])),
+                      ("Xác nhận lúc", t(alert.get("acked_at")))]
+                     + ([("Người xác nhận", f'{alert["acked_by"]}')] if result == "already" and alert.get("acked_by") else []))
+    if result == "new":
+        title = "Đã ghi nhận. Cảm ơn bạn!"
+        sub = "SafeWatch đã dừng gửi lại và chuyển tiếp cảnh báo này cho những người khác."
+        nxt = (f'<div class="sw-ack-next">{svg("phone", 20)}<div><b>Việc cần làm ngay:</b> gọi điện cho người thân '
+               'hoặc tới chỗ họ để kiểm tra. Nếu không liên lạc được, hãy gọi 115.</div></div>')
+    else:
+        title = "Cảnh báo này đã có người nhận"
+        sub = "Một người khác đã xác nhận trước bạn, chuỗi cảnh báo đã dừng."
+        nxt = ""
+    return (f'<div class="sw-ack">{mark}<div class="sw-ack-title">{title}</div><div class="sw-ack-sub">{sub}</div>'
+            f'<div class="sw-stamp">ĐÃ NHẬN<small>{stamp_time}</small></div>'
+            f'<div class="sw-card">{rows}</div>{nxt}</div>')
 
 
 def badge_html(level, text):
     """level: safe | monitoring | emergency | nodata | idle | info | neutral (= idle)."""
     _, _, bg, fg = LEVELS["idle" if level == "neutral" else level]
-    return f'<span class="sw-badge" style="background:{bg};color:{fg};">{text}</span>'
+    return f'<span class="sw-badge sw-badge-{level}" style="background:{bg};color:{fg};">{text}</span>'
 
 
 def rows_html(rows):

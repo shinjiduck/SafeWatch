@@ -40,7 +40,7 @@ with left:
         )
         s["mirror_camera"] = st.toggle("Lật ngang hình (như soi gương)", value=s["mirror_camera"])
         s["show_overlay"] = st.toggle("Vẽ khung xương lên video", value=s["show_overlay"])
-        st.caption("Áp dụng khi bấm STOP rồi START lại ở trang Trực tiếp.")
+        st.caption("Áp dụng khi bấm Dừng rồi Bắt đầu lại ở trang Trực tiếp.")
 
 with right:
     section("Đặt camera thế nào")

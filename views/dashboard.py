@@ -14,14 +14,15 @@ import streamlit as st
 
 import event_log
 import notifier
-from theme import COLOR_NAVY, card, fmt_duration, kpi_card, page_header, section
+from theme import COLOR_NAVY, card, empty_html, fmt_duration, kpi_card, page_header, section
 
 event_log.init_db()
 notifier.init_db()
 page_header("Tổng quan", "Sự cố theo ngày, theo giờ và tốc độ người nhà xác nhận cảnh báo.", icon="📊")
 
 COLORS = {event_log.STATUS_ALARM: "#DC2626", "Tự đứng dậy": "#2563EB"}
-AXIS = dict(labelColor="#64748B", titleColor="#64748B", gridColor="#EEF0F3", domainColor="#CBD5E1", tickColor="#CBD5E1")
+AXIS = dict(labelColor="#71717A", titleColor="#71717A", gridColor="#F4F4F5", domainColor="#D4D4D8", tickColor="#D4D4D8",
+            labelFont="Be Vietnam Pro", titleFont="Be Vietnam Pro")
 
 events = []
 for ts, event_type, _ in event_log.get_events(limit=5000):
@@ -48,12 +49,13 @@ with k1:
 with k2:
     kpi_card("Tự đứng dậy", int((recent["Kết quả"] == "Tự đứng dậy").sum()), "Không cần báo động", icon="🧍", tone="emerald")
 with k3:
-    kpi_card("Người nhà xác nhận sau", fmt_duration(median(ack_times)) if ack_times else "—", "Trung vị, từ lúc gửi được", icon="⏱️", tone="sky")
+    kpi_card("Thời gian xác nhận", fmt_duration(median(ack_times)) if ack_times else "—", "Trung vị: gửi được → người nhà bấm nhận", icon="⏱️", tone="sky")
 with k4:
     kpi_card("Chưa ai xác nhận", sum(1 for a in alerts if a["status"] != notifier.STATUS_ACKED), "Cảnh báo cần xem", icon="📨", tone="amber")
 
 if recent.empty:
-    st.info(f"Chưa có sự cố nào trong {days} ngày qua.")
+    st.markdown(empty_html(f"Không có sự cố nào trong {days} ngày qua", "Biểu đồ theo ngày và theo giờ sẽ hiện khi "
+                           "có lần ngã, cử chỉ cầu cứu hoặc tự đứng dậy được ghi lại."), unsafe_allow_html=True)
     st.stop()
 
 section("Sự cố theo ngày")
@@ -71,7 +73,7 @@ chart = (
                 axis=alt.Axis(labelAngle=0, grid=False, labelOverlap=True, **AXIS)),
         y=alt.Y("Số lần:Q", title=None, axis=alt.Axis(tickMinStep=1, **AXIS)),
         color=alt.Color("Kết quả:N", scale=alt.Scale(domain=list(COLORS), range=list(COLORS.values())),
-                        legend=alt.Legend(orient="top", title=None, labelColor=COLOR_NAVY)),
+                        legend=alt.Legend(orient="top", title=None, labelColor=COLOR_NAVY, labelFont="Be Vietnam Pro")),
         order=alt.Order("Kết quả:N", sort="descending"),
         tooltip=[alt.Tooltip("Ngày:T", format="%d/%m/%Y"), "Kết quả:N", "Số lần:Q"],
     )
@@ -86,7 +88,7 @@ per_hour = recent.assign(Giờ=recent["dt"].dt.hour).groupby("Giờ").size().rei
 per_hour = per_hour.rename("Số lần").reset_index()
 chart = (
     alt.Chart(per_hour)
-    .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, color="#475569")
+    .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4, color="#6366F1")
     .encode(
         x=alt.X("Giờ:O", title="Giờ", axis=alt.Axis(labelAngle=0, grid=False, **AXIS)),
         y=alt.Y("Số lần:Q", title=None, axis=alt.Axis(tickMinStep=1, **AXIS)),

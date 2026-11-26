@@ -1,18 +1,50 @@
-# Chủ đề màu SafeWatch — sáng, phẳng. Màu chính (chàm) dùng cho nút / công tắc / thanh kéo — KHÔNG dùng đỏ, vì đỏ
-# trong app nghĩa là KHẨN CẤP. Màu trạng thái (xanh lá / cam / đỏ / xám) định nghĩa trong theme.py.
+# Chủ đề SafeWatch: dashboard sáng. Nền xám nhạt, khung + thanh bên trắng, màu chính = chàm của logo (nút chính,
+# mục menu đang chọn, công tắc). Đỏ / cam / xanh lá dành riêng cho trạng thái (theme.py), không dùng cho nút.
+[client]
+toolbarMode = "minimal"
+
+[server]
+enableStaticServing = true
+
 [theme]
 base = "light"
 primaryColor = "#4F46E5"
-backgroundColor = "#F8FAFC"
-secondaryBackgroundColor = "#F1F5F9"
-textColor = "#0F172A"
-borderColor = "#E2E8F0"
-baseRadius = "0.625rem"
-font = "sans serif"
+backgroundColor = "#F3F4F7"
+secondaryBackgroundColor = "#F4F4F5"
+textColor = "#18181B"
+linkColor = "#4338CA"
+borderColor = "#E4E4E7"
+showWidgetBorder = true
+baseRadius = "0.5rem"
+buttonRadius = "0.5rem"
+font = "Be Vietnam Pro, -apple-system, Segoe UI, sans-serif"
+headingFont = "Be Vietnam Pro, -apple-system, Segoe UI, sans-serif"
+headingFontWeights = [700, 600, 600, 600, 600, 600]
+baseFontSize = 16
+
+[[theme.fontFaces]]
+family = "Be Vietnam Pro"
+url = "app/static/fonts/BeVietnamPro-Regular.ttf"
+weight = 400
+
+[[theme.fontFaces]]
+family = "Be Vietnam Pro"
+url = "app/static/fonts/BeVietnamPro-Medium.ttf"
+weight = 500
+
+[[theme.fontFaces]]
+family = "Be Vietnam Pro"
+url = "app/static/fonts/BeVietnamPro-SemiBold.ttf"
+weight = 600
+
+[[theme.fontFaces]]
+family = "Be Vietnam Pro"
+url = "app/static/fonts/BeVietnamPro-Bold.ttf"
+weight = 700
 
 [theme.sidebar]
 backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F1F5F9"
-textColor = "#334155"
+secondaryBackgroundColor = "#F4F4F5"
+textColor = "#27272A"
 primaryColor = "#4F46E5"
-borderColor = "#E2E8F0"
+borderColor = "#E4E4E7"

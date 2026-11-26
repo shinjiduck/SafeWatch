@@ -136,6 +136,13 @@ def ack(token, by="", via="", now=None):
         return cursor.rowcount > 0
 
 
+def get_alert_by_token(token):
+    """1 cảnh báo theo mã xác nhận (dùng cho trang mở từ link trong tin nhắn); không có thì None."""
+    with _conn() as conn:
+        conn.row_factory = _dict_row
+        return conn.execute("SELECT * FROM alerts WHERE ack_token = ?", (token,)).fetchone()
+
+
 def get_alerts(limit=200):
     with _conn() as conn:
         conn.row_factory = _dict_row

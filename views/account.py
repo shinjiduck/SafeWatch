@@ -35,7 +35,7 @@ with st.form("profile_form"):
     health_notes = st.text_area("Ghi chú sức khoẻ (bệnh nền, thuốc đang dùng...)", value=profile["health_notes"])
     watch_area = st.text_input("Khu vực giám sát chính", value=profile["watch_area"])
 
-    if st.form_submit_button("Lưu thay đổi"):
+    if st.form_submit_button("Lưu thay đổi", type="primary"):
         profile_store.save_profile(
             {
                 "name": name,
