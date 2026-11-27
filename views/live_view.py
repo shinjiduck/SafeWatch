@@ -12,6 +12,7 @@ Vòng lặp while ở cuối file CHỈ để polling + cập nhật hiển th�
 card, FPS), không xử lý frame nào cả.
 """
 
+import base64
 import os
 import time
 
@@ -247,9 +248,11 @@ while webrtc_ctx.state.playing:
             st.caption(f"Đang nhắc: {framing.VOICE_TEXT[pending_voice]}")
             # Cùng 1 câu nhắc phát lần 2 trong cùng lần chạy -> Streamlit báo trùng ID (ID tính từ nội dung; st.audio
             # bản này không nhận key). Gắn thẻ ID3v1 có số thứ tự vào cuối mp3 -> nội dung khác, máy phát bỏ qua thẻ.
+            # Đưa vào dạng data URI (nhúng thẳng vào trang) thay vì bytes: bytes đi qua đường /media/, mà trên Streamlit
+            # Cloud đường này lỗi nén gzip ("Expected ASGI message 'http.response.start'") -> không phát được tiếng.
             st.session_state["_voice_play_count"] = st.session_state.get("_voice_play_count", 0) + 1
-            st.audio(voice_bytes(pending_voice) + id3_tag(st.session_state["_voice_play_count"]),
-                     format="audio/mpeg", autoplay=True)
+            mp3 = voice_bytes(pending_voice) + id3_tag(st.session_state["_voice_play_count"])
+            st.audio("data:audio/mpeg;base64," + base64.b64encode(mp3).decode(), format="audio/mpeg", autoplay=True)
         pending_voice = None
 
     processor = webrtc_ctx.video_processor

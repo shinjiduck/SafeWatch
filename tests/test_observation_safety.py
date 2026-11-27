@@ -187,6 +187,54 @@ def v2_harness(grace=5.0):
     return h
 
 
+def too_close(cx=0.5):
+    """Ngồi sát webcam: vai rộng 0.5 khung hình (framing.assess -> TOO_CLOSE)."""
+    lm = standing(cx=cx)
+    lm[11], lm[12] = [cx + 0.25, 0.3, 0, 0.99], [cx - 0.25, 0.3, 0, 0.99]
+    return lm
+
+
+def test_qua_gan_camera_khong_bat_dau_ca_nga_moi():
+    """Ảnh chụp thật: ngồi sát webcam -> model đọc nhầm hông/chân đoán bừa thành 'ngã'. Đã quá gần >= 2 s thì
+    không được bắt đầu theo dõi ngã; hiện 'quá gần camera' (chưa đủ dữ liệu), không báo động."""
+    fresh_db()
+    h = v2_harness(grace=5.0)
+    h.pose.lm = too_close()
+    h.run(3.0)  # giữ quá gần > framing.HOLD_SECONDS
+    assert h.s["framing_status"] == "too_close"
+    h.p.fall_tracker.model.prob = lambda _f: 1.0  # model bị đánh lừa: chắc chắn "ngã"
+    h.run(8.0)  # lâu hơn cả thời gian xác minh 5 s
+    assert h.s["fall_down_since"] is None, "quá gần camera mà vẫn bắt đầu theo dõi ngã"
+    assert not h.s["sos_alert"]
+    assert "Ngã (không đứng lên lại)" not in [k for k, _ in events()]
+    # lùi ra xa (khung hình đúng) -> phát hiện ngã hoạt động lại bình thường
+    h.pose.lm = standing()
+    h.run(4.0)
+    assert h.s["fall_down_since"] is not None, "đứng đúng chỗ rồi mà không phát hiện ngã lại"
+
+
+def test_dang_xac_minh_nga_ma_qua_gan_van_bao_dong():
+    """Ca ngã ĐANG xác minh: chặn 'quá gần camera' không được xoá dữ liệu hay đổi nhãn của ca đó (an toàn hơn là báo
+    đúng hạn). Người vẫn nằm (khung xương nằm, sát camera) -> hết giờ vẫn báo động."""
+    fresh_db()
+    h = v2_harness(grace=5.0)
+    h.p.fall_tracker.model.prob = lambda _f: 1.0
+    h.run(0.5)
+    started = h.s["fall_down_since"]
+    assert started is not None
+    h.pose.lm = lying()  # vẫn nằm (không đứng dậy)
+    real_assess = webrtc_processor.framing.assess
+    webrtc_processor.framing.assess = lambda _lm: "too_close"  # khung hình bị đánh giá quá gần suốt lúc xác minh
+    try:
+        h.run(3.0)  # > framing.HOLD_SECONDS: trạng thái quá gần đã được giữ
+        assert h.s["framing_status"] == "too_close"
+        assert h.s["fall_down_since"] == started and h.s["fall_label"] == "Fall", "chặn quá gần đã xoá ca đang xác minh"
+        h.run(2.5)
+    finally:
+        webrtc_processor.framing.assess = real_assess
+    assert h.s["fall_escalated"] and h.s["sos_alert"]
+
+
 def drop_and_vanish(h):
     for i in range(1, 6):  # 0.5 s: hông tụt 0.15 khung hình (ngã xuống sau giường)
         h.pose.lm = standing(top=0.3 + 0.03 * i)

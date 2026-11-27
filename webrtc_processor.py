@@ -216,9 +216,18 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 # Đang theo dõi sau ngã / đang báo động: không nhắc "đứng lại cho đúng".
                 self._pose_for_hands = landmarks
                 # Đang giơ tay cao hơn vai (có thể đang ra hiệu cầu cứu) -> không nhắc "lùi ra xa".
-                self.framing.observe(framing.assess(landmarks), now,
-                                     quiet=self._busy(now) or hand_roi.hand_raised(landmarks))
-                if self.fall_tracker is not None:
+                status = self.framing.observe(framing.assess(landmarks), now,
+                                              quiet=self._busy(now) or hand_roi.hand_raised(landmarks))
+                if self._too_close_gate(status):
+                    # Đã "quá gần camera" liên tục >= framing.HOLD_SECONDS và chưa có ca ngã nào đang xác minh:
+                    # khung hình chỉ có đầu + vai, MediaPipe phải đoán hông/chân nằm ngoài khung -> model ngã đọc
+                    # nhầm thành "đổ xuống". Không bắt đầu ca ngã mới; giao diện hiện "Đứng quá gần camera" + nhắc
+                    # lùi ra (trạng thái chưa đủ dữ liệu, không phải an toàn). Ca ngã ĐANG xác minh vẫn chạy tiếp.
+                    self.fall_lm_window.clear()
+                    if self.fall_tracker is not None:
+                        self.fall_tracker.clear_window()
+                    self.fall_label = engine.NO_DATA_LABEL
+                elif self.fall_tracker is not None:
                     label = self.fall_tracker.update(landmarks, now)
                     if label is not None:
                         self.fall_label = label
@@ -309,8 +318,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
         """Chế độ nhiều người: mỗi người 1 bộ theo dõi ngã v2 + luật khuất sau vật cản riêng. Đồng hồ xác
         minh sau ngã chạy từ lúc người SỚM NHẤT trong số đang ngã bắt đầu ngã; ai ngã mà không dậy -> báo."""
         visible = self.people.update(self.multi.detect(img_rgb, now), now)
+        too_close = self._too_close_gate(self.framing.status)  # trạng thái đã giữ >= 2 s (cập nhật ở cuối hàm)
         for person in list(self.people.people.values()):
-            if person.seen_now:
+            if person.seen_now and too_close and person.down_since is None:
+                # Quá gần camera: không bắt đầu ca ngã mới cho người này (xem _too_close_gate).
+                person.hips.append((now, framing.hip_y(person.lm)))
+                person.fall.clear_window()
+                label = None
+            elif person.seen_now:
                 person.hips.append((now, framing.hip_y(person.lm)))
                 label = person.fall.update(person.lm, now)
             else:
@@ -387,6 +402,11 @@ class DetectionVideoProcessor(VideoProcessorBase):
         if self.hand_label not in engine.SOS_HAND_LABELS or self._hand_sos_since is None:
             return False
         return not self.config.get("sos_filter") or now - self._hand_sos_since >= self.SOS_HOLD_SECONDS
+
+    def _too_close_gate(self, framing_status):
+        """True = khung hình 'quá gần camera' (đã giữ ổn định, xem framing.FramingMonitor) và KHÔNG có ca ngã nào
+        đang xác minh -> không được bắt đầu ca ngã mới. Ca đang xác minh thì không chặn: an toàn hơn là báo đúng hạn."""
+        return framing_status == framing.TOO_CLOSE and self.fall_down_since is None
 
     def _busy(self, now):
         return self.fall_down_since is not None or now < self.alert_until
