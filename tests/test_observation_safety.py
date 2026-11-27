@@ -325,6 +325,35 @@ def test_mat_camera_phat_hien_qua_tick_va_khoi_phuc():
     assert statuses()[-1] == "Camera đã khôi phục"
 
 
+def test_ai_xu_ly_cham_khong_bi_bao_nham_mat_camera():
+    """1 khung hình AI xử lý mất 5 s (máy bận). Camera vẫn gửi hình bình thường -> không được báo mất tín hiệu,
+    không được xoá cửa sổ đang theo dõi (trước đây recv() ghi giờ nhận TRƯỚC khi chạy AI nên tick() báo nhầm)."""
+    fresh_db()
+    h = Harness()
+    h.run(3)
+    original = h.p._process_frame
+
+    def slow(img, now):
+        h.clock.t += 5.0  # AI chạy 5 giây
+        return original(img, now)
+
+    h.p._process_frame = slow
+    h.clock.t += 1 / FPS
+    # khung hình AI xử lý (frame_count chia hết cho PROCESS_EVERY_N_FRAMES)
+    while (h.p.frame_count + 1) % h.p.PROCESS_EVERY_N_FRAMES:
+        h.p.frame_count += 1
+    window_before = len(h.p.fall_lm_window)
+    h.p.recv(h.frame)
+    h.p.tick()
+    h.p._process_frame = original
+    assert not h.s["camera_lost"], "AI xử lý chậm bị coi là mất camera"
+    assert "Mất tín hiệu camera" not in statuses(), "nhật ký ghi nhầm mất tín hiệu"
+    assert len(h.p.fall_lm_window) >= window_before, "cửa sổ theo dõi bị xoá"
+    # camera thật sự ngừng gửi hình thì vẫn phải báo như cũ
+    h.stall(4)
+    assert h.s["camera_lost"]
+
+
 def test_mat_camera_trong_luc_theo_doi_sau_nga_van_bao_dong():
     fresh_db()
     h = Harness(grace=5.0)

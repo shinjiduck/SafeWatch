@@ -151,6 +151,10 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 event_log.log_status("Camera đã khôi phục", "Nhận lại hình ảnh từ camera")
             if should_process:
                 img = self._process_frame(img, now)
+                # Thời gian AI xử lý không phải là camera mất hình: camera vẫn gửi khung trong lúc đó. Không ghi lại mốc
+                # này thì tick() (đang chờ khoá) thấy "đã > CAMERA_STALL_SECONDS không có khung" khi AI chậm (máy bận)
+                # -> báo nhầm "Mất tín hiệu camera" và xoá cửa sổ đang theo dõi (tests/test_observation_safety.py).
+                self.last_frame_time = time.time()
             self._update_alerts(now)
 
         fps = 1 / (now - self.prev_time) if now > self.prev_time else 0
