@@ -137,6 +137,8 @@ def _login_screen():
             with st.form("first_setup"):
                 username = st.text_input("Tên đăng nhập", placeholder="vd: an.nguyen")
                 display = st.text_input("Tên hiển thị", placeholder="vd: Nguyễn Văn An (con trai)")
+                email = st.text_input("Email (để tự lấy lại mật khẩu khi quên, không bắt buộc)",
+                                      placeholder="vd: an.nguyen@gmail.com")
                 pw = st.text_input("Mật khẩu (ít nhất 6 ký tự, hoặc mã PIN 6 số)", type="password")
                 pw2 = st.text_input("Nhập lại mật khẩu", type="password")
                 commit = st.checkbox("Tôi cam kết chỉ dùng SafeWatch khi người được giám sát đã được giải thích và đồng "
@@ -147,7 +149,7 @@ def _login_screen():
                     elif not commit:
                         st.error("Cần đánh dấu cam kết sử dụng.")
                     else:
-                        uid, err = auth.create_user(username, display, auth.ROLE_ADMIN, pw)
+                        uid, err = auth.create_user(username, display, auth.ROLE_ADMIN, pw, email=email)
                         if err:
                             st.error(err)
                         else:
