@@ -88,3 +88,32 @@ def delete_contact(contact_id):
 def set_notify_enabled(contact_id, enabled):
     with _get_connection() as conn:
         conn.execute("UPDATE contacts SET notify_enabled = ? WHERE id = ?", (1 if enabled else 0, contact_id))
+
+
+def contacts_from_secrets():
+    """Người liên hệ khai trong Secrets ([[contacts]]: name, relationship, phone, email, telegram_chat_id, priority)."""
+    try:
+        import streamlit as st
+
+        return [dict(c) for c in st.secrets.get("contacts", [])]
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def bootstrap(items=None):
+    """Streamlit Cloud: CSDL trống sau khi khởi động lại -> nạp người liên hệ khai trong Secrets (lưu mã hoá như
+    thường). Đã có người liên hệ nào thì không làm gì (không ghi đè chỉnh sửa trong app). Trả số người đã thêm."""
+    items = contacts_from_secrets() if items is None else items
+    if not items or get_contacts():
+        return 0
+    added = 0
+    for c in items:
+        name = str(c.get("name", "")).strip()
+        if not name:
+            continue
+        add_contact(name, str(c.get("relationship", "") or "Khác"), str(c.get("phone", "") or ""),
+                    str(c.get("email", "") or ""), int(c.get("priority", 1) or 1),
+                    str(c.get("telegram_chat_id", "") or "") or None)
+        added += 1
+    return added
+

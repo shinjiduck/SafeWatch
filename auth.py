@@ -28,6 +28,14 @@ ROLE_CAREGIVER = "cham_soc"
 ROLE_SUBJECT = "duoc_giam_sat"
 ROLE_NAMES = {ROLE_ADMIN: "Quản trị gia đình", ROLE_CAREGIVER: "Người chăm sóc", ROLE_SUBJECT: "Người được giám sát"}
 ROLES = list(ROLE_NAMES)
+# Tài khoản tự đăng ký: KHÔNG có quyền gì cho tới khi quản trị duyệt và chọn vai trò (chống người lạ tự vào xem dữ liệu).
+ROLE_PENDING = "cho_duyet"
+ROLE_LABELS = {**ROLE_NAMES, ROLE_PENDING: "Chờ duyệt"}
+MAX_PENDING = 20  # chặn đăng ký tràn lan: quá số này thì tạm ngừng nhận đăng ký mới
+# Mỗi IP đăng ký tối đa bấy nhiêu lần / giờ: cả nhà chung Wi-Fi (chung IP) vẫn đăng ký được vài tài khoản, máy spam
+# thì bị chặn. Đếm trong bộ nhớ của server (khởi động lại thì đếm lại từ đầu).
+SIGNUP_PER_IP_PER_HOUR = 5
+_signup_times = {}
 
 MONITOR = "giam_sat"                  # bắt đầu / dừng giám sát trên thiết bị
 PAUSE = "tam_dung"                    # tạm dừng vì riêng tư
@@ -55,6 +63,7 @@ _ALL = {MONITOR, PAUSE, ACK, VIEW_HISTORY, EXPORT, DELETE_HISTORY, DELETE_ALL, S
         VIEW_AUDIT, VIEW_REPORTS, TEST_ALERTS}
 # Đúng ma trận mục 3.2 của đặc tả. Người chăm sóc KHÔNG xoá được lịch sử (không ai che giấu được sự cố).
 PERMISSIONS = {
+    ROLE_PENDING: frozenset(),
     ROLE_ADMIN: frozenset(_ALL),
     ROLE_CAREGIVER: frozenset({MONITOR, PAUSE, ACK, VIEW_HISTORY, VIEW_CONTACTS, VIEW_PROFILE, VIEW_REPORTS}),
     ROLE_SUBJECT: frozenset({MONITOR, PAUSE, ACK, VIEW_HISTORY, EXPORT, DELETE_HISTORY, DELETE_ALL, VIEW_CONTACTS,
@@ -185,6 +194,21 @@ def init_db():
                 last_login REAL
             )"""
         )
+        if "requested_role" not in {r[1] for r in conn.execute("PRAGMA table_info(users)")}:
+            conn.execute("ALTER TABLE users ADD COLUMN requested_role TEXT")  # vai trò người đăng ký mong muốn
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS invites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code_hash TEXT NOT NULL UNIQUE,
+                role TEXT NOT NULL,
+                note TEXT,
+                created_by TEXT,
+                created_at REAL NOT NULL,
+                expires_at REAL NOT NULL,
+                used_by TEXT,
+                used_at REAL
+            )"""
+        )
         conn.execute(
             """CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -236,7 +260,7 @@ def create_user(username, display_name, role, secret, now=None):
         return None, "Tên đăng nhập 3–32 ký tự: chữ thường không dấu, số, dấu . _ -"
     if not display_name or len(display_name) > 60:
         return None, "Cần tên hiển thị (tối đa 60 ký tự)."
-    if role not in ROLE_NAMES:
+    if role not in ROLE_LABELS:
         return None, "Vai trò không hợp lệ."
     problem = password_problem(secret, username, role)
     if problem:
@@ -321,6 +345,154 @@ def set_secret(user_id, new_secret, actor=None, old_secret=None):
         conn.execute("UPDATE users SET secret_hash = ?, failed_count = 0, locked_until = 0 WHERE id = ?",
                      (hash_secret(new_secret), user_id))
     audit("doi_mat_khau" if old_secret is not None else "dat_lai_mat_khau", user["username"], who=actor)
+    return None
+
+
+def signup_enabled():
+    """Cho tự đăng ký (mặc định có). Tắt: SAFEWATCH_ALLOW_SIGNUP=0 hoặc ALLOW_SIGNUP = "0" trong secrets."""
+    value = os.environ.get("SAFEWATCH_ALLOW_SIGNUP", "")
+    try:
+        import streamlit as st
+
+        value = str(st.secrets.get("ALLOW_SIGNUP", "")) or value
+    except Exception:  # noqa: BLE001
+        pass
+    return value.strip() not in ("0", "false", "False", "off")
+
+
+def list_pending():
+    with _conn() as conn:
+        conn.row_factory = _row
+        return conn.execute("SELECT id, username, display_name, created_at, requested_role FROM users WHERE role = ? "
+                            "ORDER BY id", (ROLE_PENDING,)).fetchall()
+
+
+def client_ip():
+    """IP của kết nối hiện tại (theo kết nối TCP, máy khác không giả được), hoặc None."""
+    try:
+        from streamlit.runtime import get_instance
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+
+        client = get_instance().get_client(get_script_run_ctx().session_id)
+        return client.client_context.remote_ip if client and client.client_context else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+# ------------------------------------------------------------------ mã mời
+# Quản trị tạo cho MỖI NGƯỜI một mã mời gắn sẵn vai trò. Người đó đăng ký kèm mã -> có quyền ngay, không phải chờ
+# duyệt. Mã dùng 1 lần, hết hạn sau INVITE_HOURS giờ, chỉ lưu mã băm (SHA-256). 12 ký tự ~ 60 bit, cộng giới hạn
+# đăng ký theo IP -> không dò được.
+INVITE_HOURS = 48
+_INVITE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # bỏ 0/O, 1/I dễ nhầm
+
+
+def _invite_hash(code):
+    norm = "".join(ch for ch in (code or "").upper() if ch.isalnum())
+    return hashlib.sha256(norm.encode()).hexdigest()
+
+
+def create_invite(role, note="", actor=None, now=None, hours=INVITE_HOURS):
+    """Tạo mã mời cho 1 vai trò. Trả mã dạng XXXX-XXXX-XXXX (chỉ hiện 1 lần, không lưu dạng gốc)."""
+    import secrets as _s
+
+    if role not in ROLE_NAMES:
+        raise ValueError("Vai trò không hợp lệ.")
+    now = time.time() if now is None else now
+    raw = "".join(_s.choice(_INVITE_ALPHABET) for _ in range(12))
+    code = f"{raw[:4]}-{raw[4:8]}-{raw[8:]}"
+    who = actor or ("", "")
+    with _conn() as conn:
+        conn.execute("INSERT INTO invites (code_hash, role, note, created_by, created_at, expires_at) "
+                     "VALUES (?, ?, ?, ?, ?, ?)", (_invite_hash(code), role, (note or "").strip()[:60], who[0], now,
+                                                   now + hours * 3600))
+    audit("tao_ma_moi", f"{ROLE_NAMES[role]} · {(note or '').strip()[:60]}", who=actor)
+    return code
+
+
+def list_invites(now=None):
+    """Mã mời còn dùng được (chưa dùng, chưa hết hạn) — không có mã gốc."""
+    now = time.time() if now is None else now
+    with _conn() as conn:
+        conn.row_factory = _row
+        return conn.execute("SELECT id, role, note, created_by, created_at, expires_at FROM invites "
+                            "WHERE used_at IS NULL AND expires_at > ? ORDER BY id DESC", (now,)).fetchall()
+
+
+def revoke_invite(invite_id, actor=None):
+    with _conn() as conn:
+        n = conn.execute("DELETE FROM invites WHERE id = ? AND used_at IS NULL", (invite_id,)).rowcount
+    if n:
+        audit("huy_ma_moi", f"#{invite_id}", who=actor)
+
+
+def register(username, display_name, secret, now=None, ip=None, invite="", requested_role=None):
+    """Đăng ký. Có mã mời hợp lệ -> tạo tài khoản đúng vai trò của mã, dùng được ngay. Không có mã -> CHỜ DUYỆT
+    (không có quyền gì). Trả (id, None) hoặc (None, lý do)."""
+    now = time.time() if now is None else now
+    if ip:
+        recent = [t for t in _signup_times.get(ip, []) if now - t < 3600]
+        if len(recent) >= SIGNUP_PER_IP_PER_HOUR:
+            audit("dang_ky_bi_chan", f"quá {SIGNUP_PER_IP_PER_HOUR} lần/giờ", who=("", ""))
+            return None, "Đăng ký quá nhiều lần từ cùng một mạng. Thử lại sau 1 giờ hoặc nhờ quản trị tạo tài khoản."
+        _signup_times[ip] = recent
+    if (invite or "").strip():
+        with _conn() as conn:
+            row = conn.execute("SELECT id, role FROM invites WHERE code_hash = ? AND used_at IS NULL AND expires_at > ?",
+                               (_invite_hash(invite), now)).fetchone()
+        if row is None:
+            audit("ma_moi_sai", "mã mời sai, đã dùng hoặc hết hạn", who=("", ""))
+            if ip:
+                _signup_times.setdefault(ip, []).append(now)  # nhập sai mã cũng tính vào giới hạn theo IP
+            return None, "Mã mời không đúng, đã được dùng hoặc đã hết hạn. Nhờ quản trị tạo mã mới."
+        uid, err = create_user(username, display_name, row[1], secret, now=now)
+        if uid:
+            with _conn() as conn:
+                conn.execute("UPDATE invites SET used_by = ?, used_at = ? WHERE id = ?",
+                             ((username or "").strip().lower(), now, row[0]))
+            audit("dang_ky_bang_ma_moi", f"{(username or '').strip().lower()} · {ROLE_NAMES[row[1]]}",
+                  who=((username or "").strip().lower(), row[1]))
+        return uid, err
+    if not signup_enabled():
+        return None, "Gia đình này đã tắt tự đăng ký. Nhờ quản trị tạo tài khoản cho bạn, hoặc xin mã mời."
+    if count_users() == 0:
+        return None, "Chưa có quản trị. Người lắp đặt cần tạo tài khoản quản trị trước."
+    if len(list_pending()) >= MAX_PENDING:
+        return None, "Đang có quá nhiều yêu cầu chờ duyệt. Nhờ quản trị duyệt bớt rồi thử lại."
+    uid, err = create_user(username, display_name, ROLE_PENDING, secret, now=now)
+    if uid and requested_role in ROLE_NAMES:
+        with _conn() as conn:
+            conn.execute("UPDATE users SET requested_role = ? WHERE id = ?", (requested_role, uid))
+    if uid and ip:
+        _signup_times[ip].append(now)
+    if uid:
+        audit("dang_ky", f"{(username or '').strip().lower()} · chờ duyệt · muốn làm "
+                         f"{ROLE_NAMES.get(requested_role, 'chưa chọn')}", who=((username or "").strip().lower(),
+                                                                             ROLE_PENDING))
+    return uid, err
+
+
+def approve(user_id, role, actor=None):
+    """Quản trị duyệt tài khoản chờ duyệt, gán vai trò."""
+    user = get_user(user_id)
+    if user is None or user["role"] != ROLE_PENDING:
+        return "Không có yêu cầu này."
+    if role not in ROLE_NAMES:
+        return "Vai trò không hợp lệ."
+    with _conn() as conn:
+        conn.execute("UPDATE users SET role = ? WHERE id = ?", (role, user_id))
+    audit("duyet_dang_ky", f"{user['username']} -> {ROLE_NAMES[role]}", who=actor)
+    return None
+
+
+def reject(user_id, actor=None):
+    """Từ chối: xoá hẳn tài khoản chờ duyệt."""
+    user = get_user(user_id)
+    if user is None or user["role"] != ROLE_PENDING:
+        return "Không có yêu cầu này."
+    with _conn() as conn:
+        conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    audit("tu_choi_dang_ky", user["username"], who=actor)
     return None
 
 
@@ -426,10 +598,10 @@ def require(permission, message="Bạn không có quyền làm việc này."):
     st.stop()
 
 
-# Mã cài đặt tự tạo (khi người lắp không đặt SETUP_CODE): sống trong bộ nhớ của tiến trình server, chỉ in ra
-# terminal / log của máy chủ — ai xem được màn hình máy chủ mới biết, như token của Jupyter Notebook.
-_SETUP_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # bỏ 0/O, 1/I dễ nhầm khi đọc từ màn hình
-_generated_setup_code = None
+# Mã cài đặt lần đầu: KHÔNG bắt buộc. Có đặt SETUP_CODE (secrets) thì người mở app từ máy khác / Cloud phải nhập
+# đúng mã mới tạo được quản trị đầu tiên. Không đặt thì ai mở app đầu tiên (khi chưa có tài khoản nào) là quản trị —
+# tiện cho bản dùng thử trên Cloud; muốn tránh người lạ thành quản trị sau mỗi lần Cloud khởi động lại thì khai tài
+# khoản quản trị trong Secrets ([[accounts]], xem cuối file) hoặc đặt SETUP_CODE.
 
 
 def configured_setup_code():
@@ -444,49 +616,14 @@ def configured_setup_code():
     return code if len(code) >= 8 else None
 
 
-def _normalize(code):
-    return "".join(ch for ch in (code or "").upper() if ch.isalnum())
-
-
-def generated_setup_code():
-    """Mã 1 lần tự tạo (12 ký tự, ~60 bit) — tạo và in ra màn hình máy chủ ở lần gọi đầu tiên của tiến trình."""
-    global _generated_setup_code
-    if _generated_setup_code is None:
-        import secrets as _s
-
-        raw = "".join(_s.choice(_SETUP_ALPHABET) for _ in range(12))
-        _generated_setup_code = f"{raw[:4]}-{raw[4:8]}-{raw[8:]}"
-        bar = "=" * 64
-        # Không dấu: terminal Windows / log Cloud không phải lúc nào cũng hiện đúng tiếng Việt có dấu.
-        print("", bar,
-              f"  SafeWatch - MA CAI DAT LAN DAU:  {_generated_setup_code}",
-              "  Mo app, nhap ma nay de tao tai khoan quan tri gia dinh.",
-              "  Ma chi dung 1 lan; khoi dong lai app se ra ma moi.",
-              "  (Muon co dinh ma: dat SETUP_CODE trong .streamlit/secrets.toml)",
-              bar, "", sep=chr(10), flush=True)
-    return _generated_setup_code
-
-
-def setup_code():
-    """Mã cài đặt đang có hiệu lực: mã tự đặt nếu có, không thì mã tự tạo (in ra màn hình máy chủ)."""
-    return configured_setup_code() or generated_setup_code()
-
-
-def setup_code_source():
-    return "config" if configured_setup_code() else "generated"
+def setup_code_required(local=False):
+    """Lần cài đặt đầu có phải nhập mã không: chỉ khi đã đặt SETUP_CODE và không mở ngay trên máy chạy app."""
+    return configured_setup_code() is not None and not local
 
 
 def check_setup_code(entered):
     configured = configured_setup_code()
-    if configured:
-        return hmac.compare_digest(configured.encode(), (entered or "").strip().encode())
-    return hmac.compare_digest(_normalize(generated_setup_code()).encode(), _normalize(entered).encode())
-
-
-def forget_generated_setup_code():
-    """Đã có quản trị: mã tự tạo hết tác dụng."""
-    global _generated_setup_code
-    _generated_setup_code = None
+    return configured is None or hmac.compare_digest(configured.encode(), (entered or "").strip().encode())
 
 
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
@@ -526,3 +663,73 @@ def local_setup_allowed():
                                forced=os.environ.get("SAFEWATCH_REQUIRE_SETUP_CODE") == "1")
     except Exception:  # noqa: BLE001
         return False
+
+
+# ------------------------------------------------------------------ tài khoản khai trong Secrets (Streamlit Cloud)
+# Streamlit Cloud xoá dữ liệu mỗi lần khởi động lại. Khai tài khoản trong Secrets thì app tự tạo lại lúc khởi động:
+#
+#   [[accounts]]
+#   username = "thao"
+#   display_name = "Thảo (cháu trai)"
+#   role = "quan_tri"                 # quan_tri | cham_soc | duoc_giam_sat
+#   password_hash = "scrypt$32768$8$1$...$..."
+#
+# CHỈ lưu mã băm, không lưu mật khẩu: tạo bằng  python -X utf8 auth.py hash  (nhập mật khẩu, in ra mã băm).
+# Tài khoản đã có (cùng tên đăng nhập) thì giữ nguyên, không ghi đè thay đổi trong app.
+
+_HASH_RE = re.compile(r"^scrypt\$\d+\$\d+\$\d+\$[A-Za-z0-9+/=]+\$[A-Za-z0-9+/=]+$")
+
+
+def accounts_from_secrets():
+    try:
+        import streamlit as st
+
+        return [dict(a) for a in st.secrets.get("accounts", [])]
+    except Exception:  # noqa: BLE001 — không có secrets.toml / không có mục accounts
+        return []
+
+
+def bootstrap_accounts(accounts=None, now=None):
+    """Tạo các tài khoản khai sẵn còn thiếu. Trả (số tài khoản đã tạo, [lỗi của từng mục sai])."""
+    accounts = accounts_from_secrets() if accounts is None else accounts
+    created, problems = 0, []
+    for i, a in enumerate(accounts, 1):
+        username = str(a.get("username", "")).strip().lower()
+        display = str(a.get("display_name", "") or username).strip()[:60]
+        role = str(a.get("role", "")).strip()
+        hashed = str(a.get("password_hash", "")).strip()
+        if not USERNAME_RE.match(username):
+            problems.append(f"accounts #{i}: tên đăng nhập không hợp lệ")
+            continue
+        if role not in ROLE_NAMES:
+            problems.append(f"accounts #{i} ({username}): role phải là quan_tri, cham_soc hoặc duoc_giam_sat")
+            continue
+        if not _HASH_RE.match(hashed):
+            problems.append(f"accounts #{i} ({username}): password_hash sai dạng — tạo bằng: python -X utf8 auth.py hash")
+            continue
+        with _conn() as conn:
+            if conn.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone():
+                continue
+            conn.execute("INSERT INTO users (username, display_name, role, secret_hash, created_at) "
+                         "VALUES (?, ?, ?, ?, ?)", (username, display, role, hashed, time.time() if now is None else now))
+        created += 1
+        audit("tao_tu_secrets", f"{username} · {ROLE_NAMES[role]}", who=("(hệ thống)", ""))
+    return created, problems
+
+
+if __name__ == "__main__":
+    import getpass
+    import sys
+
+    if len(sys.argv) < 2 or sys.argv[1] != "hash":
+        sys.exit("Dùng: python -X utf8 auth.py hash   (tạo mã băm mật khẩu / PIN để khai trong Secrets)")
+    pin = input("Tài khoản người được giám sát dùng PIN 6 số? (c/k): ").strip().lower().startswith("c")
+    first = getpass.getpass("Mật khẩu / PIN (không hiện khi gõ): ")
+    if first != getpass.getpass("Nhập lại: "):
+        sys.exit("Hai lần nhập không khớp.")
+    problem = password_problem(first, "", ROLE_SUBJECT if pin else ROLE_CAREGIVER)
+    if problem:
+        sys.exit(problem)
+    print(chr(10) + "Dán dòng dưới vào mục [[accounts]] trong Secrets:" + chr(10))
+    print(f'password_hash = "{hash_secret(first)}"')
+

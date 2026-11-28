@@ -123,37 +123,21 @@ def test_nhat_ky_ghi_dang_nhap_va_khong_chua_mat_khau():
     assert not any("sai-mat-khau-9" in (r[0] or "") or "Hoa-sen-2026" in (r[0] or "") for r in rows)
 
 
-def test_ma_cai_dat_tu_tao_khi_chua_dat_setup_code():
-    """Chưa đặt SETUP_CODE: app tự tạo mã 1 lần (in ra màn hình máy chủ), nhập không phân biệt hoa thường / dấu gạch."""
-    import contextlib
-    import io
-
+def test_khong_dat_setup_code_thi_khong_can_ma():
     real = auth.configured_setup_code
     auth.configured_setup_code = lambda: None
-    auth.forget_generated_setup_code()
     try:
-        out = io.StringIO()
-        with contextlib.redirect_stdout(out):
-            code = auth.setup_code()
-        assert code in out.getvalue(), "mã phải được in ra màn hình máy chủ"
-        assert auth.setup_code() == code, "trong 1 lần chạy server, mã giữ nguyên"
-        assert auth.setup_code_source() == "generated"
-        assert len(code.replace("-", "")) == 12 and not set(code) & set("01IO"), "12 ký tự, không có ký tự dễ nhầm"
-        assert auth.check_setup_code(code.lower().replace("-", " "))
-        assert not auth.check_setup_code("AAAA-BBBB-CCCC")
-        auth.forget_generated_setup_code()
-        with contextlib.redirect_stdout(io.StringIO()):
-            assert auth.setup_code() != code, "sau khi đã tạo quản trị / khởi động lại thì ra mã mới"
+        assert not auth.setup_code_required()
+        assert auth.check_setup_code("")
     finally:
         auth.configured_setup_code = real
-        auth.forget_generated_setup_code()
 
 
 def test_ma_cai_dat_tu_dat_thi_dung_ma_do():
     real = auth.configured_setup_code
     auth.configured_setup_code = lambda: "ma-rieng-cua-toi-2026"
     try:
-        assert auth.setup_code_source() == "config"
+        assert auth.setup_code_required() and not auth.setup_code_required(local=True), "localhost thì bỏ qua mã"
         assert auth.check_setup_code("ma-rieng-cua-toi-2026")
         assert not auth.check_setup_code("MA-RIENG-CUA-TOI-2026"), "mã tự đặt so khớp chính xác"
     finally:
@@ -176,6 +160,92 @@ def test_moi_quyen_deu_co_mo_ta_de_hieu():
     every = set().union(*auth.PERMISSIONS.values())
     assert every <= described, f"quyền chưa có mô tả: {every - described}"
     assert set(auth.ROLE_SUMMARY) == set(auth.ROLE_NAMES)
+
+
+def test_dang_ky_cho_duyet_khong_co_quyen_gi():
+    fresh_db()
+    assert auth.register("lan", "Lan", "Hoa-sen-2026")[0] is None, "chưa có quản trị thì chưa cho đăng ký"
+    boss, _ = auth.create_user("boss", "Boss", auth.ROLE_ADMIN, "Quan-tri-2026")
+    uid, err = auth.register("lan", "Lan", "Hoa-sen-2026")
+    assert uid and err is None
+    u = auth.authenticate("lan", "Hoa-sen-2026")
+    assert u["role"] == auth.ROLE_PENDING, "đăng ký xong là chờ duyệt"
+    for p, _ in auth.PERMISSION_LABELS:
+        assert not auth.role_can(auth.ROLE_PENDING, p), f"chờ duyệt mà có quyền {p}"
+    assert auth.approve(uid, auth.ROLE_CAREGIVER, actor=("boss", auth.ROLE_ADMIN)) is None
+    assert auth.authenticate("lan", "Hoa-sen-2026")["role"] == auth.ROLE_CAREGIVER
+    assert auth.approve(boss, auth.ROLE_CAREGIVER) is not None, "chỉ duyệt được tài khoản đang chờ"
+    actions = [r["action"] for r in auth.get_audit()]
+    assert "dang_ky" in actions and "duyet_dang_ky" in actions
+
+
+def test_tu_choi_dang_ky_va_gioi_han_so_yeu_cau():
+    fresh_db()
+    auth.create_user("boss", "Boss", auth.ROLE_ADMIN, "Quan-tri-2026")
+    uid, _ = auth.register("la.mat", "Người lạ", "Thu-vao-2026")
+    assert auth.reject(uid) is None and auth.get_user(uid) is None
+    for i in range(auth.MAX_PENDING):
+        assert auth.register(f"spam{i:02d}", "x", "Spam-pass-99")[0]
+    assert auth.register("spam99", "x", "Spam-pass-99")[0] is None, "quá số yêu cầu chờ duyệt thì tạm ngừng"
+
+
+def test_moi_ip_dang_ky_toi_da_5_lan_moi_gio():
+    fresh_db()
+    auth.create_user("boss", "Boss", auth.ROLE_ADMIN, "Quan-tri-2026")
+    auth._signup_times.clear()
+    t = 1_000_000.0
+    for i in range(auth.SIGNUP_PER_IP_PER_HOUR):
+        assert auth.register(f"nha{i}", "x", "Mat-khau-2026", now=t + i, ip="203.0.113.7")[0], "cả nhà chung IP vẫn đăng ký được"
+    assert auth.register("nha9", "x", "Mat-khau-2026", now=t + 10, ip="203.0.113.7")[0] is None
+    assert auth.register("khac1", "x", "Mat-khau-2026", now=t + 10, ip="198.51.100.2")[0], "IP khác không bị ảnh hưởng"
+    assert auth.register("nha9", "x", "Mat-khau-2026", now=t + 3700, ip="203.0.113.7")[0], "sau 1 giờ đăng ký lại được"
+    auth._signup_times.clear()
+
+
+def test_khai_tai_khoan_trong_secrets_tu_tao_lai_khi_khoi_dong():
+    fresh_db()
+    h = auth.hash_secret("Quan-tri-2026")
+    created, problems = auth.bootstrap_accounts([
+        {"username": "thao", "display_name": "Thảo", "role": "quan_tri", "password_hash": h},
+        {"username": "x", "role": "quan_tri", "password_hash": h},
+        {"username": "sai.vai.tro", "role": "sep", "password_hash": h},
+        {"username": "khong.bam", "role": "cham_soc", "password_hash": "Quan-tri-2026"},
+    ])
+    assert created == 1 and len(problems) == 3, (created, problems)
+    assert auth.authenticate("thao", "Quan-tri-2026")["role"] == auth.ROLE_ADMIN
+    assert auth.bootstrap_accounts([{"username": "thao", "role": "cham_soc", "password_hash": h}])[0] == 0, \
+        "tài khoản đã có thì không ghi đè"
+
+
+def test_ma_moi_moi_nguoi_mot_ma_dung_vai_tro_dung_mot_lan():
+    fresh_db()
+    auth._signup_times.clear()
+    auth.create_user("boss", "Boss", auth.ROLE_ADMIN, "Quan-tri-2026")
+    t = 1_000_000.0
+    code = auth.create_invite(auth.ROLE_SUBJECT, "ông Ba", actor=("boss", auth.ROLE_ADMIN), now=t)
+    assert len(code) == 14 and code.count("-") == 2
+    uid, err = auth.register("ong.ba", "Ông Ba", "482915", now=t + 60, invite=code.lower().replace("-", ""))
+    assert uid and err is None, err
+    assert auth.authenticate("ong.ba", "482915")["role"] == auth.ROLE_SUBJECT, "có mã thì có vai trò ngay"
+    assert auth.register("ke.khac", "x", "Mat-khau-2026", now=t + 120, invite=code)[0] is None, "mã chỉ dùng 1 lần"
+    old = auth.create_invite(auth.ROLE_CAREGIVER, now=t)
+    assert auth.register("tre.qua", "x", "Mat-khau-2026", now=t + (auth.INVITE_HOURS + 1) * 3600, invite=old)[0] is None
+    assert auth.register("doan.bua", "x", "Mat-khau-2026", now=t, invite="AAAA-BBBB-CCCC")[0] is None
+    path = event_log.DB_PATH
+    assert code.replace("-", "").encode() not in open(path, "rb").read(), "không lưu mã mời dạng gốc"
+    auth._signup_times.clear()
+
+
+def test_dang_ky_chon_vai_tro_mong_muon_quan_tri_thay_chon_san():
+    fresh_db()
+    auth._signup_times.clear()
+    auth.create_user("boss", "Boss", auth.ROLE_ADMIN, "Quan-tri-2026")
+    uid, _ = auth.register("ong.ba", "Ông Ba", "Mat-khau-2026", requested_role=auth.ROLE_SUBJECT)
+    p = auth.list_pending()[0]
+    assert p["requested_role"] == auth.ROLE_SUBJECT
+    assert auth.authenticate("ong.ba", "Mat-khau-2026")["role"] == auth.ROLE_PENDING, "chọn vai trò chưa có quyền ngay"
+    assert auth.approve(uid, p["requested_role"]) is None
+    assert auth.authenticate("ong.ba", "Mat-khau-2026")["role"] == auth.ROLE_SUBJECT
 
 
 if __name__ == "__main__":

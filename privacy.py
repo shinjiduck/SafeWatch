@@ -344,6 +344,11 @@ def init_all():
     auth.init_db()
     init_db()
     encrypt_existing()
+    # Streamlit Cloud: tạo lại tài khoản / người liên hệ khai trong Secrets (dữ liệu bị xoá mỗi lần khởi động lại)
+    _, problems = auth.bootstrap_accounts()
+    for p in problems:
+        print(f"[SafeWatch] Secrets: {p}", flush=True)
+    contacts.bootstrap()
 
 
 def data_files():
