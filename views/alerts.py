@@ -204,7 +204,7 @@ with st.expander("Gửi SMS thử", expanded="sms" in channel_names and not noti
                 except Exception as exc:  # noqa: BLE001 — hiện lỗi cho người cài đặt
                     st.error(f"Gửi không được: {exc}")
 
-with st.expander("Kiểm thử chuỗi cảnh báo & bảng thời gian (minh chứng yêu cầu cải tiến số 1)"):
+with st.expander("Kiểm thử chuỗi cảnh báo & bảng thời gian"):
     if st.button("Giả lập sự kiện ngã", disabled=not auth.can(auth.TEST_ALERTS)):
         auth.require(auth.TEST_ALERTS)
         alert_id = notifier.raise_alert("Ngã (giả lập)", "Kiểm thử chuỗi cảnh báo", source="simulated")

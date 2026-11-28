@@ -123,6 +123,61 @@ def test_nhat_ky_ghi_dang_nhap_va_khong_chua_mat_khau():
     assert not any("sai-mat-khau-9" in (r[0] or "") or "Hoa-sen-2026" in (r[0] or "") for r in rows)
 
 
+def test_ma_cai_dat_tu_tao_khi_chua_dat_setup_code():
+    """Chưa đặt SETUP_CODE: app tự tạo mã 1 lần (in ra màn hình máy chủ), nhập không phân biệt hoa thường / dấu gạch."""
+    import contextlib
+    import io
+
+    real = auth.configured_setup_code
+    auth.configured_setup_code = lambda: None
+    auth.forget_generated_setup_code()
+    try:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = auth.setup_code()
+        assert code in out.getvalue(), "mã phải được in ra màn hình máy chủ"
+        assert auth.setup_code() == code, "trong 1 lần chạy server, mã giữ nguyên"
+        assert auth.setup_code_source() == "generated"
+        assert len(code.replace("-", "")) == 12 and not set(code) & set("01IO"), "12 ký tự, không có ký tự dễ nhầm"
+        assert auth.check_setup_code(code.lower().replace("-", " "))
+        assert not auth.check_setup_code("AAAA-BBBB-CCCC")
+        auth.forget_generated_setup_code()
+        with contextlib.redirect_stdout(io.StringIO()):
+            assert auth.setup_code() != code, "sau khi đã tạo quản trị / khởi động lại thì ra mã mới"
+    finally:
+        auth.configured_setup_code = real
+        auth.forget_generated_setup_code()
+
+
+def test_ma_cai_dat_tu_dat_thi_dung_ma_do():
+    real = auth.configured_setup_code
+    auth.configured_setup_code = lambda: "ma-rieng-cua-toi-2026"
+    try:
+        assert auth.setup_code_source() == "config"
+        assert auth.check_setup_code("ma-rieng-cua-toi-2026")
+        assert not auth.check_setup_code("MA-RIENG-CUA-TOI-2026"), "mã tự đặt so khớp chính xác"
+    finally:
+        auth.configured_setup_code = real
+
+
+def test_mo_tren_chinh_may_thi_khong_can_ma_cai_dat():
+    ok = auth.is_local_access
+    assert ok("127.0.0.1", "localhost:8501") and ok("::1", "[::1]:8501") and ok("127.0.0.1", "127.0.0.1:8501")
+    assert not ok("192.168.1.20", "localhost:8501"), "máy khác trong mạng LAN vẫn phải nhập mã"
+    assert not ok("127.0.0.1", "abcd.ngrok-free.app"), "đường hầm (ngrok) chạy trên máy này vẫn phải nhập mã"
+    assert not ok("127.0.0.1", "localhost:8501", on_cloud=True), "Streamlit Cloud luôn phải nhập mã"
+    assert not ok("127.0.0.1", "localhost:8501", forced=True)
+    assert not ok(None, "localhost:8501") and not ok("khong-phai-ip", "localhost")
+
+
+def test_moi_quyen_deu_co_mo_ta_de_hieu():
+    """Màn hình đăng nhập, nút "Quyền của tôi" và trang Tài khoản & quyền dùng chung PERMISSION_LABELS."""
+    described = {p for p, _ in auth.PERMISSION_LABELS}
+    every = set().union(*auth.PERMISSIONS.values())
+    assert every <= described, f"quyền chưa có mô tả: {every - described}"
+    assert set(auth.ROLE_SUMMARY) == set(auth.ROLE_NAMES)
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0

@@ -62,6 +62,39 @@ PERMISSIONS = {
 }
 
 
+# Mô tả dễ hiểu cho người dùng (màn hình đăng nhập, "Quyền của tôi", trang Tài khoản & quyền) — 1 nguồn duy nhất.
+ROLE_SUMMARY = {
+    ROLE_ADMIN: ("Người lắp đặt, thường là con cháu", "Làm được mọi việc: tạo tài khoản, người liên hệ, cấu hình, "
+                 "hạn lưu, xoá dữ liệu. Luôn có ít nhất 1 người."),
+    ROLE_CAREGIVER: ("Người thân, người giúp việc, nhân viên y tế", "Giám sát, nhận và xác nhận cảnh báo, xem lịch sử. "
+                     "Không đổi cấu hình, không xoá lịch sử."),
+    ROLE_SUBJECT: ("Ông bà — người được camera theo dõi", "Đăng nhập bằng PIN 6 số. Đồng ý hoặc rút lại việc giám sát, "
+                   "tạm dừng vì riêng tư, xem và xoá dữ liệu của mình."),
+}
+PERMISSION_LABELS = [
+    (MONITOR, "Bật / dừng giám sát trên thiết bị"),
+    (PAUSE, "Tạm dừng giám sát vì riêng tư"),
+    (ACK, "Xem cảnh báo, bấm “Tôi đã nhận”"),
+    (VIEW_HISTORY, "Xem lịch sử, trang Tổng quan"),
+    (VIEW_CONTACTS, "Xem người liên hệ"),
+    (VIEW_PROFILE, "Xem hồ sơ người được giám sát"),
+    (VIEW_REPORTS, "Xem trang Kiểm định, Phiên bản, Quyền riêng tư"),
+    (EXPORT, "Xuất lịch sử ra file CSV"),
+    (DELETE_HISTORY, "Xoá sự kiện / theo ngày / toàn bộ lịch sử"),
+    (DELETE_ALL, "Xoá toàn bộ dữ liệu cá nhân"),
+    (SET_RETENTION, "Đặt hạn lưu dữ liệu"),
+    (EDIT_CONTACTS, "Thêm / sửa / xoá người liên hệ"),
+    (EDIT_PROFILE, "Sửa hồ sơ"),
+    (EDIT_CONFIG, "Đổi cấu hình phát hiện"),
+    (MANAGE_USERS, "Tạo / khoá tài khoản, đổi vai trò, đặt lại mật khẩu"),
+    (CONSENT_SELF, "Tự đồng ý được giám sát"),
+    (CONSENT_ON_BEHALF, "Ghi thay sự đồng ý (bắt buộc nêu lý do)"),
+    (WITHDRAW_CONSENT, "Rút lại sự đồng ý"),
+    (VIEW_AUDIT, "Xem nhật ký truy cập (ai làm gì, lúc nào)"),
+    (TEST_ALERTS, "Gửi tin thử, giả lập sự kiện"),
+]
+
+
 def role_can(role, permission):
     return permission in PERMISSIONS.get(role, frozenset())
 
@@ -393,8 +426,14 @@ def require(permission, message="Bạn không có quyền làm việc này."):
     st.stop()
 
 
-def setup_code():
-    """Mã cài đặt lần đầu (secrets SETUP_CODE hoặc biến môi trường SAFEWATCH_SETUP_CODE). Không có -> None."""
+# Mã cài đặt tự tạo (khi người lắp không đặt SETUP_CODE): sống trong bộ nhớ của tiến trình server, chỉ in ra
+# terminal / log của máy chủ — ai xem được màn hình máy chủ mới biết, như token của Jupyter Notebook.
+_SETUP_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # bỏ 0/O, 1/I dễ nhầm khi đọc từ màn hình
+_generated_setup_code = None
+
+
+def configured_setup_code():
+    """Mã do người lắp đặt tự đặt (secrets SETUP_CODE hoặc biến môi trường SAFEWATCH_SETUP_CODE), hoặc None."""
     code = os.environ.get("SAFEWATCH_SETUP_CODE", "")
     try:
         import streamlit as st
@@ -405,6 +444,85 @@ def setup_code():
     return code if len(code) >= 8 else None
 
 
+def _normalize(code):
+    return "".join(ch for ch in (code or "").upper() if ch.isalnum())
+
+
+def generated_setup_code():
+    """Mã 1 lần tự tạo (12 ký tự, ~60 bit) — tạo và in ra màn hình máy chủ ở lần gọi đầu tiên của tiến trình."""
+    global _generated_setup_code
+    if _generated_setup_code is None:
+        import secrets as _s
+
+        raw = "".join(_s.choice(_SETUP_ALPHABET) for _ in range(12))
+        _generated_setup_code = f"{raw[:4]}-{raw[4:8]}-{raw[8:]}"
+        bar = "=" * 64
+        # Không dấu: terminal Windows / log Cloud không phải lúc nào cũng hiện đúng tiếng Việt có dấu.
+        print("", bar,
+              f"  SafeWatch - MA CAI DAT LAN DAU:  {_generated_setup_code}",
+              "  Mo app, nhap ma nay de tao tai khoan quan tri gia dinh.",
+              "  Ma chi dung 1 lan; khoi dong lai app se ra ma moi.",
+              "  (Muon co dinh ma: dat SETUP_CODE trong .streamlit/secrets.toml)",
+              bar, "", sep=chr(10), flush=True)
+    return _generated_setup_code
+
+
+def setup_code():
+    """Mã cài đặt đang có hiệu lực: mã tự đặt nếu có, không thì mã tự tạo (in ra màn hình máy chủ)."""
+    return configured_setup_code() or generated_setup_code()
+
+
+def setup_code_source():
+    return "config" if configured_setup_code() else "generated"
+
+
 def check_setup_code(entered):
-    code = setup_code()
-    return bool(code) and hmac.compare_digest(code.encode(), (entered or "").encode())
+    configured = configured_setup_code()
+    if configured:
+        return hmac.compare_digest(configured.encode(), (entered or "").strip().encode())
+    return hmac.compare_digest(_normalize(generated_setup_code()).encode(), _normalize(entered).encode())
+
+
+def forget_generated_setup_code():
+    """Đã có quản trị: mã tự tạo hết tác dụng."""
+    global _generated_setup_code
+    _generated_setup_code = None
+
+
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
+
+def is_local_access(remote_ip, host_header, on_cloud=False, forced=False):
+    """Người mở app đang ngồi ngay trên máy chạy app? Cần ĐỦ cả 3 điều kiện:
+      - kết nối tới từ chính máy này (địa chỉ loopback của kết nối TCP — máy khác trong mạng LAN không giả được),
+      - trình duyệt mở bằng localhost / 127.0.0.1 (chặn trường hợp đường hầm kiểu ngrok chạy trên chính máy này
+        đưa người ngoài Internet vào qua loopback),
+      - không chạy trên Streamlit Cloud (máy chủ có proxy riêng), không bị bắt buộc dùng mã (SAFEWATCH_REQUIRE_SETUP_CODE=1).
+    """
+    import ipaddress
+
+    if on_cloud or forced or not remote_ip:
+        return False
+    try:
+        loopback = ipaddress.ip_address(remote_ip).is_loopback
+    except ValueError:
+        return False
+    host = (host_header or "").strip().lower()
+    host = host[1:host.index("]")] if host.startswith("[") and "]" in host else host.rsplit(":", 1)[0]
+    return loopback and host in LOCAL_HOSTS
+
+
+def local_setup_allowed():
+    """Lần cài đặt đầu mở trên chính máy chạy app (localhost) -> không cần mã cài đặt. Lỗi gì cũng coi là KHÔNG."""
+    try:
+        import streamlit as st
+        from streamlit.runtime import get_instance
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+
+        client = get_instance().get_client(get_script_run_ctx().session_id)
+        remote_ip = client.client_context.remote_ip if client and client.client_context else None
+        on_cloud = os.path.isdir("/mount/src") or bool(os.environ.get("STREAMLIT_SHARING_MODE"))
+        return is_local_access(remote_ip, st.context.headers.get("Host", ""), on_cloud=on_cloud,
+                               forced=os.environ.get("SAFEWATCH_REQUIRE_SETUP_CODE") == "1")
+    except Exception:  # noqa: BLE001
+        return False

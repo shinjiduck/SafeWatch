@@ -19,7 +19,7 @@ if _flash:
     st.toast(_flash, icon="✅")
 
 section("Đổi mật khẩu của tôi")
-with card("own_pw"), st.form("own_pw_form", clear_on_submit=True):
+with card("own_pw"), st.form("own_pw_form", clear_on_submit=True, border=False):
     old = st.text_input("Mật khẩu / PIN hiện tại", type="password")
     new = st.text_input("Mật khẩu / PIN mới" + (" (PIN 6 số hoặc mật khẩu)" if me["role"] == auth.ROLE_SUBJECT
                                                  else " (ít nhất 8 ký tự, có chữ và số)"), type="password")
@@ -37,16 +37,7 @@ with card("own_pw"), st.form("own_pw_form", clear_on_submit=True):
 
 section("Quyền của từng vai trò")
 with card("perm_matrix"):
-    labels = [
-        (auth.PAUSE, "Tạm dừng giám sát vì riêng tư"), (auth.ACK, "Xem cảnh báo, bấm “Tôi đã nhận”"),
-        (auth.VIEW_HISTORY, "Xem lịch sử, Tổng quan"), (auth.EXPORT, "Xuất lịch sử ra CSV"),
-        (auth.DELETE_HISTORY, "Xoá sự kiện / theo ngày / toàn bộ lịch sử"),
-        (auth.DELETE_ALL, "Xoá toàn bộ dữ liệu cá nhân"), (auth.SET_RETENTION, "Đặt hạn lưu dữ liệu"),
-        (auth.EDIT_CONTACTS, "Thêm / sửa / xoá người liên hệ"), (auth.EDIT_PROFILE, "Sửa hồ sơ"),
-        (auth.EDIT_CONFIG, "Đổi cấu hình phát hiện"), (auth.MANAGE_USERS, "Quản lý tài khoản, vai trò"),
-        (auth.CONSENT_SELF, "Tự đồng ý giám sát"), (auth.CONSENT_ON_BEHALF, "Ghi thay sự đồng ý (kèm lý do)"),
-        (auth.WITHDRAW_CONSENT, "Rút lại sự đồng ý"), (auth.VIEW_AUDIT, "Xem nhật ký truy cập"),
-    ]
+    labels = auth.PERMISSION_LABELS
     st.dataframe(pd.DataFrame([{"Việc": text, **{name: "✓" if auth.role_can(r, p) else "—"
                                                  for r, name in auth.ROLE_NAMES.items()}} for p, text in labels]),
                  hide_index=True, width="stretch")
@@ -56,7 +47,7 @@ if not auth.can(auth.MANAGE_USERS):
     st.stop()
 
 section("Tạo tài khoản")
-with card("new_user"), st.form("new_user_form", clear_on_submit=True):
+with card("new_user"), st.form("new_user_form", clear_on_submit=True, border=False):
     c1, c2 = st.columns(2)
     username = c1.text_input("Tên đăng nhập", placeholder="vd: lan.nguyen")
     display = c2.text_input("Tên hiển thị", placeholder="vd: Nguyễn Thị Lan (con gái)")
@@ -75,12 +66,14 @@ with card("new_user"), st.form("new_user_form", clear_on_submit=True):
 section("Danh sách tài khoản")
 for u in auth.list_users():
     with card(f"user_{u['id']}"):
-        c1, c2, c3 = st.columns([2.2, 2, 2.4])
+        c1, c2, c3 = st.columns([2.2, 2, 2.4], vertical_alignment="center")
         last = datetime.fromtimestamp(u["last_login"]).strftime("%H:%M %d/%m/%Y") if u["last_login"] else "chưa"
         c1.markdown(f"**{escape(u['display_name'])}**  \n`{escape(u['username'])}` · đăng nhập gần nhất: {last}"
                     + ("  \n:red[Đã khoá]" if u["disabled"] else ""))
         new_role = c2.selectbox("Vai trò", list(auth.ROLE_NAMES), index=list(auth.ROLE_NAMES).index(u["role"]),
-                                format_func=auth.ROLE_NAMES.get, key=f"role_{u['id']}")
+                                format_func=auth.ROLE_NAMES.get, key=f"role_{u['id']}", label_visibility="collapsed",
+                                disabled=u["id"] == me["id"],
+                                help="Không tự đổi vai trò của chính mình (tránh tự khoá quyền quản trị).")
         if new_role != u["role"]:
             auth.require(auth.MANAGE_USERS)
             err = auth.set_role(u["id"], new_role, actor=auth.who())
@@ -101,7 +94,7 @@ for u in auth.list_users():
                     s["_users_flash"] = "Đã mở khoá." if u["disabled"] else "Đã khoá tài khoản."
                     st.rerun()
             with b2.popover("Đặt lại mật khẩu", width="stretch"):
-                with st.form(f"reset_{u['id']}", clear_on_submit=True):
+                with st.form(f"reset_{u['id']}", clear_on_submit=True, border=False):
                     npw = st.text_input("Mật khẩu / PIN mới", type="password")
                     if st.form_submit_button("Lưu"):
                         auth.require(auth.MANAGE_USERS)

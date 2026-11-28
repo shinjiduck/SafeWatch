@@ -58,6 +58,8 @@ def start_notifier():
     dispatcher = notifier.Dispatcher(notifier.build_channels(config), public_base_url=config.get("PUBLIC_BASE_URL"),
                                      housekeeping=privacy.prune)
     dispatcher.start()
+    if auth.count_users() == 0:
+        auth.setup_code()  # chưa có tài khoản nào: in mã cài đặt ra terminal / log ngay khi server chạy
     return dispatcher
 
 
@@ -89,14 +91,22 @@ def _login_screen():
     with mid:
         if auth.count_users() == 0:
             st.markdown("### Cài đặt lần đầu")
-            st.caption("Tạo tài khoản quản trị gia đình. Cần **mã cài đặt** (SETUP_CODE trong .streamlit/secrets.toml) "
-                       "để người lạ mở app trước không chiếm được quyền quản trị.")
-            if auth.setup_code() is None:
-                st.error("Chưa đặt mã cài đặt. Thêm dòng SETUP_CODE = \"<ít nhất 8 ký tự>\" vào .streamlit/secrets.toml "
-                         "rồi tải lại trang.")
-                return
+            local = auth.local_setup_allowed()
+            if local:
+                st.caption("Tạo tài khoản quản trị gia đình. Bạn đang mở app **ngay trên máy chạy app** (localhost) nên "
+                           "không cần mã cài đặt. Mở từ máy khác hoặc trên Cloud thì mới phải nhập mã, để người lạ "
+                           "không chiếm được quyền quản trị.")
+            else:
+                auth.setup_code()  # chưa đặt SETUP_CODE thì tạo mã và in ra màn hình máy chủ ngay lúc này
+                if auth.setup_code_source() == "config":
+                    where = "mã **SETUP_CODE** bạn đã đặt trong `.streamlit/secrets.toml` (trên Cloud: mục Secrets)"
+                else:
+                    where = ("mã vừa được in ra **cửa sổ terminal nơi chạy app** (trên Streamlit Cloud: **Manage app** ở "
+                             "góc dưới, phần log). Mã có dạng XXXX-XXXX-XXXX; khởi động lại app sẽ ra mã mới")
+                st.caption(f"Tạo tài khoản quản trị gia đình. Nhập {where}. Mã này để người lạ mở app trước không "
+                           "chiếm được quyền quản trị; tạo xong tài khoản thì không cần đến nữa.")
             with st.form("first_setup"):
-                code = st.text_input("Mã cài đặt", type="password")
+                code = "" if local else st.text_input("Mã cài đặt", type="password")
                 username = st.text_input("Tên đăng nhập", placeholder="vd: an.nguyen")
                 display = st.text_input("Tên hiển thị", placeholder="vd: Nguyễn Văn An (con trai)")
                 pw = st.text_input("Mật khẩu (ít nhất 8 ký tự, có chữ và số)", type="password")
@@ -104,7 +114,7 @@ def _login_screen():
                 commit = st.checkbox("Tôi cam kết chỉ dùng SafeWatch khi người được giám sát đã được giải thích và đồng "
                                      "ý; không lắp đặt bí mật; giữ kín mật khẩu.")
                 if st.form_submit_button("Tạo tài khoản quản trị", type="primary"):
-                    if not auth.check_setup_code(code):
+                    if not (local and auth.local_setup_allowed()) and not auth.check_setup_code(code):
                         time.sleep(1.0)
                         auth.audit("cai_dat_sai_ma", who=("", ""))
                         st.error("Mã cài đặt không đúng.")
@@ -118,7 +128,8 @@ def _login_screen():
                             st.error(err)
                         else:
                             auth.audit("tao_quan_tri_dau_tien", who=(username.strip().lower(), auth.ROLE_ADMIN))
-                            auth.login(auth.get_user(uid))
+                            auth.forget_generated_setup_code()
+                            auth.login(auth.authenticate(username, pw))  # ghi luôn lần đăng nhập đầu
                             st.rerun()
             return
         st.markdown("### Đăng nhập SafeWatch")
@@ -134,6 +145,12 @@ def _login_screen():
                     auth.login(user)
                     st.rerun()
         st.caption("Nhận được cảnh báo? Bấm link trong tin nhắn để xác nhận, không cần đăng nhập.")
+        with st.container(border=True, key="swbox_roles_intro"):
+            st.markdown("**Mỗi người một tài khoản, mỗi vai trò một quyền**")
+            for role, (who_txt, can_txt) in auth.ROLE_SUMMARY.items():
+                st.markdown(f"**{auth.ROLE_NAMES[role]}** · {who_txt}" + "  " + chr(10) + can_txt)
+            st.caption("Chưa có tài khoản? Nhờ **quản trị gia đình** tạo cho bạn ở trang Tài khoản & quyền. Quên mật "
+                       "khẩu? Nhờ quản trị đặt lại. Sai 5 lần liên tiếp thì tài khoản tạm khoá 5 phút.")
 
 
 _user = auth.current_user()
@@ -183,6 +200,11 @@ with st.sidebar:
     )
     st.markdown("---")
     render_sidebar_profile(name=_user["display_name"], role=auth.ROLE_NAMES.get(_user["role"], ""))
+    with st.popover("Quyền của tôi", width="stretch"):
+        st.markdown(f"**{auth.ROLE_NAMES[_user['role']]}** — {auth.ROLE_SUMMARY[_user['role']][1]}")
+        st.markdown(chr(10).join(f"- {'✅' if auth.role_can(_user['role'], p) else '⛔'} {text}"
+                                 for p, text in auth.PERMISSION_LABELS))
+        st.caption("Cần thêm quyền? Nhờ quản trị gia đình đổi vai trò ở trang Tài khoản & quyền.")
     if st.button("Đăng xuất", key="logout", width="stretch"):
         auth.logout()
         st.rerun()

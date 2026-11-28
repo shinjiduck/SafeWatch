@@ -117,7 +117,7 @@ source .venv/bin/activate
 # 3. Cài thư viện
 pip install -r requirements.txt
 
-# 4. Tạo file cấu hình, BẮT BUỘC điền SETUP_CODE (mã cài đặt lần đầu, ít nhất 8 ký tự)
+# 4. Tạo file cấu hình (để trống SETUP_CODE thì mã cài đặt lần đầu được in ra cửa sổ terminal khi chạy app)
 #    Windows:
 copy .streamlit\secrets.toml.example .streamlit\secrets.toml
 #    macOS / Linux:
@@ -127,7 +127,7 @@ cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 streamlit run main.py
 ```
 
-Trình duyệt tự mở **http://localhost:8501**. Lần đầu: nhập **mã cài đặt** để tạo tài khoản quản trị gia đình, rồi vào
+Trình duyệt tự mở **http://localhost:8501**. Lần đầu: nhập **mã cài đặt** (in trong cửa sổ terminal, hoặc `SETUP_CODE` nếu bạn đã đặt) để tạo tài khoản quản trị gia đình, rồi vào
 **Tài khoản & quyền** tạo tài khoản cho người chăm sóc và người được giám sát (PIN 6 số). Người được giám sát đăng nhập,
 đọc và bấm **đồng ý** ở trang **Trực tiếp**, sau đó bấm **Bắt đầu giám sát** và cho phép dùng camera.
 
