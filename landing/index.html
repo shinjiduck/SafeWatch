@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SafeWatch – Giám sát an toàn cho người thân bằng AI</title>
-<meta name="description" content="SafeWatch dùng một webcam thông thường để phát hiện ngã và cử chỉ cầu cứu, rồi nhắn cho người nhà cho tới khi có người xác nhận đã nhận.">
+<meta name="description" content="SafeWatch – giải pháp giám sát an toàn bằng trí tuệ nhân tạo cho người cao tuổi và người sống một mình. Sản phẩm của Trường Đại học Kinh tế, Đại học Huế.">
 <meta property="og:title" content="SafeWatch – Người thân ngã, cả nhà biết ngay">
 <meta property="og:description" content="Phát hiện ngã và cử chỉ cầu cứu qua webcam. Cảnh báo tới người nhà qua Telegram, Email, SMS cho tới khi có người bấm “Tôi đã nhận”.">
 <meta property="og:image" content="img/logo_mark.png">
@@ -97,6 +97,10 @@ section { padding: 104px 0; }
 .hero-facts { display: flex; gap: 22px; margin-top: 34px; flex-wrap: wrap; color: var(--on-blue); font-size: .95rem; }
 .hero-facts span { display: inline-flex; align-items: center; gap: .45rem; }
 .hero-facts svg { width: 18px; height: 18px; color: var(--gold); }
+.hero-made { display: flex; align-items: center; gap: 12px; margin-top: 30px; padding-top: 22px; max-width: 560px;
+             border-top: 1px solid rgba(255,255,255,.18); color: var(--on-blue); font-size: .98rem; line-height: 1.45; }
+.hero-made img { width: 44px; height: 44px; flex: none; background: #fff; border-radius: 50%; padding: 2px; }
+.hero-made b { color: #fff; font-weight: 600; }
 
 /* Màn minh hoạ chuỗi cảnh báo (vòng lặp 12 s). Mặc định = trạng thái CUỐI để tắt hiệu ứng vẫn đủ nội dung. */
 .stage { position: relative; background: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 18px; padding: 28px 28px 0; }
@@ -319,8 +323,8 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
     <div class="wrap hero-grid">
       <div>
         <h1>Người thân bị ngã, <span>cả nhà biết ngay.</span></h1>
-        <p class="lead">SafeWatch dùng một webcam thông thường để phát hiện ngã và cử chỉ cầu cứu, rồi nhắn cho người nhà qua
-          Telegram, Email, SMS, và tiếp tục nhắc cho tới khi có người bấm <b>“Tôi đã nhận”</b>.</p>
+        <p class="lead">Giải pháp giám sát an toàn bằng trí tuệ nhân tạo dành cho người cao tuổi và người sống một mình,
+          giúp gia đình luôn yên tâm và kịp thời có mặt khi người thân cần giúp đỡ.</p>
         <div class="hero-cta">
           <a class="btn btn-gold" data-app href="#">Dùng thử ngay
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
@@ -331,6 +335,8 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Chạy trên trình duyệt</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Không lưu hình ảnh</span>
         </div>
+        <div class="hero-made"><img src="img/logo_truong_sm.png" alt="Logo Trường Đại học Kinh tế, Đại học Huế"><span>Sản phẩm của
+          <b>Trường Đại học Kinh tế, Đại học Huế</b></span></div>
       </div>
 
       <div class="stage" role="img" aria-label="Minh hoạ: SafeWatch phát hiện ngã, xác minh 30 giây, gửi cảnh báo tới điện thoại người nhà và người nhà bấm Đã nhận">
@@ -497,7 +503,7 @@ footer { padding: 48px 0 40px; border-top: 1px solid var(--line); font-size: .92
   <div class="wrap">
     <div class="foot">
       <div><img src="img/logo_light.png" alt="SafeWatch"><p>Giám sát an toàn cá nhân bằng AI cho người thân sống một mình.</p>
-        <div class="foot-school"><img src="img/logo_truong_sm.png" alt="Logo Trường Đại học Kinh tế, Đại học Huế"><span>Trường Đại học Kinh tế<br>Đại học Huế</span></div></div>
+        <div class="foot-school"><img src="img/logo_truong_sm.png" alt="Logo Trường Đại học Kinh tế, Đại học Huế"><span>Sản phẩm của Trường Đại học Kinh tế,<br>Đại học Huế</span></div></div>
       <div><h4>Sản phẩm</h4><a data-app href="#">Dùng thử</a><a href="#cach-hoat-dong">Cách hoạt động</a><a href="#so-lieu">Số liệu kiểm định</a></div>
       <div><h4>Tài liệu</h4><a href="https://github.com/shinjiduck/SafeWatch">Mã nguồn trên GitHub</a><a href="https://github.com/shinjiduck/SafeWatch/blob/main/training/fall_eval/KIEM_DINH_THEO_YEU_CAU_BTC.md">Báo cáo kiểm định</a><a href="#rieng-tu">Quyền riêng tư</a></div>
     </div>
