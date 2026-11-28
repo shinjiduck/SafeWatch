@@ -62,6 +62,11 @@ def start_notifier():
 
 
 notifier.RUNNING = start_notifier()
+# Cập nhật cấu trúc CSDL (thêm bảng / cột mới) ở MỖI lần chạy, không chỉ lúc khởi động: Streamlit Cloud nạp code mới
+# khi app cũ vẫn chạy (start_notifier đã được cache) -> bản mới thiếu cột mới (VD users.email) nếu chỉ chạy 1 lần.
+# Các lệnh đều "nếu chưa có thì tạo", tốn khoảng 1 ms.
+auth.init_db()
+privacy.init_db()
 
 # Link xác nhận trong email / SMS / Telegram: <PUBLIC_BASE_URL>/?ack=<mã> -> trang xác nhận riêng, KHÔNG cần đăng
 # nhập (người nhà đang gấp). Link chỉ xác nhận đúng cảnh báo đó và hết hạn sau notifier.LINK_TTL_SECONDS.

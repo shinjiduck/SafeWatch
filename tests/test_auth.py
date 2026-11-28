@@ -170,6 +170,27 @@ def test_ma_dat_lai_het_han_va_sai_qua_5_lan():
     assert auth.reset_password_with_code("lan", code2, "Moi-hon-2027", now=t + 21 * 60) is not None, "sai 5 lần thì huỷ mã"
 
 
+def test_csdl_ban_cu_thieu_cot_email_tu_duoc_bo_sung():
+    """Cloud nạp code mới khi CSDL được tạo bởi bản cũ: init_db phải tự thêm cột email, không lỗi."""
+    import sqlite3
+
+    fd, path = tempfile.mkstemp(suffix=".db")
+    os.close(fd)
+    event_log.DB_PATH = path
+    con = sqlite3.connect(path)
+    con.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE COLLATE NOCASE, "
+                "display_name TEXT NOT NULL, role TEXT NOT NULL, secret_hash TEXT NOT NULL, disabled INTEGER NOT NULL "
+                "DEFAULT 0, failed_count INTEGER NOT NULL DEFAULT 0, locked_until REAL NOT NULL DEFAULT 0, created_at "
+                "REAL NOT NULL, last_login REAL)")
+    con.execute("INSERT INTO users (username, display_name, role, secret_hash, created_at) VALUES "
+                "('cu', 'Cũ', 'quan_tri', 'x', 0)")
+    con.commit()
+    con.close()
+    auth.init_db()
+    auth.init_db()  # chạy lại nhiều lần không lỗi
+    assert auth.get_email(1) == ""
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0
