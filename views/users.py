@@ -63,63 +63,8 @@ with card("new_user"), st.form("new_user_form", clear_on_submit=True, border=Fal
             s["_users_flash"] = f"Đã tạo tài khoản {username.strip().lower()}."
             st.rerun()
 
-section("Mã mời")
-with card("invites"):
-    st.caption(f"Tạo cho mỗi người một mã, gắn sẵn vai trò. Người đó vào trang đăng nhập → **Đăng ký** → nhập mã là "
-               f"dùng được ngay. Mã dùng 1 lần, hết hạn sau {auth.INVITE_HOURS} giờ.")
-    i1, i2, i3 = st.columns([2, 2.4, 1.4], vertical_alignment="bottom")
-    inv_role = i1.selectbox("Vai trò", list(auth.ROLE_NAMES), index=1, format_func=auth.ROLE_NAMES.get, key="inv_role")
-    inv_note = i2.text_input("Mời ai (để nhớ)", placeholder="vd: chị Lan, con gái", key="inv_note")
-    if i3.button("Tạo mã mời", type="primary", width="stretch"):
-        auth.require(auth.MANAGE_USERS)
-        s["_new_invite"] = (auth.create_invite(inv_role, inv_note, actor=auth.who()), inv_role, inv_note)
-        st.rerun()
-    new_inv = s.pop("_new_invite", None)
-    if new_inv:
-        st.success(f"Mã mời cho **{escape(new_inv[2] or auth.ROLE_NAMES[new_inv[1]])}** "
-                   f"({auth.ROLE_NAMES[new_inv[1]]}). Mã chỉ hiện **1 lần** — gửi riêng cho người đó:")
-        st.code(new_inv[0], language=None)
-    active = auth.list_invites()
-    for inv in active:
-        r1, r2 = st.columns([5, 1], vertical_alignment="center")
-        r1.markdown(f"{auth.ROLE_NAMES[inv['role']]} · {escape(inv['note'] or '—')} · hết hạn "
-                    f"{datetime.fromtimestamp(inv['expires_at']).strftime('%H:%M %d/%m')}")
-        if r2.button("Huỷ", key=f"revoke_{inv['id']}", width="stretch"):
-            auth.require(auth.MANAGE_USERS)
-            auth.revoke_invite(inv["id"], actor=auth.who())
-            st.rerun()
-
-pending = auth.list_pending()
-if pending:
-    section(f"Chờ duyệt ({len(pending)})")
-    st.caption("Người tự đăng ký. Chưa duyệt thì họ không xem được gì. Chỉ duyệt người bạn biết; chọn đúng vai trò.")
-    for p in pending:
-        with card(f"pending_{p['id']}"):
-            c1, c2, c3, c4 = st.columns([2.4, 2, 1, 1], vertical_alignment="center")
-            when = datetime.fromtimestamp(p["created_at"]).strftime("%H:%M %d/%m/%Y")
-            want = p.get("requested_role")
-            c1.markdown(f"**{escape(p['display_name'])}**  " + chr(10) + f"`{escape(p['username'])}` · đăng ký lúc {when}"
-                        + ("  " + chr(10) + f"Muốn làm: **{auth.ROLE_NAMES[want]}**" if want in auth.ROLE_NAMES else ""))
-            role_pick = c2.selectbox("Vai trò", list(auth.ROLE_NAMES),
-                                     index=list(auth.ROLE_NAMES).index(want) if want in auth.ROLE_NAMES else 1,
-                                     format_func=auth.ROLE_NAMES.get,
-                                     key=f"approve_role_{p['id']}", label_visibility="collapsed")
-            if c3.button("Duyệt", key=f"approve_{p['id']}", type="primary", width="stretch"):
-                auth.require(auth.MANAGE_USERS)
-                err = auth.approve(p["id"], role_pick, actor=auth.who())
-                if err:
-                    st.error(err)
-                else:
-                    s["_users_flash"] = f"Đã duyệt {p['username']} · {auth.ROLE_NAMES[role_pick]}."
-                    st.rerun()
-            if c4.button("Từ chối", key=f"reject_{p['id']}", width="stretch"):
-                auth.require(auth.MANAGE_USERS)
-                auth.reject(p["id"], actor=auth.who())
-                s["_users_flash"] = f"Đã từ chối và xoá yêu cầu của {p['username']}."
-                st.rerun()
-
 section("Danh sách tài khoản")
-for u in [x for x in auth.list_users() if x["role"] != auth.ROLE_PENDING]:
+for u in auth.list_users():
     with card(f"user_{u['id']}"):
         c1, c2, c3 = st.columns([2.2, 2, 2.4], vertical_alignment="center")
         last = datetime.fromtimestamp(u["last_login"]).strftime("%H:%M %d/%m/%Y") if u["last_login"] else "chưa"

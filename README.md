@@ -32,7 +32,7 @@ SafeWatch dùng một webcam thông thường để theo dõi người thân (th
 | **Trạng thái an toàn khi mất hình** | Mất camera, không thấy người, đứng quá gần, chỉ thấy một phần cơ thể: hệ thống **không bao giờ hiển thị "An toàn"** mà hiện trạng thái riêng, kèm **nhắc bằng giọng nói** ("Xin mời quý vị rời xa camera một chút"). |
 | **Chuỗi cảnh báo** | Gửi đồng thời Telegram / Email / SMS. Gửi lỗi thì thử lại sau 5, 10, 20, 40, 60 s. Hết **thời gian chờ xác nhận 60 s** mà chưa ai bấm thì gửi lại và **chuyển tiếp cho người liên hệ kế tiếp**, tối đa 5 vòng. Ghi lại ai xác nhận, qua kênh nào, lúc nào. |
 | **Xác nhận "Tôi đã nhận"** | Nút ngay trong Telegram, nút trong email, link trong SMS, hoặc nút trên web. Xác nhận xong thì chuỗi cảnh báo dừng. |
-| **Phân quyền & quyền riêng tư** | Đăng nhập (mật khẩu băm scrypt, khoá khi sai 5 lần), 3 vai trò: quản trị gia đình, người chăm sóc, người được giám sát (PIN 6 số). Người mới tự **đăng ký** và chọn vai trò mong muốn, quản trị bấm **Duyệt** (có thể đổi vai trò) mới dùng được; hoặc quản trị tạo **mã mời** cho từng người (gắn sẵn vai trò, dùng 1 lần, hết hạn 48 giờ) để dùng ngay. **Không lưu video.** Người được giám sát phải đồng ý trước khi giám sát, rút lại được, **tạm dừng vì riêng tư** tối đa 60 phút. Tự xoá dữ liệu quá hạn lưu (mặc định 30 ngày); xoá 4 mức (1 sự kiện, theo ngày, toàn bộ lịch sử, toàn bộ dữ liệu cá nhân); số điện thoại, email, hồ sơ sức khoẻ được mã hoá; nhật ký truy cập. |
+| **Phân quyền & quyền riêng tư** | Đăng nhập (mật khẩu băm scrypt, khoá khi sai 5 lần), 3 vai trò: quản trị gia đình, người chăm sóc, người được giám sát (PIN 6 số). Quản trị gia đình **tạo tài khoản** cho từng người; người đó đăng nhập là dùng được. **Không lưu video.** Người được giám sát phải đồng ý trước khi giám sát, rút lại được, **tạm dừng vì riêng tư** tối đa 60 phút. Tự xoá dữ liệu quá hạn lưu (mặc định 30 ngày); xoá 4 mức (1 sự kiện, theo ngày, toàn bộ lịch sử, toàn bộ dữ liệu cá nhân); số điện thoại, email, hồ sơ sức khoẻ được mã hoá; nhật ký truy cập. |
 | **Báo cáo** | Trang Tổng quan (sự cố theo ngày / giờ, thời gian người nhà phản hồi), Nhật ký, bảng thời gian *phát hiện → gửi → xác nhận* xuất được CSV, trang Kiểm định hiển thị số liệu. |
 | **Thử nghiệm** | Signal for Help theo chuỗi động tác (học từ 60 chuỗi, chưa đánh giá độc lập), theo dõi nhiều người cùng lúc (tối đa 3), nhận cử chỉ khi đứng xa camera. Cả ba **tắt mặc định** và không dùng trong bản trình diễn; số đo có trong tài liệu kiểm định. |
 
@@ -127,7 +127,7 @@ cp .streamlit/secrets.toml.example .streamlit/secrets.toml
 streamlit run main.py
 ```
 
-Trình duyệt tự mở **http://localhost:8501**. Lần đầu: người mở app đầu tiên tạo tài khoản quản trị gia đình (nếu đã đặt `SETUP_CODE` thì phải nhập mã đó, trừ khi mở bằng localhost), rồi vào
+Trình duyệt tự mở **http://localhost:8501**. Lần đầu: người mở app đầu tiên tạo tài khoản quản trị gia đình, rồi vào
 **Tài khoản & quyền** tạo tài khoản cho người chăm sóc và người được giám sát (PIN 6 số). Người được giám sát đăng nhập,
 đọc và bấm **đồng ý** ở trang **Trực tiếp**, sau đó bấm **Bắt đầu giám sát** và cho phép dùng camera.
 
@@ -155,7 +155,7 @@ Khai báo trong `.streamlit/secrets.toml`. Mẫu đầy đủ, có chú thích: 
 | **SMS qua Twilio** | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | Gửi về số Việt Nam cần đăng ký tên người gửi. |
 | Link xác nhận | `PUBLIC_BASE_URL` | Địa chỉ web của app, dùng cho link "Tôi đã nhận" trong email và SMS. |
 
-Sau khi điền thì khởi động lại app. **Streamlit Cloud xoá dữ liệu mỗi lần khởi động lại**: khai tài khoản quản trị (`[[accounts]]`, mật khẩu dạng băm tạo bằng `python -X utf8 auth.py hash`) và người liên hệ (`[[contacts]]`) trong Secrets để app tự tạo lại. Vào **Người liên hệ** thêm ít nhất một người, rồi vào **Cảnh báo → Giả lập sự kiện ngã** để thử. Nút này **gửi thật** tới người liên hệ, có ghi nhãn *[THỬ NGHIỆM]*.
+Sau khi điền thì khởi động lại app. Vào **Người liên hệ** thêm ít nhất một người, rồi vào **Cảnh báo → Giả lập sự kiện ngã** để thử. Nút này **gửi thật** tới người liên hệ, có ghi nhãn *[THỬ NGHIỆM]*.
 
 ---
 
@@ -170,7 +170,7 @@ Sau khi điền thì khởi động lại app. **Streamlit Cloud xoá dữ liệ
 | **Thiết lập → Camera & lắp đặt** | Độ phân giải, lật hình, hướng dẫn đặt camera (cao khoảng 2 m, chéo góc phòng, cách khoảng 3 m) |
 | **Thiết lập → Cấu hình** | Bật/tắt phát hiện ngã, cử chỉ, thời gian xác minh, giọng nói, các tính năng thử nghiệm |
 | **Báo cáo → Tổng quan / Kiểm định / Phiên bản** | Thống kê sự cố, số liệu kiểm định mô hình, thông số bản đang chạy |
-| **Tài khoản → Tài khoản & quyền** | Đổi mật khẩu; quản trị duyệt người tự đăng ký, tạo / khoá tài khoản, đổi vai trò; bảng quyền của từng vai trò |
+| **Tài khoản → Tài khoản & quyền** | Đổi mật khẩu; quản trị tạo / khoá tài khoản, đổi vai trò, đặt lại mật khẩu; bảng quyền của từng vai trò |
 | **Tài khoản → Quyền riêng tư** | Sơ đồ dữ liệu, sự đồng ý, hạn lưu, xoá dữ liệu, nhật ký truy cập |
 
 ---

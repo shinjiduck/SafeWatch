@@ -89,16 +89,9 @@ def _login_screen():
     with mid:
         if auth.count_users() == 0:
             st.markdown("### Cài đặt lần đầu")
-            need_code = auth.setup_code_required(local=auth.local_setup_allowed())
-            if need_code:
-                st.caption("Tạo tài khoản quản trị gia đình. Nhập mã **SETUP_CODE** đã đặt trong "
-                           "`.streamlit/secrets.toml` (trên Cloud: mục Secrets), để người lạ không chiếm được quyền "
-                           "quản trị. Tạo xong thì không cần đến mã nữa.")
-            else:
-                st.caption("Chưa có tài khoản nào. **Người tạo tài khoản đầu tiên sẽ là quản trị gia đình**, sau đó tạo "
-                           "hoặc duyệt tài khoản cho những người khác.")
+            st.caption("Chưa có tài khoản nào. **Người tạo tài khoản đầu tiên sẽ là quản trị gia đình**, sau đó duyệt "
+                       "hoặc tạo tài khoản cho những người khác.")
             with st.form("first_setup"):
-                code = st.text_input("Mã cài đặt", type="password") if need_code else ""
                 username = st.text_input("Tên đăng nhập", placeholder="vd: an.nguyen")
                 display = st.text_input("Tên hiển thị", placeholder="vd: Nguyễn Văn An (con trai)")
                 pw = st.text_input("Mật khẩu (ít nhất 8 ký tự, có chữ và số)", type="password")
@@ -106,11 +99,7 @@ def _login_screen():
                 commit = st.checkbox("Tôi cam kết chỉ dùng SafeWatch khi người được giám sát đã được giải thích và đồng "
                                      "ý; không lắp đặt bí mật; giữ kín mật khẩu.")
                 if st.form_submit_button("Tạo tài khoản quản trị", type="primary"):
-                    if need_code and not auth.check_setup_code(code):
-                        time.sleep(1.0)
-                        auth.audit("cai_dat_sai_ma", who=("", ""))
-                        st.error("Mã cài đặt không đúng.")
-                    elif pw != pw2:
+                    if pw != pw2:
                         st.error("Hai lần nhập mật khẩu không khớp.")
                     elif not commit:
                         st.error("Cần đánh dấu cam kết sử dụng.")
@@ -123,9 +112,8 @@ def _login_screen():
                             auth.login(auth.authenticate(username, pw))  # ghi luôn lần đăng nhập đầu
                             st.rerun()
             return
-        st.markdown("### SafeWatch")
-        tab_in, tab_up = st.tabs(["Đăng nhập", "Đăng ký"])
-        with tab_in, st.form("login", border=False):
+        st.markdown("### Đăng nhập SafeWatch")
+        with st.form("login"):
             username = st.text_input("Tên đăng nhập")
             secret = st.text_input("Mật khẩu hoặc mã PIN", type="password")
             if st.form_submit_button("Đăng nhập", type="primary", width="stretch"):
@@ -136,61 +124,18 @@ def _login_screen():
                 else:
                     auth.login(user)
                     st.rerun()
-        with tab_up:
-            st.caption("Có **mã mời** từ quản trị gia đình thì nhập vào: dùng được ngay với đúng vai trò của mã. Không có "
-                       "mã thì đăng ký vẫn được nhưng phải **chờ quản trị duyệt**." if auth.signup_enabled() else
-                       "Cần **mã mời** từ quản trị gia đình để đăng ký.")
-            with st.container():
-                with st.form("signup", border=False, clear_on_submit=False):
-                    r_code = st.text_input("Mã mời" + ("" if not auth.signup_enabled() else " (nếu có)"),
-                                           placeholder="XXXX-XXXX-XXXX", key="su_code")
-                    r_user = st.text_input("Tên đăng nhập", placeholder="vd: lan.nguyen", key="su_user")
-                    r_name = st.text_input("Tên hiển thị", placeholder="vd: Nguyễn Thị Lan (con gái)", key="su_name")
-                    r_pw = st.text_input("Mật khẩu (ít nhất 8 ký tự, có chữ và số)", type="password", key="su_pw")
-                    r_pw2 = st.text_input("Nhập lại mật khẩu", type="password", key="su_pw2")
-                    r_role = st.selectbox("Bạn muốn dùng SafeWatch với vai trò", [auth.ROLE_CAREGIVER, auth.ROLE_SUBJECT,
-                                          auth.ROLE_ADMIN], format_func=lambda r: f"{auth.ROLE_NAMES[r]} — "
-                                          f"{auth.ROLE_SUMMARY[r][0]}", key="su_role",
-                                          help="Quản trị gia đình sẽ duyệt và có thể đổi vai trò. Có mã mời thì vai trò "
-                                               "theo mã.")
-                    if st.form_submit_button("Gửi yêu cầu đăng ký", type="primary", width="stretch"):
-                        if r_pw != r_pw2:
-                            st.error("Hai lần nhập mật khẩu không khớp.")
-                        else:
-                            time.sleep(0.5)
-                            uid, err = auth.register(r_user, r_name, r_pw, ip=auth.client_ip(), invite=r_code,
-                                                     requested_role=r_role)
-                            if err:
-                                st.error(err)
-                            elif r_code.strip():
-                                st.success("Đăng ký thành công. Đăng nhập ở thẻ **Đăng nhập** là dùng được ngay.")
-                            else:
-                                st.success("Đã gửi yêu cầu. Nhờ quản trị gia đình vào **Tài khoản & quyền** duyệt "
-                                           "cho bạn, rồi đăng nhập ở thẻ Đăng nhập.")
         st.caption("Nhận được cảnh báo? Bấm link trong tin nhắn để xác nhận, không cần đăng nhập.")
         with st.container(border=True, key="swbox_roles_intro"):
             st.markdown("**Mỗi người một tài khoản, mỗi vai trò một quyền**")
             for role, (who_txt, can_txt) in auth.ROLE_SUMMARY.items():
                 st.markdown(f"**{auth.ROLE_NAMES[role]}** · {who_txt}" + "  " + chr(10) + can_txt)
-            st.caption("Chưa có tài khoản? Xin **mã mời** từ quản trị gia đình rồi bấm **Đăng ký**, hoặc đăng ký không "
-                       "mã và chờ duyệt. Quên mật khẩu? Nhờ quản trị đặt lại. Sai 5 lần liên tiếp thì tài khoản tạm "
-                       "khoá 5 phút.")
+            st.caption("Chưa có tài khoản? Nhờ **quản trị gia đình** tạo cho bạn ở trang Tài khoản & quyền. Quên mật "
+                       "khẩu? Nhờ quản trị đặt lại. Sai 5 lần liên tiếp thì tài khoản tạm khoá 5 phút.")
 
 
 _user = auth.current_user()
 if _user is None:
     _login_screen()
-    st.stop()
-
-if _user["role"] == auth.ROLE_PENDING:  # đã đăng ký, chưa được duyệt: không thấy gì của gia đình
-    _, mid, _ = st.columns([1, 1.3, 1])
-    with mid:
-        st.markdown("### Đang chờ duyệt")
-        st.info(f"Chào {_user['display_name']}. Tài khoản của bạn đã đăng ký nhưng **quản trị gia đình chưa duyệt**. "
-                "Khi được duyệt và chọn vai trò, bạn đăng nhập lại là dùng được.")
-        if st.button("Đăng xuất", width="stretch"):
-            auth.logout()
-            st.rerun()
     st.stop()
 
 # ------------------------------------------------------------------ menu theo vai trò
@@ -235,9 +180,6 @@ with st.sidebar:
     )
     st.markdown("---")
     render_sidebar_profile(name=_user["display_name"], role=auth.ROLE_NAMES.get(_user["role"], ""))
-    if auth.role_can(_user["role"], auth.MANAGE_USERS) and auth.list_pending():
-        st.warning(f"{len(auth.list_pending())} tài khoản đăng ký đang chờ duyệt")
-        st.page_link("views/users.py", label="Duyệt ở Tài khoản & quyền")
     with st.popover("Quyền của tôi", width="stretch"):
         st.markdown(f"**{auth.ROLE_NAMES[_user['role']]}** — {auth.ROLE_SUMMARY[_user['role']][1]}")
         st.markdown(chr(10).join(f"- {'✅' if auth.role_can(_user['role'], p) else '⛔'} {text}"

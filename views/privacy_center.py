@@ -157,7 +157,7 @@ if auth.can(auth.VIEW_AUDIT):
         else:
             st.dataframe(pd.DataFrame([{
                 "Lúc": datetime.fromtimestamp(r["at"]).strftime("%H:%M:%S %d/%m/%Y"), "Ai": r["username"] or "",
-                "Vai trò": auth.ROLE_LABELS.get(r["role"], r["role"] or ""), "Việc": r["action"], "Chi tiết": r["detail"] or "",
+                "Vai trò": auth.ROLE_NAMES.get(r["role"], r["role"] or ""), "Việc": r["action"], "Chi tiết": r["detail"] or "",
             } for r in rows]), hide_index=True, width="stretch")
         st.caption("Không ai sửa hay xoá được nhật ký này từ giao diện; tự dọn sau "
                    f"{auth.AUDIT_RETENTION_DAYS} ngày. Không chứa nội dung dữ liệu.")
