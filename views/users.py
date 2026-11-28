@@ -35,6 +35,19 @@ with card("own_pw"), st.form("own_pw_form", clear_on_submit=True, border=False):
                 s["_users_flash"] = "Đã đổi mật khẩu."
                 st.rerun()
 
+section("Email lấy lại mật khẩu")
+with card("own_email"), st.form("own_email_form", border=False):
+    cur_email = auth.get_email(me["id"])
+    em = st.text_input("Email của tôi", value=cur_email, placeholder="vd: ten@gmail.com",
+                       help="Quên mật khẩu thì SafeWatch gửi mã đặt lại tới email này. Lưu mã hoá.")
+    if st.form_submit_button("Lưu email"):
+        err = auth.set_email(me["id"], em, actor=auth.who())
+        if err:
+            st.error(err)
+        else:
+            s["_users_flash"] = "Đã lưu email."
+            st.rerun()
+
 section("Quyền của từng vai trò")
 with card("perm_matrix"):
     labels = auth.PERMISSION_LABELS
@@ -53,9 +66,10 @@ with card("new_user"), st.form("new_user_form", clear_on_submit=True, border=Fal
     display = c2.text_input("Tên hiển thị", placeholder="vd: Nguyễn Thị Lan (con gái)")
     role = c1.selectbox("Vai trò", list(auth.ROLE_NAMES), format_func=auth.ROLE_NAMES.get, index=1)
     pw = c2.text_input("Mật khẩu ban đầu (người được giám sát: PIN 6 số)", type="password")
+    new_email = c1.text_input("Email (để tự lấy lại mật khẩu, không bắt buộc)", placeholder="vd: lan@gmail.com")
     if st.form_submit_button("Tạo tài khoản", type="primary"):
         auth.require(auth.MANAGE_USERS)
-        uid, err = auth.create_user(username, display, role, pw)
+        uid, err = auth.create_user(username, display, role, pw, email=new_email)
         if err:
             st.error(err)
         else:

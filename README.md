@@ -28,7 +28,7 @@ SafeWatch dùng một webcam thông thường để theo dõi người thân (th
 |---|---|
 | **Phát hiện ngã** | Model ngã v2 (Conv1D + GRU trên chuỗi khung xương 1,5 s, 10 khung hình/giây). Sau khi phát hiện ngã, hệ thống chạy **thời gian xác minh sau ngã 30 s** (chỉnh được 5–300 s). Người tự đứng dậy thì huỷ, không báo động. |
 | **Ngã sau vật cản** | Hông tụt nhanh rồi mất dấu giữa khung hình (khuất sau giường, sofa) thì vẫn bị coi là nghi ngã và đếm giờ xác minh. |
-| **Cử chỉ SOS** | Nhận diện 14 cử chỉ tay, trong đó 3 cử chỉ cầu cứu (Need Help, Need Ambulance, Signal For Help). Có bộ lọc chống báo nhầm (tay phải giơ cao hơn vai và giữ 2 giây), hiện **tắt mặc định**, bật trong trang Cấu hình. |
+| **Cử chỉ SOS** | Nhận diện 14 cử chỉ tay, trong đó 3 cử chỉ cầu cứu (Need Help, Need Ambulance, Signal For Help). **Bộ lọc chống báo nhầm bật sẵn**: cử chỉ phải giữ liên tục 2 giây. Tuỳ chọn chặt hơn: chỉ nhận khi giơ tay cao hơn vai. |
 | **Trạng thái an toàn khi mất hình** | Mất camera, không thấy người, đứng quá gần, chỉ thấy một phần cơ thể: hệ thống **không bao giờ hiển thị "An toàn"** mà hiện trạng thái riêng, kèm **nhắc bằng giọng nói** ("Xin mời quý vị rời xa camera một chút"). |
 | **Chuỗi cảnh báo** | Gửi đồng thời Telegram / Email / SMS. Gửi lỗi thì thử lại sau 5, 10, 20, 40, 60 s. Hết **thời gian chờ xác nhận 60 s** mà chưa ai bấm thì gửi lại và **chuyển tiếp cho người liên hệ kế tiếp**, tối đa 5 vòng. Ghi lại ai xác nhận, qua kênh nào, lúc nào. |
 | **Xác nhận "Tôi đã nhận"** | Nút ngay trong Telegram, nút trong email, link trong SMS, hoặc nút trên web. Xác nhận xong thì chuỗi cảnh báo dừng. |
@@ -78,7 +78,7 @@ Mọi số đều chấm trên dữ liệu **model không thấy lúc train**, p
 | Le2i, giữ nguyên tư thế cuối thêm 40 s để chấm trọn 30 s xác minh | Ngã rồi nằm yên: **gửi cảnh báo 94/122 ca**, trung vị 30,8 s sau cú ngã. 21 ca bắt được nhưng bị coi nhầm là đã đứng dậy (người nằm dọc hướng nhìn của camera); đã rõ nguyên nhân, **chưa sửa** |
 | Le2i **có vật cản** che dải dưới khung hình 20% / 30% / 40% | 115 / **105** / 74 trên 129 ca ngã |
 | **Charades**: 5 giờ sinh hoạt thật trong khoảng 500 ngôi nhà | **8 cảnh báo ngã nhầm / giờ** (model cũ: 61 / giờ) |
-| **Cử chỉ SOS** báo nhầm, trên 3,2 giờ sinh hoạt Charades | **132 lần / giờ khi tắt bộ lọc (mặc định hiện tại)**; 1,9 lần / giờ khi bật bộ lọc |
+| **Cử chỉ SOS** báo nhầm, trên video sinh hoạt Charades (không ai ra hiệu) | **5,6 lần / giờ với bộ lọc giữ 2 giây (mặc định)**; 1,9 lần / giờ khi thêm điều kiện giơ tay cao hơn vai; 132 lần / giờ khi tắt lọc |
 | **Cử chỉ tay** 14 nhãn | 99,54% trên tập kiểm tra nội bộ, **chia ngẫu nhiên theo khung hình** (44.400 khung): các khung liền nhau của cùng một người nằm ở cả tập học và tập kiểm tra nên con số này cao hơn thực tế. **Độ nhạy cử chỉ ngoài thực tế chưa đo** |
 | **Chuỗi cảnh báo**: 52 cảnh báo thật | Trung vị từ lúc phát cảnh báo tới lúc gửi được: **1,1 s** |
 

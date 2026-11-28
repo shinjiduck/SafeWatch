@@ -557,15 +557,16 @@ class EmailChannel:
     def target_for(self, contact):
         return contact.get("email") or None
 
-    def send(self, target, alert, ack_url=None):
+    def send_plain(self, target, subject, text):
+        """Email thường (VD mã đặt lại mật khẩu), không phải cảnh báo."""
         msg = EmailMessage()
-        msg["Subject"] = email_subject(alert)
-        msg["From"] = formataddr(("SafeWatch Cảnh báo", self.sender))
+        msg["Subject"] = subject
+        msg["From"] = formataddr(("SafeWatch", self.sender))
         msg["To"] = target
-        msg["X-Priority"] = "1"  # đánh dấu quan trọng (Outlook / Apple Mail)
-        msg["Importance"] = "High"
-        msg.set_content(email_text(alert, ack_url))
-        msg.add_alternative(email_html(alert, ack_url), subtype="html")
+        msg.set_content(text)
+        self._deliver(msg)
+
+    def _deliver(self, msg):
         context = ssl.create_default_context()
         if self.port == 465:
             with smtplib.SMTP_SSL(self.host, self.port, timeout=self.timeout, context=context) as smtp:
@@ -576,6 +577,17 @@ class EmailChannel:
                 smtp.starttls(context=context)
                 smtp.login(self.user, self.password)
                 smtp.send_message(msg)
+
+    def send(self, target, alert, ack_url=None):
+        msg = EmailMessage()
+        msg["Subject"] = email_subject(alert)
+        msg["From"] = formataddr(("SafeWatch Cảnh báo", self.sender))
+        msg["To"] = target
+        msg["X-Priority"] = "1"  # đánh dấu quan trọng (Outlook / Apple Mail)
+        msg["Importance"] = "High"
+        msg.set_content(email_text(alert, ack_url))
+        msg.add_alternative(email_html(alert, ack_url), subtype="html")
+        self._deliver(msg)
 
 
 def to_e164(phone, country_code="84"):

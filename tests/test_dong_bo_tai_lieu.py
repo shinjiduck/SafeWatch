@@ -67,6 +67,9 @@ def test_bo_loc_sos_dung_trang_thai_mac_dinh():
     bat = engine.SETTINGS_DEFAULTS["sos_filter"]
     if bat:
         assert "khi tắt bộ lọc (mặc định hiện tại)" not in README + LANDING, "code đã BẬT bộ lọc, tài liệu vẫn ghi tắt"
+        assert "**Bộ lọc chống báo nhầm bật sẵn**" in README
+        assert "5,6 lần / giờ với bộ lọc giữ 2 giây (mặc định)" in README and "bộ lọc giữ 2 giây (bật sẵn)" in LANDING
+        assert '"5,6 / giờ"' in EVAL_PAGE, "trang Kiểm định phải hiện số báo nhầm của cấu hình mặc định"
     else:
         assert "**tắt mặc định**, bật trong trang Cấu hình" in README, "README phải ghi bộ lọc SOS tắt mặc định"
         assert "132 lần / giờ khi tắt bộ lọc (mặc định hiện tại)" in README

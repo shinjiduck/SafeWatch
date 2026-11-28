@@ -108,6 +108,7 @@ IDLE_SECONDS = 8 * 3600  # không thao tác 8 giờ thì phải đăng nhập l�
 AUDIT_RETENTION_DAYS = 365
 LOGIN_ERROR = "Sai tên đăng nhập hoặc mật khẩu, hoặc tài khoản đang tạm khoá. Thử lại sau ít phút."
 USERNAME_RE = re.compile(r"^[a-z0-9_.-]{3,32}$")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _COMMON = {"12345678", "123456789", "1234567890", "password", "matkhau123", "qwerty123", "11111111", "abc12345",
            "iloveyou", "admin123", "safewatch", "00000000", "88888888", "password1"}
 
@@ -185,6 +186,19 @@ def init_db():
                 last_login REAL
             )"""
         )
+        if "email" not in {r[1] for r in conn.execute("PRAGMA table_info(users)")}:
+            conn.execute("ALTER TABLE users ADD COLUMN email TEXT")  # mã hoá (secure_store); để lấy lại mật khẩu
+        conn.execute(
+            """CREATE TABLE IF NOT EXISTS password_resets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                code_hash TEXT NOT NULL,
+                created_at REAL NOT NULL,
+                expires_at REAL NOT NULL,
+                attempts INTEGER NOT NULL DEFAULT 0,
+                used_at REAL
+            )"""
+        )
         conn.execute(
             """CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -228,7 +242,7 @@ def _active_admins(conn):
     return conn.execute("SELECT COUNT(*) FROM users WHERE role = ? AND disabled = 0", (ROLE_ADMIN,)).fetchone()[0]
 
 
-def create_user(username, display_name, role, secret, now=None):
+def create_user(username, display_name, role, secret, now=None, email=""):
     """Tạo tài khoản. Trả (id, None) hoặc (None, lý do lỗi)."""
     username = (username or "").strip().lower()
     display_name = (display_name or "").strip()
@@ -241,13 +255,40 @@ def create_user(username, display_name, role, secret, now=None):
     problem = password_problem(secret, username, role)
     if problem:
         return None, problem
+    email = (email or "").strip()
+    if email and not EMAIL_RE.match(email):
+        return None, "Email chưa đúng dạng (VD: ten@gmail.com)."
+    from secure_store import encrypt
+
     with _conn() as conn:
         if conn.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone():
             return None, "Tên đăng nhập đã có."
         cur = conn.execute(
-            "INSERT INTO users (username, display_name, role, secret_hash, created_at) VALUES (?, ?, ?, ?, ?)",
-            (username, display_name, role, hash_secret(secret), time.time() if now is None else now))
+            "INSERT INTO users (username, display_name, role, secret_hash, created_at, email) VALUES (?, ?, ?, ?, ?, ?)",
+            (username, display_name, role, hash_secret(secret), time.time() if now is None else now,
+             encrypt(email) if email else None))
         return cur.lastrowid, None
+
+
+def set_email(user_id, email, actor=None):
+    """Đặt / đổi email lấy lại mật khẩu (lưu mã hoá). Rỗng = xoá email."""
+    email = (email or "").strip()
+    if email and not EMAIL_RE.match(email):
+        return "Email chưa đúng dạng (VD: ten@gmail.com)."
+    from secure_store import encrypt
+
+    with _conn() as conn:
+        conn.execute("UPDATE users SET email = ? WHERE id = ?", (encrypt(email) if email else None, user_id))
+    audit("doi_email", "", who=actor)
+    return None
+
+
+def get_email(user_id):
+    from secure_store import decrypt
+
+    with _conn() as conn:
+        row = conn.execute("SELECT email FROM users WHERE id = ?", (user_id,)).fetchone()
+    return decrypt(row[0]) if row and row[0] else ""
 
 
 def authenticate(username, secret, now=None):
@@ -424,3 +465,79 @@ def require(permission, message="Bạn không có quyền làm việc này."):
     audit("bi_tu_choi", permission)
     st.error(message)
     st.stop()
+
+
+# ------------------------------------------------------------------ quên mật khẩu (mã qua email)
+RESET_MINUTES = 15
+RESET_MAX_ATTEMPTS = 5
+RESET_PER_HOUR = 3
+RESET_SENT_MESSAGE = ("Nếu tài khoản có email, mã đặt lại (6 số) đã được gửi tới email đó, hiệu lực 15 phút. "
+                      "Không có email thì nhờ quản trị gia đình đặt lại mật khẩu.")
+
+
+def _reset_hash(user_id, code):
+    return hashlib.sha256(f"{user_id}:{code}".encode()).hexdigest()
+
+
+def request_password_reset(username, send_email, now=None):
+    """Gửi mã 6 số tới email của tài khoản. send_email(to, subject, text) do app truyền vào (kênh email của bộ gửi
+    cảnh báo). Luôn trả CÙNG một câu, để không dò được tài khoản nào có thật / có email."""
+    import secrets as _s
+
+    now = time.time() if now is None else now
+    username = (username or "").strip().lower()
+    with _conn() as conn:
+        row = conn.execute("SELECT id, display_name, disabled FROM users WHERE username = ?", (username,)).fetchone()
+    if row is None or row[2]:
+        audit("quen_mat_khau", f"tên không có / bị khoá: {username[:32]}", who=("", ""))
+        return RESET_SENT_MESSAGE
+    uid, name = row[0], row[1]
+    email = get_email(uid)
+    with _conn() as conn:
+        recent = conn.execute("SELECT COUNT(*) FROM password_resets WHERE user_id = ? AND created_at > ?",
+                              (uid, now - 3600)).fetchone()[0]
+    if not email or recent >= RESET_PER_HOUR:
+        audit("quen_mat_khau", "không có email" if not email else "quá số lần / giờ", who=(username, ""))
+        return RESET_SENT_MESSAGE
+    code = f"{_s.randbelow(10 ** 6):06d}"
+    with _conn() as conn:
+        conn.execute("UPDATE password_resets SET used_at = ? WHERE user_id = ? AND used_at IS NULL", (now, uid))
+        conn.execute("INSERT INTO password_resets (user_id, code_hash, created_at, expires_at) VALUES (?, ?, ?, ?)",
+                     (uid, _reset_hash(uid, code), now, now + RESET_MINUTES * 60))
+    try:
+        send_email(email, "SafeWatch: mã đặt lại mật khẩu",
+                   f"Xin chào {name},\n\nMã đặt lại mật khẩu SafeWatch của bạn: {code}\n"
+                   f"Mã có hiệu lực {RESET_MINUTES} phút và chỉ dùng được 1 lần.\n\n"
+                   "Nếu bạn không yêu cầu, hãy bỏ qua email này; mật khẩu của bạn không thay đổi.")
+        audit("quen_mat_khau", "đã gửi mã qua email", who=(username, ""))
+    except Exception as exc:  # noqa: BLE001 — lỗi gửi mail không được làm lộ gì cho người yêu cầu
+        audit("quen_mat_khau", f"gửi email lỗi: {type(exc).__name__}", who=(username, ""))
+    return RESET_SENT_MESSAGE
+
+
+def reset_password_with_code(username, code, new_secret, now=None):
+    """Đặt mật khẩu mới bằng mã trong email. Trả None nếu được, hoặc lý do."""
+    now = time.time() if now is None else now
+    username = (username or "").strip().lower()
+    with _conn() as conn:
+        row = conn.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+    bad = "Mã không đúng hoặc đã hết hạn. Bấm gửi lại mã nếu cần."
+    if row is None:
+        return bad
+    uid = row[0]
+    with _conn() as conn:
+        r = conn.execute("SELECT id, code_hash, expires_at, attempts FROM password_resets WHERE user_id = ? AND "
+                         "used_at IS NULL ORDER BY id DESC LIMIT 1", (uid,)).fetchone()
+    if r is None or r[2] < now or r[3] >= RESET_MAX_ATTEMPTS:
+        return bad
+    if not hmac.compare_digest(r[1], _reset_hash(uid, (code or "").strip())):
+        with _conn() as conn:
+            conn.execute("UPDATE password_resets SET attempts = attempts + 1 WHERE id = ?", (r[0],))
+        audit("dat_lai_mat_khau_sai_ma", who=(username, ""))
+        return bad
+    problem = set_secret(uid, new_secret, actor=(username, ""))
+    if problem:
+        return problem
+    with _conn() as conn:
+        conn.execute("UPDATE password_resets SET used_at = ? WHERE id = ?", (now, r[0]))
+    return None

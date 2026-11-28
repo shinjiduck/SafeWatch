@@ -84,6 +84,44 @@ if _ack_token:
 
 # ------------------------------------------------------------------ đăng nhập
 
+def _email_sender():
+    """Kênh email của bộ gửi cảnh báo (cấu hình SMTP trong secrets), hoặc None nếu chưa cài."""
+    ch = notifier.RUNNING.channels.get("email") if notifier.RUNNING else None
+    return ch.send_plain if ch is not None and hasattr(ch, "send_plain") else None
+
+
+def _forgot_password():
+    with st.expander("Quên mật khẩu?"):
+        sender = _email_sender()
+        if sender is None:
+            st.write("Nhờ **quản trị gia đình** đặt lại mật khẩu cho bạn ở trang Tài khoản & quyền.")
+            return
+        st.caption("Nhập tên đăng nhập. Nếu tài khoản có email, SafeWatch gửi mã 6 số tới email đó. Không có email "
+                   "(VD tài khoản dùng mã PIN) thì nhờ quản trị gia đình đặt lại.")
+        with st.form("forgot_req", border=False):
+            fu = st.text_input("Tên đăng nhập", key="fp_user")
+            if st.form_submit_button("Gửi mã qua email"):
+                time.sleep(0.5)
+                st.session_state["_fp_user"] = fu.strip().lower()
+                st.info(auth.request_password_reset(fu, sender))
+        if st.session_state.get("_fp_user"):
+            with st.form("forgot_set", border=False):
+                code = st.text_input("Mã 6 số trong email", max_chars=6, key="fp_code")
+                npw = st.text_input("Mật khẩu / PIN mới", type="password", key="fp_pw")
+                npw2 = st.text_input("Nhập lại", type="password", key="fp_pw2")
+                if st.form_submit_button("Đặt mật khẩu mới", type="primary"):
+                    if npw != npw2:
+                        st.error("Hai lần nhập không khớp.")
+                    else:
+                        time.sleep(0.5)
+                        err = auth.reset_password_with_code(st.session_state["_fp_user"], code, npw)
+                        if err:
+                            st.error(err)
+                        else:
+                            st.session_state.pop("_fp_user", None)
+                            st.success("Đã đặt mật khẩu mới. Đăng nhập lại ở trên.")
+
+
 def _login_screen():
     _, mid, _ = st.columns([1, 1.3, 1])
     with mid:
@@ -124,13 +162,15 @@ def _login_screen():
                 else:
                     auth.login(user)
                     st.rerun()
+        _forgot_password()
         st.caption("Nhận được cảnh báo? Bấm link trong tin nhắn để xác nhận, không cần đăng nhập.")
         with st.container(border=True, key="swbox_roles_intro"):
             st.markdown("**Mỗi người một tài khoản, mỗi vai trò một quyền**")
             for role, (who_txt, can_txt) in auth.ROLE_SUMMARY.items():
                 st.markdown(f"**{auth.ROLE_NAMES[role]}** · {who_txt}" + "  " + chr(10) + can_txt)
             st.caption("Chưa có tài khoản? Nhờ **quản trị gia đình** tạo cho bạn ở trang Tài khoản & quyền. Quên mật "
-                       "khẩu? Nhờ quản trị đặt lại. Sai 5 lần liên tiếp thì tài khoản tạm khoá 5 phút.")
+                       "khẩu? Bấm **Quên mật khẩu?** (mã qua email) hoặc nhờ quản trị đặt lại. Sai 5 lần liên tiếp thì "
+                       "tài khoản tạm khoá 5 phút.")
 
 
 _user = auth.current_user()

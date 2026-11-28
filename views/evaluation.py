@@ -72,7 +72,7 @@ with k2:
 with k3:
     kpi_card("Charades · 5 giờ thật", "8 / giờ", "báo ngã nhầm · cũ 61 / giờ", icon="🏠", tone="sky")
 with k4:
-    kpi_card("Cử chỉ SOS báo nhầm", "132 / giờ", "bộ lọc tắt (mặc định) · bật: 1,9 / giờ", icon="✋", tone="violet")
+    kpi_card("Cử chỉ SOS báo nhầm", "5,6 / giờ", "bộ lọc giữ 2 s (mặc định) · tắt lọc: 132 / giờ", icon="✋", tone="violet")
 st.caption("Số liệu chi tiết và cách tính ở các tab dưới. Thông số bản đang chạy và giới hạn của từng con số: trang Phiên bản.")
 
 DOCS = [

@@ -130,6 +130,46 @@ def test_moi_quyen_deu_co_mo_ta_de_hieu():
     assert every <= described, f"quyền chưa có mô tả: {every - described}"
     assert set(auth.ROLE_SUMMARY) == set(auth.ROLE_NAMES)
 
+def test_quen_mat_khau_gui_ma_qua_email():
+
+    from cryptography.fernet import Fernet
+
+    os.environ.setdefault("SAFEWATCH_DATA_KEY", Fernet.generate_key().decode())
+    path = fresh_db()
+    uid, _ = auth.create_user("lan", "Lan", auth.ROLE_CAREGIVER, "Hoa-sen-2026", email="lan@example.com")
+    assert b"lan@example.com" not in open(path, "rb").read(), "email lưu mã hoá"
+    sent = []
+    t = 1_000_000.0
+    msg = auth.request_password_reset("lan", lambda to, subj, text: sent.append((to, text)), now=t)
+    assert sent and sent[0][0] == "lan@example.com"
+    code = [w for w in sent[0][1].replace(".", " ").split() if w.isdigit() and len(w) == 6][0]
+    assert auth.request_password_reset("khong-co", lambda *a: sent.append(a), now=t) == msg, "cùng 1 câu trả lời"
+    assert len(sent) == 1, "tên không có thì không gửi gì"
+    assert auth.reset_password_with_code("lan", "000000" if code != "000000" else "111111", "Moi-hon-2027", now=t + 60)
+    assert auth.reset_password_with_code("lan", code, "Moi-hon-2027", now=t + 60) is None
+    assert auth.authenticate("lan", "Moi-hon-2027") is not None
+    assert auth.reset_password_with_code("lan", code, "Lai-nua-2028", now=t + 70) is not None, "mã dùng 1 lần"
+
+
+def test_ma_dat_lai_het_han_va_sai_qua_5_lan():
+    from cryptography.fernet import Fernet
+
+    os.environ.setdefault("SAFEWATCH_DATA_KEY", Fernet.generate_key().decode())
+    fresh_db()
+    auth.create_user("lan", "Lan", auth.ROLE_CAREGIVER, "Hoa-sen-2026", email="lan@example.com")
+    sent = []
+    t = 1_000_000.0
+    auth.request_password_reset("lan", lambda to, subj, text: sent.append(text), now=t)
+    code = [w for w in sent[0].replace(".", " ").split() if w.isdigit() and len(w) == 6][0]
+    assert auth.reset_password_with_code("lan", code, "Moi-hon-2027", now=t + 16 * 60) is not None, "quá 15 phút"
+    auth.request_password_reset("lan", lambda to, subj, text: sent.append(text), now=t + 20 * 60)
+    code2 = [w for w in sent[1].replace(".", " ").split() if w.isdigit() and len(w) == 6][0]
+    wrong = "123456" if code2 != "123456" else "654321"
+    for _ in range(auth.RESET_MAX_ATTEMPTS):
+        auth.reset_password_with_code("lan", wrong, "Moi-hon-2027", now=t + 21 * 60)
+    assert auth.reset_password_with_code("lan", code2, "Moi-hon-2027", now=t + 21 * 60) is not None, "sai 5 lần thì huỷ mã"
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0

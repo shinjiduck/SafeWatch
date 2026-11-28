@@ -50,11 +50,18 @@ with tab_detect:
     with card("set_hand"):
         st.session_state["enable_hand"] = st.toggle("Bật phát hiện cử chỉ tay", value=st.session_state["enable_hand"])
         st.session_state["sos_filter"] = st.toggle(
-            "Chống báo SOS nhầm: chỉ nhận cử chỉ khi giơ tay cao hơn vai và giữ 2 giây",
+            "Chống báo SOS nhầm: cử chỉ cầu cứu phải giữ 2 giây",
             value=st.session_state["sos_filter"],
             disabled=not st.session_state["enable_hand"],
-            help="Đo trên 3,2 giờ sinh hoạt (Charades): báo SOS nhầm 132 -> 1,9 lần / giờ. Cần bật phát hiện ngã (để biết "
-            "vai ở đâu). Số đo: training/hand_eval/KIEM_DINH_TAY_XA.md.",
+            help="Đo trên video sinh hoạt Charades (không ai ra hiệu): báo SOS nhầm 132 -> 5,6 lần / giờ. "
+            "Số đo: training/hand_eval/KIEM_DINH_TAY_XA.md.",
+        )
+        st.session_state["sos_above_shoulder"] = st.toggle(
+            "Chặt hơn: chỉ nhận khi giơ tay cao hơn vai",
+            value=st.session_state.get("sos_above_shoulder", False),
+            disabled=not (st.session_state["enable_hand"] and st.session_state["sos_filter"]),
+            help="Báo nhầm còn 1,9 lần / giờ, nhưng người đã ngã nằm dưới sàn khó giơ tay cao hơn vai. Cần bật phát hiện "
+            "ngã (để biết vai ở đâu).",
         )
         st.session_state["hand_roi"] = st.toggle(
             "Nhận cử chỉ khi đứng xa camera (thử nghiệm)",

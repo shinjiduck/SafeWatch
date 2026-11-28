@@ -114,7 +114,8 @@ class DetectionVideoProcessor(VideoProcessorBase):
         # riêng chạy trên ô quanh bàn tay (tạo khi cần).
         self._pose_for_hands = None
         self._hands_roi = None
-        # Lọc cử chỉ SOS (cấu hình "sos_filter"): chỉ nhận khi bàn tay giơ cao hơn vai và nhãn SOS giữ liên tục
+        # Lọc cử chỉ SOS (cấu hình "sos_filter", bật mặc định): nhãn SOS phải giữ liên tục SOS_HOLD_SECONDS. Tuỳ chọn
+        # thêm "sos_above_shoulder": chỉ nhận khi bàn tay giơ cao hơn vai (chặt hơn, nhưng người đã ngã nằm khó làm).
         # SOS_HOLD_SECONDS. Đo trên Charades: báo SOS nhầm 132 -> 1.9 / giờ (training/hand_eval/KIEM_DINH_TAY_XA.md).
         self._hand_sos_since = None
         # Tạm dừng vì riêng tư (privacy.py): trang Trực tiếp đặt mốc hết tạm dừng; trước mốc đó recv() KHÔNG chạy AI,
@@ -318,7 +319,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
             raw_label, self.hand_confidence = engine.predict_hand(
                 self.hand_model, raw_vector, cfg["hand_confidence_threshold"]
             )
-            if (cfg.get("sos_filter") and raw_label in engine.SOS_HAND_LABELS
+            if (cfg.get("sos_filter") and cfg.get("sos_above_shoulder") and raw_label in engine.SOS_HAND_LABELS
                     and not hand_roi.hand_above_shoulders(hand_results, self._pose_for_hands)):
                 raw_label = engine.UNCERTAIN_LABEL  # tay không giơ cao -> không tính là ra hiệu cầu cứu
             self.hand_votes.append(raw_label)

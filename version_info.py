@@ -112,8 +112,8 @@ def thong_so():
 TINH_NANG = [
     ("enable_fall", "Phát hiện ngã", "Đang dùng", ""),
     ("enable_hand", "Cử chỉ tay (14 nhãn, 3 nhãn cầu cứu)", "Đang dùng", ""),
-    ("sos_filter", "Bộ lọc chống báo SOS nhầm (giơ tay cao hơn vai + giữ 2 s)", "Đang dùng",
-     "Giảm báo nhầm 132 → 1,9 / giờ; độ nhạy chưa đo bằng video cử chỉ thật"),
+    ("sos_filter", "Bộ lọc chống báo SOS nhầm (cử chỉ giữ 2 s)", "Đang dùng",
+     "Giảm báo nhầm 132 → 5,6 / giờ (thêm điều kiện tay cao hơn vai: 1,9); độ nhạy chưa đo bằng video thật"),
     ("enable_signal", "Signal for Help theo chuỗi động tác", "Thử nghiệm", "Học từ 60 chuỗi, chưa đánh giá độc lập"),
     ("multi_person", "Theo dõi nhiều người", "Thử nghiệm", "Chưa đạt tiêu chí ghi trước khi thử"),
     ("hand_roi", "Nhận cử chỉ khi đứng xa", "Thử nghiệm", "Thấy tay nhiều hơn nhưng báo nhầm 132 → 184 / giờ"),
@@ -138,7 +138,8 @@ KET_QUA = [
      "Che giả lập dải dưới khung hình", "training/fall_eval/results_che_goc_tong_hop.md"),
     ("Báo ngã nhầm — Charades", "8 cảnh báo / giờ (model cũ: 61 / giờ)",
      "5 giờ sinh hoạt thật, ~500 nhà, không ai ngã", "training/fall_eval/KIEM_DINH_NHIEU_NGUOI.md"),
-    ("Báo SOS nhầm — Charades", "132 / giờ khi tắt bộ lọc; 1,9 / giờ khi bật",
+    ("Báo SOS nhầm — Charades", "5,6 / giờ với bộ lọc giữ 2 s (mặc định); 1,9 / giờ thêm điều kiện cao hơn vai; "
+     "132 / giờ khi tắt lọc",
      "3,2 giờ sinh hoạt, không ai ra hiệu", "training/hand_eval/KIEM_DINH_TAY_XA.md"),
     ("Cử chỉ tay — 14 nhãn", "99,54% trên tập kiểm tra nội bộ",
      "Chia ngẫu nhiên theo khung hình (44.400 khung): khung liền nhau của cùng người nằm ở cả 2 tập nên số này cao hơn "

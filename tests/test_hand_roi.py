@@ -103,20 +103,30 @@ class _HandsAt:
         return types.SimpleNamespace(multi_hand_landmarks=[types.SimpleNamespace(landmark=pts)])
 
 
-def _sos_harness(hand_y, sos_filter=True):
+def _sos_harness(hand_y, sos_filter=True, above_shoulder=False):
     fresh_db()
     h = Harness()
     h.p.config["sos_filter"] = sos_filter
+    h.p.config["sos_above_shoulder"] = above_shoulder
     h.hand_result = ("Need Help", 0.99)
     h.pose = h.p.pose_detector = _ScriptedPose(body())  # vai ở y = 0.3
     h.hands = h.p.hand_detector = _HandsAt(hand_y)
     return h
 
 
-def test_loc_sos_tay_thap_khong_bao():
-    h = _sos_harness(hand_y=0.6)
+def test_loc_sos_tay_thap_khong_bao_khi_bat_dieu_kien_cao_hon_vai():
+    h = _sos_harness(hand_y=0.6, above_shoulder=True)
     h.run(5)
     assert not h.s["sos_alert"] and h.s["hand_label"] == "Uncertain"
+
+
+def test_loc_sos_mac_dinh_khong_can_gio_cao_chi_can_giu_2_giay():
+    """Mặc định: tay thấp (VD người đã ngã nằm dưới sàn) vẫn ra hiệu được, chỉ cần giữ cử chỉ đủ 2 s."""
+    h = _sos_harness(hand_y=0.6)
+    h.run(1.4 + 1.5)
+    assert h.s["hand_label"] == "Need Help" and not h.s["sos_alert"], "chưa đủ 2 s thì chưa báo"
+    h.run(1.0)
+    assert h.s["sos_alert"]
 
 
 def test_loc_sos_gio_tay_phai_giu_du_2_giay():

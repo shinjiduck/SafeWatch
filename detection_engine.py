@@ -103,7 +103,8 @@ SETTINGS_DEFAULTS = {
     "fall_model_version": "v2",
     "multi_person": False,
     "hand_roi": False,
-    "sos_filter": False,  # lọc cử chỉ SOS: giơ tay + giữ 2 s — bật mặc định sau khi kiểm bằng video cử chỉ thật  # nhận cử chỉ khi đứng xa — bật/tắt theo kết quả training/hand_eval/KIEM_DINH_TAY_XA.md
+    "sos_filter": True,  # chống báo SOS nhầm: cử chỉ phải giữ liên tục 2 s (KIEM_DINH_TAY_XA.md)
+    "sos_above_shoulder": False,  # thêm điều kiện tay cao hơn vai (chặt hơn; người đã ngã nằm khó làm)
     "enable_fall": DEFAULT_ENABLE_FALL,
     "enable_hand": DEFAULT_ENABLE_HAND,
     "enable_signal": DEFAULT_ENABLE_SIGNAL,

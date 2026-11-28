@@ -87,7 +87,8 @@ config = {
     "show_overlay": s["show_overlay"],
     "multi_person": s.get("multi_person", False),
     "hand_roi": s.get("hand_roi", False),
-    "sos_filter": s.get("sos_filter", False),
+    "sos_filter": s.get("sos_filter", True),
+    "sos_above_shoulder": s.get("sos_above_shoulder", False),
 }
 
 fall_model, hand_model, signal_model = engine.load_models()
