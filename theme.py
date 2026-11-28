@@ -123,8 +123,9 @@ def _mask_url(name):
 
 
 # Icon menu bên trái theo đường dẫn trang (trang mặc định Trực tiếp không có đường dẫn -> icon mặc định = video).
-_NAV_ICONS = {"alerts": "bell", "history": "list", "emergency_contacts": "users", "camera_management": "camera",
-              "settings": "settings", "dashboard": "chart", "evaluation": "flask", "account": "user"}
+_NAV_ICONS = {"alerts": "bell", "history": "list", "emergency_contacts": "phone", "camera_management": "camera",
+              "settings": "settings", "dashboard": "chart", "evaluation": "flask", "version": "info", "account": "user",
+              "users": "users", "privacy_center": "shield"}
 _NAV_ICON_CSS = "\n".join(
     [f'[data-testid="stSidebarNavLink"] {{ --sw-ico: {_mask_url("video")}; }}']
     + [f'[data-testid="stSidebarNavLink"][href$="/{path}"] {{ --sw-ico: {_mask_url(icon)}; }}'
@@ -488,10 +489,12 @@ def render_sidebar_brand():
 
 
 def render_sidebar_profile(name="Người dùng", role=""):
-    initial = name.strip()[0].upper() if name.strip() else "?"
+    from html import escape
+
+    initial = escape(name.strip()[0].upper()) if name.strip() else "?"
     st.markdown(
         f'<div class="sw-profile"><div class="sw-avatar">{initial}</div><div>'
-        f'<div class="sw-profile-name">{name}</div><div class="sw-profile-role">{role}</div></div></div>',
+        f'<div class="sw-profile-name">{escape(name)}</div><div class="sw-profile-role">{escape(role)}</div></div></div>',
         unsafe_allow_html=True,
     )
 
@@ -630,6 +633,13 @@ def ack_page_html(result, alert=None):
     def t(ts):
         return "—" if not ts else datetime.fromtimestamp(ts).strftime("%H:%M:%S · %d/%m/%Y")
 
+    from html import escape
+
+    if result == "expired":
+        mark = _ACK_MARK.format(cls=" sw-ack-warn", path="M42 24v22M42 58v.5")
+        return (f'<div class="sw-ack">{mark}<div class="sw-ack-title">Link đã hết hạn</div>'
+                '<div class="sw-ack-sub">Link xác nhận chỉ dùng được trong 24 giờ kể từ lúc gửi cảnh báo. Hãy gọi điện '
+                'kiểm tra người thân, hoặc đăng nhập SafeWatch để xem và xác nhận cảnh báo.</div></div>')
     if result == "invalid" or alert is None:
         mark = _ACK_MARK.format(cls=" sw-ack-warn", path="M42 24v22M42 58v.5")
         return (f'<div class="sw-ack">{mark}<div class="sw-ack-title">Không tìm thấy cảnh báo</div>'
@@ -637,9 +647,10 @@ def ack_page_html(result, alert=None):
                 'trong tin nhắn, hoặc xem danh sách ở trang Cảnh báo.</div></div>')
     mark = _ACK_MARK.format(cls="", path="M27 43l10 10 20-21")
     stamp_time = datetime.fromtimestamp(alert["acked_at"]).strftime("%H:%M · %d/%m") if alert.get("acked_at") else ""
-    rows = rows_html([("Cảnh báo", f'#{alert["id"]} · {alert["kind"]}'), ("Phát hiện lúc", t(alert["detected_at"])),
-                      ("Xác nhận lúc", t(alert.get("acked_at")))]
-                     + ([("Người xác nhận", f'{alert["acked_by"]}')] if result == "already" and alert.get("acked_by") else []))
+    rows = rows_html([("Cảnh báo", f'#{alert["id"]} · {escape(str(alert["kind"]))}'),
+                      ("Phát hiện lúc", t(alert["detected_at"])), ("Xác nhận lúc", t(alert.get("acked_at")))]
+                     + ([("Người xác nhận", escape(str(alert["acked_by"])))]
+                        if result == "already" and alert.get("acked_by") else []))
     if result == "new":
         title = "Đã ghi nhận. Cảm ơn bạn!"
         sub = "SafeWatch đã dừng gửi lại và chuyển tiếp cảnh báo này cho những người khác."

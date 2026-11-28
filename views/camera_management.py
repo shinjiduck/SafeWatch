@@ -3,8 +3,11 @@ hướng dẫn đặt camera. Hiện hỗ trợ 1 camera: webcam của trình du
 
 import streamlit as st
 
+import auth
 import detection_engine as engine
 from theme import badge_html, card, page_header, rows_html, section, steps_html
+
+auth.require(auth.MONITOR)
 
 engine.ensure_settings_defaults()
 page_header("Camera & lắp đặt", "Camera đang dùng, cài đặt hình ảnh và cách đặt camera để phát hiện ngã tốt nhất.", icon="📷")

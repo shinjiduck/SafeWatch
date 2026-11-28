@@ -6,7 +6,10 @@ import os
 
 import streamlit as st
 
+import auth
 from theme import card, kpi_card, page_header
+
+auth.require(auth.VIEW_REPORTS)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EVAL = os.path.join(ROOT, "training", "fall_eval")
@@ -67,10 +70,10 @@ with k2:
     kpi_card("Le2i · vật cản che 30%", f"{le2i_30[0]}/{le2i_30[1]}" if le2i_30 else "—",
              "ca ngã · che 40%: 74/129", icon="🧱", tone="amber")
 with k3:
-    kpi_card("Charades · 5 giờ thật", "9 / giờ", "báo ngã nhầm · cũ 61 / giờ", icon="🏠", tone="sky")
+    kpi_card("Charades · 5 giờ thật", "8 / giờ", "báo ngã nhầm · cũ 61 / giờ", icon="🏠", tone="sky")
 with k4:
-    kpi_card("Cử chỉ SOS báo nhầm", "1,9 / giờ", "có lọc · trước 132 / giờ", icon="✋", tone="violet")
-st.caption("Số liệu chi tiết và cách tính ở các tab dưới.")
+    kpi_card("Cử chỉ SOS báo nhầm", "132 / giờ", "bộ lọc tắt (mặc định) · bật: 1,9 / giờ", icon="✋", tone="violet")
+st.caption("Số liệu chi tiết và cách tính ở các tab dưới. Thông số bản đang chạy và giới hạn của từng con số: trang Phiên bản.")
 
 DOCS = [
     ("Theo yêu cầu BTC", "KIEM_DINH_THEO_YEU_CAU_BTC.md"),

@@ -6,22 +6,28 @@ from datetime import datetime, timedelta
 import pandas as pd
 import streamlit as st
 
+import auth
 import event_log
+import privacy
 from theme import empty_html, kpi_card, page_header
 
+auth.require(auth.VIEW_HISTORY)
 event_log.init_db()
 page_header("Nhật ký", "Mọi sự cố và thay đổi trạng thái hệ thống đã ghi lại.", icon="📋")
+_flash = st.session_state.pop("_history_flash", None)
+if _flash:
+    st.toast(_flash, icon="✅")
 
 rows = []
-for ts, event_type, details in event_log.get_events(limit=2000):
+for event_id, ts, event_type, details in event_log.get_events_with_id(limit=2000):
     try:
         dt = datetime.fromisoformat(ts)
     except ValueError:
         continue
     group, status = event_log.classify(event_type)
-    rows.append({"dt": dt, "Thời gian": dt.strftime("%d/%m/%Y %H:%M:%S"), "Sự kiện": event_type, "Nhóm": group,
-                 "Kết quả": status, "Chi tiết": details})
-df = pd.DataFrame(rows, columns=["dt", "Thời gian", "Sự kiện", "Nhóm", "Kết quả", "Chi tiết"])
+    rows.append({"id": event_id, "dt": dt, "Thời gian": dt.strftime("%d/%m/%Y %H:%M:%S"), "Sự kiện": event_type,
+                 "Nhóm": group, "Kết quả": status, "Chi tiết": details})
+df = pd.DataFrame(rows, columns=["id", "dt", "Thời gian", "Sự kiện", "Nhóm", "Kết quả", "Chi tiết"])
 
 tab_events, tab_system = st.tabs(["Sự cố", "Hệ thống"])
 
@@ -65,9 +71,19 @@ with tab_system:
         st.dataframe(pd.DataFrame(status_rows, columns=["Thời gian", "Trạng thái", "Chi tiết"]), width="stretch",
                      hide_index=True)
 
-with st.expander("Xoá toàn bộ lịch sử sự cố"):
-    confirm = st.checkbox("Tôi chắc chắn muốn xoá toàn bộ lịch sử (không thể hoàn tác)")
-    if st.button("Xoá lịch sử", disabled=not confirm):
-        event_log.clear_events()
-        st.success("Đã xoá toàn bộ lịch sử.")
-        st.rerun()
+if auth.can(auth.EXPORT) and not df.empty:
+    st.download_button("Tải lịch sử sự cố (CSV)", df[["Thời gian", "Sự kiện", "Kết quả", "Chi tiết"]]
+                       .map(lambda v: "'" + v if isinstance(v, str) and v and v[0] in "=+-@" else v)
+                       .to_csv(index=False).encode("utf-8-sig"), "safewatch_nhat_ky.csv", "text/csv",
+                       on_click=lambda: auth.audit("xuat_csv", "nhật ký sự cố"))
+
+if auth.can(auth.DELETE_HISTORY) and not df.empty:
+    with st.expander("Xoá một sự kiện"):
+        pick = st.selectbox("Chọn sự kiện", df["id"].tolist(),
+                            format_func=lambda i: " · ".join(df.loc[df["id"] == i, ["Thời gian", "Sự kiện"]].iloc[0]))
+        if st.button("Xoá sự kiện này", key="del_one"):
+            auth.require(auth.DELETE_HISTORY)
+            counts = privacy.delete_event(pick, who=auth.who())
+            st.session_state["_history_flash"] = f"Đã xoá {privacy._fmt(counts)}."
+            st.rerun()
+        st.caption("Xoá theo khoảng ngày hoặc toàn bộ: trang Quyền riêng tư.")

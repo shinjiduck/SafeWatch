@@ -46,7 +46,7 @@ RANDOM_STATE = 42
 
 def build_old_hand_model_with_weights():
     """Dựng đúng kiến trúc model cũ (named layers) và load trọng số gốc —
-    giống app.py, để đánh giá model cũ trên cùng test set cho công bằng."""
+    giống app, để đánh giá model cũ trên cùng test set cho công bằng."""
     lstm_input = Input(shape=(21, 3))
     lstm_branch = LSTM(64, return_sequences=True, name="lstm")(lstm_input)
     lstm_branch = LSTM(64, name="lstm_1")(lstm_branch)

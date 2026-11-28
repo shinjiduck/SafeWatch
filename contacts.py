@@ -4,14 +4,18 @@ và cần giữ lại giữa các lần chạy app.
 """
 
 import os
-import sqlite3
+
+import event_log
+from secure_store import decrypt, encrypt
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "events.db")
 
 
 def _get_connection():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    return sqlite3.connect(DB_PATH)
+    return event_log.connect(DB_PATH)
+
+
+# Số điện thoại, email, Telegram Chat ID được mã hoá khi lưu (secure_store); đọc ra thì giải mã.
 
 
 def init_db():
@@ -40,17 +44,17 @@ def add_contact(name, relationship, phone, email, priority, telegram_chat_id=Non
         conn.execute(
             "INSERT INTO contacts (name, relationship, phone, email, priority, notify_enabled, telegram_chat_id) "
             "VALUES (?, ?, ?, ?, ?, 1, ?)",
-            (name, relationship, phone, email, priority, telegram_chat_id or None),
+            (name, relationship, encrypt(phone), encrypt(email), priority, encrypt(telegram_chat_id or None)),
         )
 
 
 def get_contacts():
     with _get_connection() as conn:
-        cursor = conn.execute(
+        rows = conn.execute(
             "SELECT id, name, relationship, phone, email, priority, notify_enabled, telegram_chat_id "
             "FROM contacts ORDER BY priority ASC, id ASC"
-        )
-        return cursor.fetchall()
+        ).fetchall()
+    return [(r[0], r[1], r[2], decrypt(r[3]), decrypt(r[4]), r[5], r[6], decrypt(r[7])) for r in rows]
 
 
 def get_alert_recipients():
@@ -66,13 +70,14 @@ def update_contact(contact_id, name, relationship, phone, email, priority, teleg
         conn.execute(
             "UPDATE contacts SET name = ?, relationship = ?, phone = ?, email = ?, priority = ?, telegram_chat_id = ? "
             "WHERE id = ?",
-            (name, relationship, phone, email, priority, telegram_chat_id or None, contact_id),
+            (name, relationship, encrypt(phone), encrypt(email), priority, encrypt(telegram_chat_id or None),
+             contact_id),
         )
 
 
 def set_telegram_chat_id(contact_id, chat_id):
     with _get_connection() as conn:
-        conn.execute("UPDATE contacts SET telegram_chat_id = ? WHERE id = ?", (chat_id or None, contact_id))
+        conn.execute("UPDATE contacts SET telegram_chat_id = ? WHERE id = ?", (encrypt(chat_id or None), contact_id))
 
 
 def delete_contact(contact_id):

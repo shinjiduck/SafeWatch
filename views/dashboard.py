@@ -12,9 +12,12 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+import auth
 import event_log
 import notifier
 from theme import COLOR_NAVY, card, empty_html, fmt_duration, kpi_card, page_header, section
+
+auth.require(auth.VIEW_HISTORY)
 
 event_log.init_db()
 notifier.init_db()

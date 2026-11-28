@@ -52,3 +52,10 @@ ngưỡng không giảm thêm). Một vài luật khác trên clip 0-199: chỉ 
 Đã đưa vào app: Cấu hình → "Chống báo SOS nhầm" (`sos_filter`), trang Trực tiếp hiện "Giữ tay thêm x s để gửi".
 Để TẮT mặc định cho tới khi kiểm bằng video cử chỉ thật của nhóm (>= 90% lần ra hiệu được nhận). Cần bật phát hiện
 ngã (Pose) để biết vai ở đâu.
+
+## Thử kiểm độ nhạy bằng video có sẵn (28/11/2026)
+
+Video duy nhất có cử chỉ cầu cứu (`NCKH SV 2024/Demo/SOS_HandDetection.mp4`) là video quay màn hình app cũ, landmark
+vẽ đè lên bàn tay -> MediaPipe Hands không thấy tay ở khung nào, kể cả ở độ phân giải gốc. **Không dùng được.**
+`sos_filter` vẫn TẮT mặc định theo đúng tiêu chí trên. Cần nhóm quay video cử chỉ thật (không có lớp vẽ đè) rồi chạy
+`video_cau_hinh.py <video> <ra.json> sos_filter=1` để đo. Xem `training/fall_eval/results_kich_ban/KET_QUA_KICH_BAN.md`.

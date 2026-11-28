@@ -343,6 +343,12 @@ def cmd_replay(mode, version, list_csv, pose_dir, out_json, shard="0", shards="1
             continue
         d = np.load(path)
         poses, times = d["poses"], d["times"]
+        duration = float(times[-1]) + 1 / HZ if len(times) else 0.0
+        hold = float(os.environ.get("REPLAY_GIU_CUOI", "0") or 0)  # giữ khung xương cuối thêm N giây (người nằm / đứng yên)
+        if hold > 0 and len(times):
+            n = int(round(hold * HZ))
+            times = np.concatenate([times, times[-1] + np.arange(1, n + 1) / HZ])
+            poses = np.concatenate([poses, np.repeat(poses[-1:], n, axis=0)])
         replay = _ReplayPose()
         p = webrtc_processor.DetectionVideoProcessor(
             model, None, None, replay, None, config, multi_detector=replay if mode == "multi" else None)
@@ -363,11 +369,12 @@ def cmd_replay(mode, version, list_csv, pose_dir, out_json, shard="0", shards="1
                                  "vanish": bool(p.vanish_suspected)})
             if p.fall_escalated and not prev_esc and episodes:
                 episodes[-1]["sent"] = True
+                episodes[-1]["t_sent"] = clock.t - base
             prev_down, prev_esc = p.fall_down_since, p.fall_escalated
         if p.fall_down_since is not None and episodes and not p.fall_escalated:
             episodes[-1]["sent"] = True  # clip hết khi vẫn đang chờ xác minh -> tính là CÓ gửi (bất lợi cho mình)
             episodes[-1]["clip_end"] = True
-        results[row["name"]] = {**row, "duration": float(times[-1]) + 1 / HZ if len(times) else 0.0,
+        results[row["name"]] = {**row, "duration": duration, "giu_cuoi_s": hold,
                                 "episodes": episodes, "ms": float(np.median(d["ms"])) if len(d["ms"]) else 0.0,
                                 "people": float(np.mean([(~np.isnan(x[:, 0, 0])).sum() for x in poses])) if len(poses) else 0.0}
     os.makedirs(os.path.dirname(os.path.abspath(out_json)), exist_ok=True)

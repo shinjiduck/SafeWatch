@@ -4,7 +4,7 @@ trình duyệt của MỖI NGƯỜI XEM tự capture webcam CỦA HỌ qua WebRT
 từng frame lên DetectionVideoProcessor.recv() (webrtc_processor.py) để xử
 lý — đây là điều kiện bắt buộc để deploy app lên 1 địa chỉ web thật cho
 nhiều người dùng riêng biệt (bản cv2 cũ chỉ chạy đúng khi mở local trên
-đúng máy có webcam, xem app.py và lịch sử git để tham khảo bản đó).
+đúng máy có webcam, xem lịch sử git để tham khảo bản đó).
 
 Xử lý AI thật sự chạy trong DetectionVideoProcessor, trên 1 thread riêng
 do streamlit-webrtc quản lý — liên tục, độc lập với vòng đời script này.
@@ -24,8 +24,10 @@ from streamlit_webrtc import (
     webrtc_streamer,
 )
 
+import auth
 import detection_engine as engine
 import event_log
+import privacy
 import framing
 import multi_person
 import contacts
@@ -34,7 +36,10 @@ from theme import (badge_html, card, card_html, kpi_card, page_header, rows_html
                    status_banner_html, steps_html)
 from webrtc_processor import DetectionVideoProcessor
 
+auth.require(auth.MONITOR)
 engine.ensure_settings_defaults()
+privacy.init_db()
+me = auth.current_user()
 
 # STUN công khai của Google luôn có sẵn — đủ cho mạng "dễ" (nhà, hầu hết
 # trường học). Mạng chặt hơn (NAT đối xứng, firewall công ty/1 số mobile
@@ -107,6 +112,42 @@ page_header(
 )
 
 
+def render_consent():
+    """Chưa có sự đồng ý còn hiệu lực: không hiện nút Bắt đầu giám sát (đặc tả mục 4.3)."""
+    with card("consent"):
+        st.markdown("### Trước khi giám sát, xin đọc và đồng ý")
+        st.caption("Người được giám sát cần biết rõ camera dùng để làm gì và quyền của mình.")
+        for title, text in privacy.CONSENT_POINTS:
+            st.markdown(f"**{title}.** {text}")
+        if auth.can(auth.CONSENT_SELF):
+            if st.button("Tôi đã hiểu và đồng ý được giám sát", type="primary"):
+                err = privacy.give_consent(me)
+                if err:
+                    st.error(err)
+                else:
+                    st.rerun()
+        if auth.can(auth.CONSENT_ON_BEHALF):
+            st.markdown("---")
+            st.markdown("**Người được giám sát nên tự bấm đồng ý** bằng tài khoản của họ (mã PIN). Chỉ khi họ không tự "
+                        "thao tác được, quản trị mới ghi thay, kèm lý do. Việc ghi thay được lưu vào nhật ký truy cập "
+                        "và người được giám sát rút lại được bất cứ lúc nào.")
+            reason = st.text_area("Lý do ghi thay", placeholder="VD: Bố tôi bị sa sút trí nhớ, tôi là người giám hộ; "
+                                  "đã giải thích cho bố và bố gật đầu đồng ý.")
+            if st.button("Ghi thay sự đồng ý"):
+                err = privacy.give_consent(me, on_behalf=True, reason=reason)
+                if err:
+                    st.error(err)
+                else:
+                    st.rerun()
+        if not auth.can(auth.CONSENT_SELF) and not auth.can(auth.CONSENT_ON_BEHALF):
+            st.info("Cần người được giám sát tự đồng ý (hoặc quản trị gia đình ghi thay) trước khi bắt đầu.")
+
+
+if privacy.active_consent() is None:
+    render_consent()
+    st.stop()
+
+
 def processor_factory():
     # Mỗi lần bắt đầu stream tạo 1 bộ nhận diện nhiều người riêng (chế độ VIDEO giữ trạng thái theo dõi).
     multi_detector = multi_person.MultiPoseDetector() if multi_on else None
@@ -145,6 +186,28 @@ with video_col, card("video"):
         },
     )
     st.caption("Đổi cấu hình thì bấm **Dừng** rồi **Bắt đầu giám sát** lại để áp dụng.")
+    # Tạm dừng vì riêng tư (tắm, thay đồ, có khách): AI không xử lý khung hình nào, tự bật lại sau tối đa 60 phút.
+    _pu = privacy.pause_until()
+    if _pu:
+        p1, p2 = st.columns([3, 1.2], vertical_alignment="center")
+        p1.warning(f"Đang tạm dừng vì riêng tư — tự bật lại lúc {time.strftime('%H:%M', time.localtime(_pu))}.")
+        if p2.button("Bật lại ngay", width="stretch"):
+            auth.require(auth.PAUSE)
+            privacy.resume(me["display_name"])
+            st.rerun()
+    elif auth.can(auth.PAUSE):
+        cols = st.columns(len(privacy.PAUSE_CHOICES) + 1, vertical_alignment="center")
+        cols[0].markdown("**Tạm dừng vì riêng tư:**")
+        for col, minutes in zip(cols[1:], privacy.PAUSE_CHOICES):
+            if col.button(f"{minutes} phút", key=f"pause_{minutes}", width="stretch"):
+                auth.require(auth.PAUSE)
+                vp = webrtc_ctx.video_processor
+                if vp is not None and vp.fall_down_since is not None:
+                    st.warning("Đang theo dõi sau ngã — chưa tạm dừng được cho tới khi xác minh xong.")
+                else:
+                    privacy.pause(minutes, me["display_name"])
+                    st.rerun()
+    st.caption(privacy.DISCLAIMER)
 
 with panel_col:
     status_banner_placeholder = st.empty()
@@ -240,6 +303,7 @@ if st.session_state.get("sidebar_status_placeholder") is not None:
     st.session_state["sidebar_status_placeholder"].markdown(sidebar_status_html(True), unsafe_allow_html=True)
 
 pending_voice = None
+st.session_state["_priv_checked"] = 0.0  # kiểm tra tạm dừng / đồng ý ngay vòng đầu
 while webrtc_ctx.state.playing:
     # Lời nhắc giọng nói: vòng trước đã xoá player cũ, giờ mới tạo player mới -> trình duyệt coi là phần tử mới
     # và tự phát (autoplay được vì người dùng đã bấm Bắt đầu trên trang).
@@ -264,6 +328,25 @@ while webrtc_ctx.state.playing:
             unsafe_allow_html=True,
         )
         time.sleep(0.2)
+        continue
+
+    # Tạm dừng / rút lại sự đồng ý (đọc CSDL mỗi giây): đặt mốc cho bộ xử lý — trước mốc đó AI không chạy.
+    if time.time() - st.session_state.get("_priv_checked", 0) >= 1.0:
+        st.session_state["_priv_checked"] = time.time()
+        st.session_state["_has_consent"] = privacy.active_consent() is not None
+        processor.paused_until = privacy.pause_until() if st.session_state["_has_consent"] else float("inf")
+        auth.touch()
+    if processor.paused_until > time.time():
+        if st.session_state.get("_has_consent", True):
+            title, sub = "Đang tạm dừng vì riêng tư", ("Không xử lý hình ảnh nào. Tự bật lại lúc "
+                                                       + time.strftime("%H:%M", time.localtime(processor.paused_until)))
+        else:
+            title, sub = "Đã rút lại sự đồng ý", "Giám sát đã dừng. Bấm Dừng; muốn giám sát lại cần đồng ý lại."
+        status_banner_placeholder.markdown(status_banner_html("nodata", title, sub, icon="pause"),
+                                           unsafe_allow_html=True)
+        detail_placeholder.empty()
+        st.session_state["camera_online"] = False
+        time.sleep(0.5)
         continue
 
     # Kiểm tra mất camera + đếm giờ sau ngã ngay cả khi không còn frame nào tới (khi đó recv() không chạy).

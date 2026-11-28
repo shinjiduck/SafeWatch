@@ -7,10 +7,14 @@ from html import escape
 
 import streamlit as st
 
+import auth
 import contacts
+from secure_store import mask
 from theme import badge_html, card, empty_html, page_header, rows_html
 
+auth.require(auth.VIEW_CONTACTS)
 contacts.init_db()
+CAN_EDIT = auth.can(auth.EDIT_CONTACTS)  # chỉ quản trị thêm / sửa / xoá; vai trò khác chỉ xem (số đã che bớt)
 
 RELATIONSHIPS = ["Người thân chính", "Người giám hộ", "Cơ sở y tế", "Khác"]
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -68,18 +72,25 @@ def contact_fields(prefix, current=None):
 
 # ------------------------------------------------------------------ thêm người liên hệ
 rows = contacts.get_contacts()
-with st.expander("+ Thêm người liên hệ", expanded=not rows):
-    with st.form("add_contact_form", clear_on_submit=True):
-        name, relationship, phone, email, priority, tg = contact_fields("add")
-        if st.form_submit_button("Lưu người liên hệ", type="primary"):
-            errors = validate(name, phone, email, tg)
-            if errors:
-                for e in errors:
-                    st.error(e)
-            else:
-                contacts.add_contact(name.strip(), relationship, phone.strip(), email.strip(), priority, tg.strip())
-                s["_contacts_flash"] = f"Đã thêm {name.strip()}."
-                st.rerun()
+if CAN_EDIT:
+    with st.expander("+ Thêm người liên hệ", expanded=not rows):
+        with st.form("add_contact_form", clear_on_submit=True):
+            name, relationship, phone, email, priority, tg = contact_fields("add")
+            if st.form_submit_button("Lưu người liên hệ", type="primary"):
+                auth.require(auth.EDIT_CONTACTS)
+                errors = validate(name, phone, email, tg)
+                if errors:
+                    for e in errors:
+                        st.error(e)
+                else:
+                    contacts.add_contact(name.strip(), relationship, phone.strip(), email.strip(), priority,
+                                         tg.strip())
+                    auth.audit("them_nguoi_lien_he", name.strip())
+                    s["_contacts_flash"] = f"Đã thêm {name.strip()}."
+                    st.rerun()
+else:
+    st.info("Bạn đang xem. Chỉ quản trị gia đình thêm / sửa / xoá được người liên hệ; số điện thoại và email đã được "
+            "che bớt.")
 
 if not rows:
     st.markdown(empty_html("Chưa có ai nhận cảnh báo", "Thêm ít nhất 1 người thân ở mục “Thêm người liên hệ” phía "
@@ -97,12 +108,14 @@ def show_edit(c):
         save = b1.form_submit_button("Lưu thay đổi", type="primary", width="stretch")
         cancel = b2.form_submit_button("Huỷ", width="stretch")
     if save:
+        auth.require(auth.EDIT_CONTACTS)
         errors = validate(name, phone, email, tg)
         if errors:
             for e in errors:
                 st.error(e)
             return
         contacts.update_contact(cid, name.strip(), relationship, phone.strip(), email.strip(), priority, tg.strip())
+        auth.audit("sua_nguoi_lien_he", name.strip())
         s.pop("_editing_contact", None)
         s["_contacts_flash"] = f"Đã lưu thay đổi cho {name.strip()}."
         st.rerun()
@@ -127,19 +140,27 @@ def show_view(c):
             unsafe_allow_html=True,
         )
     with col2:
-        st.markdown(rows_html([("Điện thoại", escape(c["phone"] or "—")), ("Email", escape(c["email"] or "—")),
-                               ("Telegram", escape(c["telegram_chat_id"] or "Chưa có"))]), unsafe_allow_html=True)
+        show = (lambda v: v) if CAN_EDIT else mask
+        st.markdown(rows_html([("Điện thoại", escape(show(c["phone"]) or "—")), ("Email", escape(show(c["email"]) or "—")),
+                               ("Telegram", escape(show(c["telegram_chat_id"]) or "Chưa có"))]), unsafe_allow_html=True)
     with col3:
+        if not CAN_EDIT:
+            st.caption("Đang nhận cảnh báo" if c["notify_enabled"] else "Đã tắt nhận cảnh báo")
+            return
         new_enabled = st.toggle("Nhận cảnh báo", value=bool(c["notify_enabled"]), key=f"notify_{cid}")
         if new_enabled != bool(c["notify_enabled"]):
+            auth.require(auth.EDIT_CONTACTS)
             contacts.set_notify_enabled(cid, new_enabled)
+            auth.audit("bat_tat_nhan_canh_bao", f"{c['name']}: {'bật' if new_enabled else 'tắt'}")
             s["_contacts_flash"] = f"Đã {'bật' if new_enabled else 'tắt'} nhận cảnh báo cho {c['name']}."
             st.rerun()
         if s.get("_deleting_contact") == cid:
             st.caption(f"Xoá {c['name']}? Không hoàn tác được.")
             y, n = st.columns(2)
             if y.button("Xoá", key=f"confirm_del_{cid}", type="primary", width="stretch"):
+                auth.require(auth.EDIT_CONTACTS)
                 contacts.delete_contact(cid)
+                auth.audit("xoa_nguoi_lien_he", c["name"])
                 s.pop("_deleting_contact", None)
                 s["_contacts_flash"] = f"Đã xoá {c['name']}."
                 st.rerun()
@@ -161,7 +182,7 @@ def show_view(c):
 for row in rows:
     contact = dict(zip(KEYS, row))
     with card(f"contact_{contact['id']}"):
-        if s.get("_editing_contact") == contact["id"]:
+        if CAN_EDIT and s.get("_editing_contact") == contact["id"]:
             show_edit(contact)
         else:
             show_view(contact)

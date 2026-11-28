@@ -32,3 +32,5 @@ Model cũ của app (`LSTM_model.h5`, 10 frame) trên cùng các bộ: CV 3 bộ
 | Nối khoảng mất người 0.6 s | 57/80 so với 63/80 của 0.4 s | `results_cv_bridge6` |
 | MediaPipe bản nặng (complexity 2) | ngã 60/80, SH nhầm 12/90 (bản thường: 63/80, 6/90) | `results_cv_c2_bridge4` |
 | Cổng "thấy rõ vai + hông" (`FALL_GATE_VIS=0.5`), train + chạy | CV 3 bộ: ngã 119/158, SH nhầm 23/171 (all3: 122/158, 11/171) — kém hơn, không dùng | `results_cv_all3_gate` |
+
+> Ghi chú 28/11/2026: Charades "gửi 9/giờ" ở bảng trên tính bằng `system_level_eval.py` (mô phỏng offline). Phát lại qua đúng code app (`replay_eval.py`, cách README và landing dùng) ra **7,9 ≈ 8/giờ** (40 cảnh báo / 5,03 giờ). Tài liệu công khai thống nhất dùng 8/giờ.

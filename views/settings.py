@@ -4,10 +4,12 @@ Giá trị đọc/ghi qua st.session_state (key trùng SETTINGS_DEFAULTS trong d
 
 import streamlit as st
 
+import auth
 import detection_engine as engine
 import event_log
 from theme import card, page_header, section
 
+auth.require(auth.EDIT_CONFIG, "Chỉ quản trị gia đình được đổi cấu hình.")
 engine.ensure_settings_defaults()
 event_log.init_db()
 
@@ -29,7 +31,7 @@ with tab_detect:
             help="v2 cần models/fall_v2.keras (train bằng training/fall_eval/train_eval.py); thiếu thì tự dùng v1.",
         )
         st.session_state["multi_person"] = st.toggle(
-            "Theo dõi nhiều người cùng lúc (tối đa 3)",
+            "Theo dõi nhiều người cùng lúc (tối đa 3, thử nghiệm)",
             value=st.session_state["multi_person"],
             disabled=st.session_state["fall_model_version"] != "v2",
             help="Mỗi người có bộ theo dõi ngã riêng; ai ngã mà không dậy thì báo. Cần model v2. Tốn CPU hơn "
@@ -83,7 +85,8 @@ with tab_detect:
             max_value=100,
             value=int(st.session_state["signal_confidence_threshold"] * 100),
         ) / 100
-        st.caption("Model này train trên rất ít data, còn hay báo sai — xem chi tiết ở README/training/.")
+        st.caption("Thử nghiệm: model học từ 60 chuỗi (30 đúng, 30 sai) do nhóm tự quay, chưa đánh giá độc lập. "
+                   "Không dùng làm kênh báo động chính.")
 
 with tab_alert:
     import notifier
@@ -137,17 +140,11 @@ with tab_alert:
         )
 
 with tab_storage, card("set_storage"):
-    st.session_state["retention_days"] = st.slider(
-        "Lưu lịch sử bao nhiêu ngày", min_value=7, max_value=365, value=st.session_state["retention_days"], step=7
-    )
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Áp dụng — xoá dữ liệu cũ hơn giới hạn"):
-            removed = event_log.prune_older_than(st.session_state["retention_days"])
-            st.success(f"Đã xoá {removed} bản ghi cũ hơn {st.session_state['retention_days']} ngày.")
-    with col2:
-        st.caption("Áp dụng ngay cho lịch sử hiện có trong database.")
+    import privacy
 
+    st.markdown(f"Dữ liệu sự cố, cảnh báo, lần gửi tự xoá sau **{privacy.retention_days()} ngày** (kiểm tra mỗi giờ). "
+                "Đổi hạn lưu, xoá dữ liệu, xem nhật ký truy cập: trang **Quyền riêng tư**.")
+    st.page_link("views/privacy_center.py", label="Mở trang Quyền riêng tư")
     st.markdown("---")
     st.session_state["save_snapshot"] = st.checkbox(
         "Lưu ảnh chụp lúc xảy ra sự cố", value=st.session_state["save_snapshot"], disabled=True

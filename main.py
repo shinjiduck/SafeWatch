@@ -2,10 +2,13 @@
 
   Giám sát  : Trực tiếp · Cảnh báo · Nhật ký
   Thiết lập : Người liên hệ · Camera & lắp đặt · Cấu hình
-  Báo cáo   : Tổng quan · Kiểm định
-  Tài khoản : Hồ sơ
+  Báo cáo   : Tổng quan · Kiểm định · Phiên bản
+  Tài khoản : Hồ sơ · Tài khoản & quyền · Quyền riêng tư
 
-(app.py cũ vẫn giữ, chạy độc lập như bản demo 1 trang.) Chạy: streamlit run main.py
+Mọi trang đều cần đăng nhập (auth.py); menu chỉ hiện trang mà vai trò được xem. Riêng trang mở từ link
+"Tôi đã nhận" trong tin nhắn thì không cần đăng nhập (chỉ xác nhận đúng 1 cảnh báo, link hết hạn sau 24 giờ).
+
+Chạy: streamlit run main.py
 """
 
 import os
@@ -23,8 +26,9 @@ import base64  # noqa: E402
 
 import streamlit as st  # noqa: E402
 
+import auth  # noqa: E402
 import notifier  # noqa: E402
-import profile_store  # noqa: E402
+import privacy  # noqa: E402
 from theme import APP_NAME, ack_page_html, inject_global_theme, render_sidebar_profile, sidebar_status_html
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -48,49 +52,125 @@ st.logo(_data_uri("logo_light_sm.png"), size="large", icon_image=_data_uri("logo
 @st.cache_resource
 def start_notifier():
     """1 bộ gửi cảnh báo nền cho cả tiến trình server — chạy cả khi không ai mở trang (xem notifier.py).
-    Cấu hình kênh đọc từ secrets.toml."""
-    notifier.init_db()
+    Cấu hình kênh đọc từ secrets.toml. Kèm việc dọn dữ liệu quá hạn lưu mỗi giờ (privacy.prune)."""
+    privacy.init_all()
     config = notifier.load_config(st.secrets)
-    dispatcher = notifier.Dispatcher(notifier.build_channels(config), public_base_url=config.get("PUBLIC_BASE_URL"))
+    dispatcher = notifier.Dispatcher(notifier.build_channels(config), public_base_url=config.get("PUBLIC_BASE_URL"),
+                                     housekeeping=privacy.prune)
     dispatcher.start()
     return dispatcher
 
 
 notifier.RUNNING = start_notifier()
 
-# Link xác nhận trong email / SMS / Telegram: <PUBLIC_BASE_URL>/?ack=<mã> -> trang xác nhận riêng (thay cho trang
-# thường ở lần chạy này). Bỏ tham số khỏi URL để tải lại trang không xác nhận lần nữa.
-_ack_view = None
+# Link xác nhận trong email / SMS / Telegram: <PUBLIC_BASE_URL>/?ack=<mã> -> trang xác nhận riêng, KHÔNG cần đăng
+# nhập (người nhà đang gấp). Link chỉ xác nhận đúng cảnh báo đó và hết hạn sau notifier.LINK_TTL_SECONDS.
+# Bỏ tham số khỏi URL để tải lại trang không xác nhận lần nữa.
 _ack_token = st.query_params.get("ack")
 if _ack_token:
-    _first = notifier.ack(_ack_token, by="(link xác nhận)", via="web-link")
     _alert = notifier.get_alert_by_token(_ack_token)
-    _ack_view = ("new" if _first else "already" if _alert else "invalid", _alert)
+    if _alert is not None and _alert.get("acked_at") is None and notifier.link_expired(_alert):
+        _view = "expired"
+    else:
+        _first = notifier.ack(_ack_token, by="(link xác nhận)", via="web-link", max_age=notifier.LINK_TTL_SECONDS)
+        _alert = notifier.get_alert_by_token(_ack_token)
+        _view = "new" if _first else "already" if _alert else "invalid"
+    auth.audit("xac_nhan_qua_link", f"kết quả: {_view}", who=("(link trong tin nhắn)", ""))
     st.query_params.clear()
+    st.markdown(ack_page_html(_view, _alert), unsafe_allow_html=True)
+    st.caption("Muốn xem tất cả cảnh báo: mở SafeWatch và đăng nhập.")
+    st.stop()
 
-if "user_name" not in st.session_state:
-    st.session_state["user_name"] = profile_store.load_profile()["name"]
 
-# Dùng emoji thay cho :material/...: — font icon Material không tải được trên máy demo.
-pages = {
+# ------------------------------------------------------------------ đăng nhập
+
+def _login_screen():
+    _, mid, _ = st.columns([1, 1.3, 1])
+    with mid:
+        if auth.count_users() == 0:
+            st.markdown("### Cài đặt lần đầu")
+            st.caption("Tạo tài khoản quản trị gia đình. Cần **mã cài đặt** (SETUP_CODE trong .streamlit/secrets.toml) "
+                       "để người lạ mở app trước không chiếm được quyền quản trị.")
+            if auth.setup_code() is None:
+                st.error("Chưa đặt mã cài đặt. Thêm dòng SETUP_CODE = \"<ít nhất 8 ký tự>\" vào .streamlit/secrets.toml "
+                         "rồi tải lại trang.")
+                return
+            with st.form("first_setup"):
+                code = st.text_input("Mã cài đặt", type="password")
+                username = st.text_input("Tên đăng nhập", placeholder="vd: an.nguyen")
+                display = st.text_input("Tên hiển thị", placeholder="vd: Nguyễn Văn An (con trai)")
+                pw = st.text_input("Mật khẩu (ít nhất 8 ký tự, có chữ và số)", type="password")
+                pw2 = st.text_input("Nhập lại mật khẩu", type="password")
+                commit = st.checkbox("Tôi cam kết chỉ dùng SafeWatch khi người được giám sát đã được giải thích và đồng "
+                                     "ý; không lắp đặt bí mật; giữ kín mật khẩu.")
+                if st.form_submit_button("Tạo tài khoản quản trị", type="primary"):
+                    if not auth.check_setup_code(code):
+                        time.sleep(1.0)
+                        auth.audit("cai_dat_sai_ma", who=("", ""))
+                        st.error("Mã cài đặt không đúng.")
+                    elif pw != pw2:
+                        st.error("Hai lần nhập mật khẩu không khớp.")
+                    elif not commit:
+                        st.error("Cần đánh dấu cam kết sử dụng.")
+                    else:
+                        uid, err = auth.create_user(username, display, auth.ROLE_ADMIN, pw)
+                        if err:
+                            st.error(err)
+                        else:
+                            auth.audit("tao_quan_tri_dau_tien", who=(username.strip().lower(), auth.ROLE_ADMIN))
+                            auth.login(auth.get_user(uid))
+                            st.rerun()
+            return
+        st.markdown("### Đăng nhập SafeWatch")
+        with st.form("login"):
+            username = st.text_input("Tên đăng nhập")
+            secret = st.text_input("Mật khẩu hoặc mã PIN", type="password")
+            if st.form_submit_button("Đăng nhập", type="primary", width="stretch"):
+                user = auth.authenticate(username, secret)
+                if user is None:
+                    time.sleep(1.0)  # làm chậm việc dò mật khẩu
+                    st.error(auth.LOGIN_ERROR)
+                else:
+                    auth.login(user)
+                    st.rerun()
+        st.caption("Nhận được cảnh báo? Bấm link trong tin nhắn để xác nhận, không cần đăng nhập.")
+
+
+_user = auth.current_user()
+if _user is None:
+    _login_screen()
+    st.stop()
+
+# ------------------------------------------------------------------ menu theo vai trò
+# (trang, tiêu đề, quyền cần có). Trang không có trong menu thì mở bằng URL cũng không tới được.
+_PAGES = {
     "Giám sát": [
-        st.Page("views/live_view.py", title="Trực tiếp", default=True),
-        st.Page("views/alerts.py", title="Cảnh báo"),
-        st.Page("views/history.py", title="Nhật ký"),
+        ("views/live_view.py", "Trực tiếp", auth.MONITOR),
+        ("views/alerts.py", "Cảnh báo", auth.ACK),
+        ("views/history.py", "Nhật ký", auth.VIEW_HISTORY),
     ],
     "Thiết lập": [
-        st.Page("views/emergency_contacts.py", title="Người liên hệ"),
-        st.Page("views/camera_management.py", title="Camera & lắp đặt"),
-        st.Page("views/settings.py", title="Cấu hình"),
+        ("views/emergency_contacts.py", "Người liên hệ", auth.VIEW_CONTACTS),
+        ("views/camera_management.py", "Camera & lắp đặt", auth.MONITOR),
+        ("views/settings.py", "Cấu hình", auth.EDIT_CONFIG),
     ],
     "Báo cáo": [
-        st.Page("views/dashboard.py", title="Tổng quan"),
-        st.Page("views/evaluation.py", title="Kiểm định"),
+        ("views/dashboard.py", "Tổng quan", auth.VIEW_HISTORY),
+        ("views/evaluation.py", "Kiểm định", auth.VIEW_REPORTS),
+        ("views/version.py", "Phiên bản", auth.VIEW_REPORTS),
     ],
     "Tài khoản": [
-        st.Page("views/account.py", title="Hồ sơ"),
+        ("views/account.py", "Hồ sơ", auth.VIEW_PROFILE),
+        ("views/users.py", "Tài khoản & quyền", None),
+        ("views/privacy_center.py", "Quyền riêng tư", auth.VIEW_REPORTS),
     ],
 }
+pages = {}
+for _group, _items in _PAGES.items():
+    _allowed = [st.Page(path, title=title, default=(path == "views/live_view.py"))
+                for path, title, perm in _items if perm is None or auth.role_can(_user["role"], perm)]
+    if _allowed:
+        pages[_group] = _allowed
 
 nav = st.navigation(pages)
 
@@ -102,15 +182,9 @@ with st.sidebar:
         sidebar_status_html(st.session_state.get("camera_online", False)), unsafe_allow_html=True
     )
     st.markdown("---")
-    render_sidebar_profile(
-        name=st.session_state.get("user_name", "Người dùng"),
-        role=profile_store.load_profile()["role"],
-    )
-
-if _ack_view is not None:
-    st.markdown(ack_page_html(*_ack_view), unsafe_allow_html=True)
-    _, mid, _ = st.columns([1, 1.2, 1])
-    mid.page_link("views/alerts.py", label="Xem tất cả cảnh báo")
-    st.stop()
+    render_sidebar_profile(name=_user["display_name"], role=auth.ROLE_NAMES.get(_user["role"], ""))
+    if st.button("Đăng xuất", key="logout", width="stretch"):
+        auth.logout()
+        st.rerun()
 
 nav.run()

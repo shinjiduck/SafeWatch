@@ -1,6 +1,6 @@
 """Lưu lịch sử các lần cảnh báo SOS (Ngã đã leo thang, cử chỉ tay SOS, chuỗi
-Signal for Help) vào SQLite — dùng chung giữa app.py (trang theo dõi trực
-tiếp, ghi log) và pages/ (trang lịch sử, đọc log).
+Signal for Help) vào SQLite — dùng chung giữa trang Trực tiếp (ghi log)
+và trang Nhật ký (đọc log).
 
 SQLite là lựa chọn nhẹ nhất cho demo/đồ án: 1 file, không cần cài server
 riêng, có sẵn trong Python (module sqlite3).
@@ -13,9 +13,22 @@ from datetime import datetime, timedelta
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "events.db")
 
 
+def connect(path):
+    """Mở CSDL với cấu hình an toàn: secure_delete = ghi đè số 0 lên dữ liệu bị xoá (không khôi phục được từ
+    file); file chỉ chủ sở hữu đọc / ghi được (Linux / macOS; Windows dùng quyền thư mục người dùng)."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    conn = sqlite3.connect(path)
+    conn.execute("PRAGMA secure_delete = ON")
+    if os.name != "nt":
+        try:
+            os.chmod(path, 0o600)
+        except OSError:
+            pass
+    return conn
+
+
 def _get_connection():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    return sqlite3.connect(DB_PATH)
+    return connect(DB_PATH)
 
 
 def init_db():
@@ -69,6 +82,13 @@ def log_event(event_type, details=""):
         )
 
 
+def get_events_with_id(limit=2000):
+    """Như get_events nhưng kèm id (để xoá từng sự kiện)."""
+    with _get_connection() as conn:
+        return conn.execute(
+            "SELECT id, timestamp, event_type, details FROM events ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+
+
 def get_events(limit=200):
     with _get_connection() as conn:
         cursor = conn.execute(
@@ -84,19 +104,6 @@ def count_events_by_type():
             "SELECT event_type, COUNT(*) FROM events GROUP BY event_type ORDER BY COUNT(*) DESC"
         )
         return cursor.fetchall()
-
-
-def clear_events():
-    with _get_connection() as conn:
-        conn.execute("DELETE FROM events")
-
-
-def prune_older_than(days):
-    cutoff = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
-    with _get_connection() as conn:
-        cursor = conn.execute("DELETE FROM events WHERE timestamp < ?", (cutoff,))
-        conn.execute("DELETE FROM status_log WHERE timestamp < ?", (cutoff,))
-        return cursor.rowcount
 
 
 # Phân loại sự kiện cho giao diện (Nhật ký, Tổng quan, Trực tiếp) — 1 chỗ duy nhất.

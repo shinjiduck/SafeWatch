@@ -117,6 +117,10 @@ class DetectionVideoProcessor(VideoProcessorBase):
         # Lọc cử chỉ SOS (cấu hình "sos_filter"): chỉ nhận khi bàn tay giơ cao hơn vai và nhãn SOS giữ liên tục
         # SOS_HOLD_SECONDS. Đo trên Charades: báo SOS nhầm 132 -> 1.9 / giờ (training/hand_eval/KIEM_DINH_TAY_XA.md).
         self._hand_sos_since = None
+        # Tạm dừng vì riêng tư (privacy.py): trang Trực tiếp đặt mốc hết tạm dừng; trước mốc đó recv() KHÔNG chạy AI,
+        # không gọi MediaPipe, trả khung hình đen. float("inf") = dừng hẳn (đã rút lại sự đồng ý).
+        self.paused_until = 0.0
+        self._paused = False
 
         event_log.init_db()
         notifier.init_db()
@@ -134,6 +138,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
         img = frame.to_ndarray(format="bgr24")
         cfg = self.config
         now = time.time()
+
+        if now < self.paused_until:
+            return self._paused_frame(img, now)
+        if self._paused:
+            with self.state_lock:
+                self._paused = False
+            with self.lock:
+                self.public_state["paused"] = False
 
         if cfg["mirror_camera"]:
             img = cv2.flip(img, 1)
@@ -163,6 +175,23 @@ class DetectionVideoProcessor(VideoProcessorBase):
             self.public_state["fps"] = fps
 
         return av.VideoFrame.from_ndarray(img, format="bgr24")
+
+    def _paused_frame(self, img, now):
+        """Đang tạm dừng: không xử lý gì, xoá mọi cửa sổ quan sát (không nối dữ liệu trước và sau tạm dừng),
+        trạng thái = không đủ dữ liệu (không bao giờ là "an toàn"), trả về khung hình đen."""
+        with self.state_lock:
+            self.last_frame_time = now  # camera vẫn gửi hình: không phải mất tín hiệu
+            if not self._paused:
+                self._paused = True
+                self._reset_observation_windows()
+                self.fall_label = engine.NO_DATA_LABEL
+        with self.lock:
+            self.public_state["paused"] = True
+            self.public_state["fall_label"] = engine.NO_DATA_LABEL
+            self.public_state["hand_label"] = "No hands"
+        black = img * 0
+        cv2.putText(black, "TAM DUNG - KHONG GIAM SAT", (16, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+        return av.VideoFrame.from_ndarray(black, format="bgr24")
 
     def tick(self, now=None):
         """Gọi định kỳ từ thread script chính (views/live_view.py). Khi camera

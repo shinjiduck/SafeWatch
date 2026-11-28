@@ -1,0 +1,6328 @@
+{
+ "video": "D:/DeTaiAI/NCKH SV 2024/Demo/SOS_HandDetection.mp4",
+ "config": {
+  "alert_hold_seconds": 2.0,
+  "camera_resolution": "640x480",
+  "enable_fall": true,
+  "enable_hand": true,
+  "enable_signal": false,
+  "fall_grace_seconds": 30,
+  "fall_model_version": "v2",
+  "hand_confidence_threshold": 0.8,
+  "hand_roi": false,
+  "mirror_camera": false,
+  "multi_person": false,
+  "retention_days": 30,
+  "save_snapshot": false,
+  "save_video": false,
+  "show_overlay": false,
+  "signal_confidence_threshold": 0.7,
+  "silent_monitoring": true,
+  "sos_filter": false,
+  "sound_alert": true,
+  "voice_prompts": true
+ },
+ "alerts": [],
+ "timeline": [
+  [
+   0.0,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.1,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.2,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.3,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.4,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.5,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.6,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.7,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.8,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   0.9,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   1.0,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   1.1,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   1.2,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   1.3,
+   "No hands",
+   "Warmup...",
+   "ok"
+  ],
+  [
+   1.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   1.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   1.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   1.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   1.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   1.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   2.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   3.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   4.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   5.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   6.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   7.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   8.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   9.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   10.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   11.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   12.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   13.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   14.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   15.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   16.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   17.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   18.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   19.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   20.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   21.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   22.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   23.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   24.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   25.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   26.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   27.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   28.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   29.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   30.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   31.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   32.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   33.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   34.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   35.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   36.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   37.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   38.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   39.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   40.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   41.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   42.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   43.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   44.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   45.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   46.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   47.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   48.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   49.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   50.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   51.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   52.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   53.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   54.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   55.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   56.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   57.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   58.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   59.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   60.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   61.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   62.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   63.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   64.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   65.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   66.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   67.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   68.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   69.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   70.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   71.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   72.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   73.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   74.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   75.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   76.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   77.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   78.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   79.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   80.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   81.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   82.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   83.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   84.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   85.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   86.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   87.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   88.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   89.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   90.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   91.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   92.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   93.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   94.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   95.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   96.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   97.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   98.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   99.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   100.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   101.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   102.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   103.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.0,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.1,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.2,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.3,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.4,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.5,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.6,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.7,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.8,
+   "No hands",
+   "NotFall",
+   "ok"
+  ],
+  [
+   104.9,
+   "No hands",
+   "NotFall",
+   "ok"
+  ]
+ ]
+}

@@ -40,11 +40,15 @@ from html import escape as _esc
 
 import contacts
 import event_log
+from secure_store import decrypt, encrypt
 
 ACK_TIMEOUT_SECONDS = 60
 MAX_ROUNDS = 5
 RETRY_BACKOFF_SECONDS = [5, 10, 20, 40, 60]
 DISPATCH_INTERVAL_SECONDS = 1.0
+LINK_TTL_SECONDS = 24 * 3600  # link "Tôi đã nhận" trong tin nhắn chỉ dùng được trong 24 giờ
+HOUSEKEEPING_SECONDS = 3600   # mỗi giờ: tự xoá dữ liệu quá hạn lưu (privacy.prune)
+DISCLAIMER = "SafeWatch hỗ trợ phát hiện sớm và báo người nhà, không thay thế người chăm sóc hay dịch vụ cấp cứu."
 
 RUNNING = None  # Dispatcher đang chạy (main.py gán) — để các trang đọc trạng thái kênh
 
@@ -114,20 +118,27 @@ def raise_alert(kind, details="", detected_at=None, source="live", now=None):
         cursor = conn.execute(
             "INSERT INTO alerts (kind, details, source, detected_at, raised_at, status, current_round, "
             "round_started_at, ack_token) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)",
-            (kind, details, source, detected_at, now, STATUS_OPEN, now, _secrets.token_urlsafe(9)),
+            (kind, details, source, detected_at, now, STATUS_OPEN, now, _secrets.token_urlsafe(16)),
         )
         return cursor.lastrowid
 
 
-def ack(token, by="", via="", now=None):
+def link_expired(alert, now=None):
+    """Link xác nhận trong tin nhắn đã quá LINK_TTL_SECONDS kể từ lúc phát cảnh báo."""
+    now = time.time() if now is None else now
+    return alert is not None and now - alert["raised_at"] > LINK_TTL_SECONDS
+
+
+def ack(token, by="", via="", now=None, max_age=None):
     """Người chăm sóc xác nhận đã nhận. Trả về True nếu đây là lần xác nhận
-    đầu tiên (lần bấm sau không ghi đè mốc thời gian gốc)."""
+    đầu tiên (lần bấm sau không ghi đè mốc thời gian gốc). max_age (giây): chỉ nhận
+    nếu cảnh báo phát chưa quá chừng đó (link trong tin nhắn dùng LINK_TTL_SECONDS)."""
     now = time.time() if now is None else now
     with _conn() as conn:
         cursor = conn.execute(
             "UPDATE alerts SET status = ?, acked_at = ?, acked_by = ?, acked_via = ? "
-            "WHERE ack_token = ? AND acked_at IS NULL",
-            (STATUS_ACKED, now, by, via, token),
+            "WHERE ack_token = ? AND acked_at IS NULL AND raised_at >= ?",
+            (STATUS_ACKED, now, by, via, token, now - max_age if max_age else 0),
         )
         if cursor.rowcount:
             conn.execute(
@@ -277,6 +288,7 @@ def email_text(alert, ack_url=None):
         "--",
         "SafeWatch – Giám sát an toàn tại nhà",
         "Email gửi tự động, vui lòng không trả lời. Bạn nhận email này vì được đăng ký là người liên hệ khẩn cấp.",
+        DISCLAIMER,
     ]
     return "\n".join(lines)
 
@@ -342,7 +354,7 @@ def email_html(alert, ack_url=None):
                  color:#71717A;{font}">
     Email gửi tự động từ hệ thống SafeWatch, vui lòng không trả lời.<br>
     Bạn nhận email này vì được đăng ký là người liên hệ khẩn cấp. Hình ảnh camera chỉ dùng để nhận diện,
-    không được đính kèm hay lưu lại.
+    không được đính kèm hay lưu lại.<br>{_esc(DISCLAIMER)}
   </td></tr>
 </table></td></tr></table></body></html>"""
 
@@ -352,7 +364,7 @@ def email_html(alert, ack_url=None):
 
 class Dispatcher:
     def __init__(self, channels, clock=time.time, ack_timeout=ACK_TIMEOUT_SECONDS, max_rounds=MAX_ROUNDS,
-                 public_base_url=None):
+                 public_base_url=None, housekeeping=None):
         self.channels = {ch.name: ch for ch in channels}
         self.clock = clock
         self.ack_timeout = ack_timeout
@@ -361,6 +373,8 @@ class Dispatcher:
         self._thread = None
         self._stop = threading.Event()
         self.last_error = None
+        self.housekeeping = housekeeping  # gọi mỗi HOUSEKEEPING_SECONDS (tự xoá dữ liệu quá hạn lưu)
+        self._last_housekeeping = 0.0
 
     def ack_url(self, alert):
         if not self.public_base_url:
@@ -384,7 +398,7 @@ class Dispatcher:
             conn.execute(
                 "INSERT INTO deliveries (alert_id, round, contact_id, contact_name, channel, target, status, "
                 "created_at, next_try_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?)",
-                (alert_id, round_index, person["id"], person["name"], channel_name, target, now, now),
+                (alert_id, round_index, person["id"], person["name"], channel_name, encrypt(target), now, now),
             )
 
     def tick(self):
@@ -423,7 +437,7 @@ class Dispatcher:
             try:
                 if channel is None:
                     raise RuntimeError(f"Kênh {d['channel']} không còn được cấu hình")
-                channel.send(d["target"], d, self.ack_url(d))
+                channel.send(decrypt(d["target"]), d, self.ack_url(d))
                 update = ("sent", now, None, now)
             except Exception as exc:  # noqa: BLE001 — mọi lỗi gửi đều phải được thử lại
                 backoff = RETRY_BACKOFF_SECONDS[min(attempts - 1, len(RETRY_BACKOFF_SECONDS) - 1)]
@@ -441,9 +455,14 @@ class Dispatcher:
             if poll is not None:
                 poll(lambda token, by, via: ack(token, by=by, via=via, now=self.clock()))
 
+    def run_housekeeping(self):
+        if self.housekeeping is not None and self.clock() - self._last_housekeeping >= HOUSEKEEPING_SECONDS:
+            self._last_housekeeping = self.clock()
+            self.housekeeping()
+
     def _loop(self):
         while not self._stop.is_set():
-            for step in (self.tick, self.poll_channels):
+            for step in (self.tick, self.poll_channels, self.run_housekeeping):
                 try:
                     step()
                     self.last_error = None

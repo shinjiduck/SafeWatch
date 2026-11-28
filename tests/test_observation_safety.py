@@ -426,6 +426,29 @@ def test_mat_camera_khong_giu_nhan_sos_tay_cu():
     assert not h.s["sos_alert"]
 
 
+def test_tam_dung_rieng_tu_khong_xu_ly_khung_hinh_nao():
+    """Tạm dừng vì riêng tư (privacy.py): AI không gọi MediaPipe lần nào, không báo mất camera, trạng thái không phải
+    "an toàn"; hết giờ thì xử lý lại."""
+    fresh_db()
+    h = Harness()
+    h.run(1.0)
+    calls = {"n": 0}
+    real = h.pose.process
+
+    def counting(img):
+        calls["n"] += 1
+        return real(img)
+
+    h.pose.process = counting
+    h.p.paused_until = h.clock.t + 5.0
+    h.run(4.0)
+    assert calls["n"] == 0, f"đang tạm dừng mà vẫn gọi MediaPipe {calls['n']} lần"
+    assert h.s["paused"] and h.s["fall_label"] == engine.NO_DATA_LABEL
+    assert not h.s.get("camera_lost"), "tạm dừng không phải mất camera"
+    h.run(2.0)
+    assert calls["n"] > 0 and not h.s["paused"], "hết giờ tạm dừng phải xử lý lại"
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0

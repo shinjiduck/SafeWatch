@@ -1,8 +1,7 @@
-"""Engine nhận diện dùng chung — tách từ app.py để các trang trong views/
-(live_view, settings, dashboard) đều import cùng 1 nguồn, không lặp code.
-
-app.py (bản gốc, 1 trang) vẫn giữ nguyên hoạt động độc lập như 1 fallback
-đơn giản; views/live_view.py là bản giao diện mới, dùng module này.
+"""Engine nhận diện dùng chung — các trang trong views/ (live_view, settings,
+dashboard) đều import cùng 1 nguồn, không lặp code. Thông số mặc định của bản
+chạy thật nằm ở đây (SETTINGS_DEFAULTS); version_info.py đọc lại để hiện ở
+trang "Thông tin phiên bản" và để test đối chiếu với README / landing.
 """
 
 import os

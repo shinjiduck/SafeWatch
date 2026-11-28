@@ -4,16 +4,21 @@ phát hiện -> gửi -> xác nhận, xuất CSV làm minh chứng yêu cầu c�
 
 import time
 from datetime import datetime
+from html import escape
 from statistics import median
 
 import pandas as pd
 import streamlit as st
 
+import auth
 import contacts
 import notifier
+import privacy
 from theme import badge_html, card, empty_html, kpi_card, page_header, section
 
+auth.require(auth.ACK)
 notifier.init_db()
+_me = auth.current_user()
 
 STATUS_TEXT = {
     notifier.STATUS_OPEN: ("monitoring", "Chờ xác nhận"),
@@ -59,13 +64,14 @@ def open_alerts():
                 meta = (f"Phát hiện {fmt_time(a['detected_at'])} · {a['details'] or ''} · vòng gửi "
                         f"{a['current_round'] + 1}/{notifier.MAX_ROUNDS}")
                 st.markdown(
-                    f'<div class="sw-alert-head">{badge_html(level, text)}<span class="sw-alert-kind">{a["kind"]}</span>'
+                    f'<div class="sw-alert-head">{badge_html(level, text)}<span class="sw-alert-kind">{escape(a["kind"])}</span>'
                     f'</div><div class="sw-alert-meta">{meta}</div>',
                     unsafe_allow_html=True,
                 )
             with c2:
                 if st.button("Tôi đã nhận", key=f"ack_{a['id']}", type="primary", width="stretch"):
-                    notifier.ack(a["ack_token"], by="(trên web)", via="web-ui")
+                    notifier.ack(a["ack_token"], by=_me["display_name"], via="web-ui")
+                    auth.audit("xac_nhan_canh_bao", f"#{a['id']}")
                     st.session_state["_alerts_flash"] = f"Đã xác nhận cảnh báo #{a['id']}. Đã dừng gửi tiếp."
                     st.rerun()
     if len(pending) > 3:
@@ -73,7 +79,8 @@ def open_alerts():
         c1.caption(f"Còn {len(pending) - 3} cảnh báo cũ hơn chưa ai xác nhận — xem bảng bên dưới.")
         if c2.button(f"Xác nhận tất cả ({len(pending)})", width="stretch"):
             for a in pending:
-                notifier.ack(a["ack_token"], by="(trên web, xác nhận hàng loạt)", via="web-ui")
+                notifier.ack(a["ack_token"], by=f"{_me['display_name']} (xác nhận hàng loạt)", via="web-ui")
+            auth.audit("xac_nhan_canh_bao", f"{len(pending)} cảnh báo, hàng loạt")
             st.session_state["_alerts_flash"] = f"Đã xác nhận {len(pending)} cảnh báo."
             st.rerun()
 
@@ -181,7 +188,8 @@ with st.expander("Gửi SMS thử", expanded="sms" in channel_names and not noti
             st.warning("Chưa có người liên hệ nào có số điện thoại.")
         else:
             who = st.selectbox("Gửi tới", with_phone, format_func=lambda r: f"{r['name']} · {r['phone']}")
-            if st.button("Gửi SMS thử"):
+            if st.button("Gửi SMS thử", disabled=not auth.can(auth.TEST_ALERTS)):
+                auth.require(auth.TEST_ALERTS)
                 channel = dispatcher.channels["sms"]
                 target = channel.target_for(who)
                 test_alert = {"kind": "Tin nhắn thử", "details": "Kiểm tra kênh SMS", "detected_at": time.time(),
@@ -197,7 +205,8 @@ with st.expander("Gửi SMS thử", expanded="sms" in channel_names and not noti
                     st.error(f"Gửi không được: {exc}")
 
 with st.expander("Kiểm thử chuỗi cảnh báo & bảng thời gian (minh chứng yêu cầu cải tiến số 1)"):
-    if st.button("Giả lập sự kiện ngã"):
+    if st.button("Giả lập sự kiện ngã", disabled=not auth.can(auth.TEST_ALERTS)):
+        auth.require(auth.TEST_ALERTS)
         alert_id = notifier.raise_alert("Ngã (giả lập)", "Kiểm thử chuỗi cảnh báo", source="simulated")
         st.toast(f"Đã phát cảnh báo giả lập #{alert_id}")
     rows = notifier.latency_rows(limit=200)
@@ -232,4 +241,20 @@ with st.expander("Kiểm thử chuỗi cảnh báo & bảng thời gian (minh ch
             pd.DataFrame(rows).to_csv(index=False).encode("utf-8-sig"),
             file_name=f"safewatch_alert_latency_{time.strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv",
+            disabled=not auth.can(auth.EXPORT),
+            on_click=lambda: auth.audit("xuat_csv", "bảng thời gian cảnh báo"),
         )
+
+if auth.can(auth.DELETE_HISTORY):
+    _all = notifier.get_alerts(limit=500)
+    if _all:
+        with st.expander("Xoá một cảnh báo"):
+            pick = st.selectbox("Chọn cảnh báo", [a["id"] for a in _all],
+                                format_func=lambda i: next(f"#{a['id']} · {a['kind']} · {fmt_time(a['raised_at'])}"
+                                                           for a in _all if a["id"] == i))
+            st.caption("Xoá cả các lần gửi của cảnh báo đó. Cảnh báo đang gửi thì dừng gửi luôn.")
+            if st.button("Xoá cảnh báo này", key="del_alert"):
+                auth.require(auth.DELETE_HISTORY)
+                counts = privacy.delete_alert(pick, who=auth.who())
+                st.session_state["_alerts_flash"] = f"Đã xoá {privacy._fmt(counts)}."
+                st.rerun()
