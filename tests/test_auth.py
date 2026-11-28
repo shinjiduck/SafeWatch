@@ -40,15 +40,14 @@ def test_file_csdl_khong_chua_mat_khau_goc():
 
 
 def test_chinh_sach_mat_khau_va_pin():
+    """1 quy tắc cho mọi vai trò: ít nhất 6 ký tự (PIN 6 số được), chặn loại quá dễ đoán."""
     assert auth.password_problem("ngan1", "a") is not None
-    assert auth.password_problem("12345678", "a") is not None
-    assert auth.password_problem("abcdefgh", "a") is not None, "phải có cả chữ và số"
-    assert auth.password_problem("an.nguyen99", "an.nguyen") is not None, "không chứa tên đăng nhập"
-    assert auth.password_problem("Hoa-sen-2026", "lan") is None
+    assert auth.password_problem("482915", "lan", auth.ROLE_CAREGIVER) is None, "PIN 6 số dùng được cho mọi vai trò"
     assert auth.password_problem("482915", "ba", auth.ROLE_SUBJECT) is None
-    assert auth.password_problem("123456", "ba", auth.ROLE_SUBJECT) is not None
-    assert auth.password_problem("111111", "ba", auth.ROLE_SUBJECT) is not None
-    assert auth.password_problem("482915", "lan", auth.ROLE_CAREGIVER) is not None, "PIN chỉ dành cho người được giám sát"
+    assert auth.password_problem("hoasen", "lan") is None, "chữ thường 6 ký tự cũng được"
+    for easy in ("123456", "111111", "password", "000000", "qwerty"):
+        assert auth.password_problem(easy, "x") is not None, easy
+    assert auth.password_problem("an.nguyen99", "an.nguyen") is not None, "không chứa tên đăng nhập"
 
 
 def test_dang_nhap_dung_sai_va_khoa_sau_5_lan():

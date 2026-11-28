@@ -21,8 +21,7 @@ if _flash:
 section("Đổi mật khẩu của tôi")
 with card("own_pw"), st.form("own_pw_form", clear_on_submit=True, border=False):
     old = st.text_input("Mật khẩu / PIN hiện tại", type="password")
-    new = st.text_input("Mật khẩu / PIN mới" + (" (PIN 6 số hoặc mật khẩu)" if me["role"] == auth.ROLE_SUBJECT
-                                                 else " (ít nhất 8 ký tự, có chữ và số)"), type="password")
+    new = st.text_input("Mật khẩu mới (ít nhất 6 ký tự, hoặc mã PIN 6 số)", type="password")
     new2 = st.text_input("Nhập lại", type="password")
     if st.form_submit_button("Đổi mật khẩu", type="primary"):
         if new != new2:
@@ -65,7 +64,7 @@ with card("new_user"), st.form("new_user_form", clear_on_submit=True, border=Fal
     username = c1.text_input("Tên đăng nhập", placeholder="vd: lan.nguyen")
     display = c2.text_input("Tên hiển thị", placeholder="vd: Nguyễn Thị Lan (con gái)")
     role = c1.selectbox("Vai trò", list(auth.ROLE_NAMES), format_func=auth.ROLE_NAMES.get, index=1)
-    pw = c2.text_input("Mật khẩu ban đầu (người được giám sát: PIN 6 số)", type="password")
+    pw = c2.text_input("Mật khẩu ban đầu (ít nhất 6 ký tự, hoặc mã PIN 6 số)", type="password")
     new_email = c1.text_input("Email (để tự lấy lại mật khẩu, không bắt buộc)", placeholder="vd: lan@gmail.com")
     if st.form_submit_button("Tạo tài khoản", type="primary"):
         auth.require(auth.MANAGE_USERS)

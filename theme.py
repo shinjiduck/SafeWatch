@@ -344,6 +344,9 @@ a.sw-chip-alert:hover {{ background: #FEE2E2; border-color: #FCA5A5; }}
 [data-testid="stMetricValue"] {{ font-variant-numeric: tabular-nums; }}
 hr {{ margin: .9rem 0; border-color: {COLOR_BORDER}; }}
 [data-testid="stForm"] {{ background: {COLOR_CARD}; border: 1px solid {COLOR_BORDER}; border-radius: 8px; padding: 1.25rem 1.4rem; }}
+/* Form nằm trong 1 khung (card) thì không kẻ thêm khung thứ 2; bỏ dòng "Press Enter to submit form" đè lên ô nhập. */
+[class*="st-key-swbox"] [data-testid="stForm"] {{ border: none; padding: 0; background: transparent; box-shadow: none; }}
+[data-testid="InputInstructions"] {{ display: none; }}
 [data-testid="stBaseButton-primaryFormSubmit"] {{
     background: {COLOR_BRAND} !important; border: 1px solid {COLOR_BRAND_DARK} !important; color: #FFFFFF !important;
     border-radius: 8px !important; min-height: 40px; font-weight: 600;

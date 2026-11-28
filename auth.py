@@ -146,21 +146,19 @@ def _dummy_hash():
     return _DUMMY_HASH
 
 
-def password_problem(secret, username="", role=ROLE_CAREGIVER):
-    """Lý do mật khẩu / PIN chưa đạt (None = đạt). Người được giám sát dùng PIN 6 số cho dễ nhớ."""
-    secret = secret or ""
-    if role == ROLE_SUBJECT and secret.isdigit():
-        if len(secret) != 6:
-            return "Mã PIN gồm đúng 6 chữ số."
-        if len(set(secret)) == 1 or secret in ("123456", "654321", "012345", "123123"):
-            return "Mã PIN quá dễ đoán."
-        return None
-    if len(secret) < 8:
-        return "Mật khẩu cần ít nhất 8 ký tự."
-    if secret.lower() in _COMMON or (username and username.lower() in secret.lower()):
-        return "Mật khẩu quá dễ đoán (không dùng mật khẩu phổ biến hay chứa tên đăng nhập)."
-    if secret.isdigit() or secret.isalpha():
-        return "Mật khẩu cần có cả chữ và số."
+_EASY = {"123456", "654321", "012345", "123123", "112233", "121212", "123321", "000000", "1234567", "abc123",
+         "qwerty", "matkhau", "password", "iloveyou", "admin123", "safewatch"}
+
+
+def password_problem(secret, username="", role=None):
+    """Lý do mật khẩu chưa đạt (None = đạt). Một quy tắc cho mọi vai trò, dễ nhớ: ít nhất 6 ký tự (mã PIN 6 số
+    cũng được), chỉ chặn loại quá dễ đoán. Đủ an toàn vì sai 5 lần liên tiếp thì khoá 5 phút (như PIN ngân hàng)."""
+    s = secret or ""
+    if len(s) < 6:
+        return "Mật khẩu cần ít nhất 6 ký tự (mã PIN 6 số cũng được)."
+    low = s.lower()
+    if len(set(s)) == 1 or low in _EASY or low in _COMMON or (username and username.lower() in low):
+        return "Mật khẩu quá dễ đoán (VD 123456, 111111, password, hoặc chứa tên đăng nhập)."
     return None
 
 

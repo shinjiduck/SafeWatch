@@ -137,7 +137,7 @@ def _login_screen():
             with st.form("first_setup"):
                 username = st.text_input("Tên đăng nhập", placeholder="vd: an.nguyen")
                 display = st.text_input("Tên hiển thị", placeholder="vd: Nguyễn Văn An (con trai)")
-                pw = st.text_input("Mật khẩu (ít nhất 8 ký tự, có chữ và số)", type="password")
+                pw = st.text_input("Mật khẩu (ít nhất 6 ký tự, hoặc mã PIN 6 số)", type="password")
                 pw2 = st.text_input("Nhập lại mật khẩu", type="password")
                 commit = st.checkbox("Tôi cam kết chỉ dùng SafeWatch khi người được giám sát đã được giải thích và đồng "
                                      "ý; không lắp đặt bí mật; giữ kín mật khẩu.")
