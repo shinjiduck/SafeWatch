@@ -69,7 +69,10 @@ auth.init_db()
 privacy.init_db()
 # Link "Tôi đã nhận" trong tin nhắn: secrets ghi localhost / để trống thì dùng địa chỉ thật mà người dùng đang mở app
 # (VD https://safewatch.streamlit.app) — người nhận mở link trên điện thoại mới vào được.
-if notifier.RUNNING is not None:
+# hasattr: Streamlit Cloud nạp main.py mới trước khi nạp lại notifier / bộ gửi đang chạy (bản cũ chưa có hàm này)
+# -> bỏ qua đến lần khởi động lại, không làm sập cả app.
+if (notifier.RUNNING is not None and hasattr(notifier, "choose_public_base_url")
+        and hasattr(notifier.RUNNING, "configured_base_url")):
     try:
         _visitor_url = st.context.url
     except Exception:  # noqa: BLE001
@@ -199,6 +202,7 @@ if _user is None:
 _PAGES = {
     "Giám sát": [
         ("views/live_view.py", "Trực tiếp", auth.MONITOR),
+        ("views/video_demo.py", "Thử bằng video", auth.MONITOR),
         ("views/alerts.py", "Cảnh báo", auth.ACK),
         ("views/history.py", "Nhật ký", auth.VIEW_HISTORY),
     ],

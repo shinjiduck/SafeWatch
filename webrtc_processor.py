@@ -35,7 +35,11 @@ from hand_features import SIGNAL_SEQUENCE_LENGTH
 
 class DetectionVideoProcessor(VideoProcessorBase):
     def __init__(self, fall_model, hand_model, signal_model, pose_detector, hand_detector, config,
-                 multi_detector=None):
+                 multi_detector=None, clock=None, sink=None):
+        # clock / sink: chỉ dùng khi phân tích video tải lên (video_demo.py) — đồng hồ theo thời gian trong video, sự
+        # kiện / cảnh báo ghi vào sink thay vì nhật ký thật và người liên hệ. Camera trực tiếp để None (như cũ).
+        self._clock = clock
+        self._sink = sink
         self.fall_model = fall_model
         self.hand_model = hand_model
         self.signal_model = signal_model
@@ -58,7 +62,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
             "fall_escalated": False,
             "sos_alert": False,
             "fps": 0.0,
-            "monitor_start_time": time.time(),
+            "monitor_start_time": self._now(),
         }
 
         self.fall_lm_window = deque(maxlen=engine.FALL_TIMESTEPS)
@@ -80,14 +84,14 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.alert_until = 0.0
         self.was_alerting = False
         self.frame_count = 0
-        self.prev_time = time.time()
+        self.prev_time = self._now()
 
         # Trạng thái quan sát (yêu cầu cải tiến số 3). recv() chạy trên thread
         # của streamlit-webrtc, tick() chạy trên thread script chính -> cùng
         # đụng vào state nên dùng chung 1 lock.
         self.state_lock = threading.Lock()
-        self.last_frame_time = time.time()
-        self.pose_last_seen = time.time()
+        self.last_frame_time = self._now()
+        self.pose_last_seen = self._now()
         self.observation_lost = False
         self.camera_lost = False
         # Đứng quá gần / bị khuất / rời khung hình -> nhắc bằng chữ + giọng nói (framing.py).
@@ -123,8 +127,23 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.paused_until = 0.0
         self._paused = False
 
-        event_log.init_db()
-        notifier.init_db()
+        if sink is None:
+            event_log.init_db()
+            notifier.init_db()
+
+    # Tra module lúc gọi (không giữ sẵn hàm) để các bài kiểm thử thay webrtc_processor.time / notifier.raise_alert
+    # vẫn có tác dụng.
+    def _now(self):
+        return self._clock() if self._clock is not None else time.time()
+
+    def _log_event(self, *args):
+        (self._sink or event_log).log_event(*args)
+
+    def _log_status(self, *args):
+        (self._sink or event_log).log_status(*args)
+
+    def _raise_alert(self, *args, **kwargs):
+        (self._sink or notifier).raise_alert(*args, **kwargs)
 
     def get_state(self):
         with self.lock:
@@ -138,7 +157,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
         cfg = self.config
-        now = time.time()
+        now = self._now()
 
         if now < self.paused_until:
             return self._paused_frame(img, now)
@@ -161,13 +180,13 @@ class DetectionVideoProcessor(VideoProcessorBase):
             self.last_frame_time = now
             if self.camera_lost:
                 self.camera_lost = False
-                event_log.log_status("Camera đã khôi phục", "Nhận lại hình ảnh từ camera")
+                self._log_status("Camera đã khôi phục", "Nhận lại hình ảnh từ camera")
             if should_process:
                 img = self._process_frame(img, now)
                 # Thời gian AI xử lý không phải là camera mất hình: camera vẫn gửi khung trong lúc đó. Không ghi lại mốc
                 # này thì tick() (đang chờ khoá) thấy "đã > CAMERA_STALL_SECONDS không có khung" khi AI chậm (máy bận)
                 # -> báo nhầm "Mất tín hiệu camera" và xoá cửa sổ đang theo dõi (tests/test_observation_safety.py).
-                self.last_frame_time = time.time()
+                self.last_frame_time = self._now()
             self._update_alerts(now)
 
         fps = 1 / (now - self.prev_time) if now > self.prev_time else 0
@@ -198,13 +217,13 @@ class DetectionVideoProcessor(VideoProcessorBase):
         """Gọi định kỳ từ thread script chính (views/live_view.py). Khi camera
         ngừng gửi frame thì recv() không còn được gọi, nên phần kiểm tra mất
         camera + đếm giờ sau ngã phải chạy được ở đây, độc lập với frame."""
-        now = time.time() if now is None else now
+        now = self._now() if now is None else now
         with self.state_lock:
             if not self.camera_lost and now - self.last_frame_time >= engine.CAMERA_STALL_SECONDS:
                 self.camera_lost = True
                 self._reset_observation_windows()
                 self.fall_label = engine.NO_DATA_LABEL
-                event_log.log_status(
+                self._log_status(
                     "Mất tín hiệu camera",
                     f"Không nhận được frame nào trong {engine.CAMERA_STALL_SECONDS:.0f}s",
                 )
@@ -263,7 +282,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                         self.fall_label = label
                 if self.observation_lost:
                     self.observation_lost = False
-                    event_log.log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")
+                    self._log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")
                 if cfg["show_overlay"]:
                     img = engine.draw_pose(img, pose_results)
             else:
@@ -282,7 +301,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                         self.exit_side = framing.exit_side(self.last_landmarks) or "middle"
                         self._check_vanished_fall()
                         self.framing.person_lost(now, quiet=self._busy(now))
-                    event_log.log_status(
+                    self._log_status(
                         "Mất quan sát người",
                         f"Không thấy landmark tư thế trong {engine.POSE_LOST_SECONDS:.1f}s"
                         + {None: "", "left": " — đi ra mép trái", "right": " — đi ra mép phải",
@@ -370,7 +389,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                         and framing.vanished_after_drop(list(person.hips), person.last_seen, person.lm)):
                     person.fall.mark_down()
                     person.down_since, person.vanish_suspected = person.last_seen, True
-                    event_log.log_event(
+                    self._log_event(
                         "Nghi ngã khuất sau vật cản",
                         f"Người #{person.id}: hông tụt nhanh rồi mất dấu giữa khung hình — đang xác minh",
                     )
@@ -387,7 +406,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
             self.framing.observe(status, now, quiet=self._busy(now) or bool(raised))
             if self.observation_lost:
                 self.observation_lost = False
-                event_log.log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")
+                self._log_status("Quan sát đã khôi phục", "Thấy lại người trong khung hình")
             if self.config["show_overlay"]:
                 img = multi_person.draw_people(img, visible)
         elif not self.observation_lost and now - self.pose_last_seen >= engine.POSE_LOST_SECONDS:
@@ -395,7 +414,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
             if self.last_landmarks is not None:
                 self.exit_side = framing.exit_side(self.last_landmarks) or "middle"
                 self.framing.person_lost(now, quiet=self._busy(now))
-            event_log.log_status("Mất quan sát người", f"Không thấy ai trong {engine.POSE_LOST_SECONDS:.1f}s")
+            self._log_status("Mất quan sát người", f"Không thấy ai trong {engine.POSE_LOST_SECONDS:.1f}s")
 
         down = self.people.down()
         if down:
@@ -424,7 +443,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
         self.fall_down_since = self.pose_last_seen
         self.was_fall_monitoring = True
         self.episode_escalated = False
-        event_log.log_event("Nghi ngã khuất sau vật cản", "Hông tụt nhanh rồi mất dấu giữa khung hình — đang xác minh")
+        self._log_event("Nghi ngã khuất sau vật cản", "Hông tụt nhanh rồi mất dấu giữa khung hình — đang xác minh")
 
     SOS_HOLD_SECONDS = 2.0
 
@@ -457,7 +476,7 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 pass
             else:
                 if self.was_fall_monitoring and not self.episode_escalated:
-                    event_log.log_event("Ngã - đã phục hồi", "Đứng lên lại trong lúc theo dõi, không báo động")
+                    self._log_event("Ngã - đã phục hồi", "Đứng lên lại trong lúc theo dõi, không báo động")
                     self.recovered_message_until = now + 4.0
                 self.was_fall_monitoring = False
                 self.fall_down_since = None
@@ -492,18 +511,18 @@ class DetectionVideoProcessor(VideoProcessorBase):
                 if self.people is not None and self.others_present:
                     note += f" — có {self.others_present} người khác trong khung hình"
                 details = f"Sau {cfg['fall_grace_seconds']:.0f}s theo dõi{note}"
-                event_log.log_event("Ngã (không đứng lên lại)", details)
+                self._log_event("Ngã (không đứng lên lại)", details)
                 # detected_at = lúc model thấy ngã lần đầu, để bảng thời gian
                 # tách được đoạn "chờ xác minh" khỏi đoạn gửi/nhận.
-                notifier.raise_alert("Ngã (không đứng lên lại)", details, detected_at=self.fall_down_since, now=now)
+                self._raise_alert("Ngã (không đứng lên lại)", details, detected_at=self.fall_down_since, now=now)
             elif cfg["enable_hand"] and self._hand_sos_active(now):
                 details = f"Độ tin cậy {self.hand_confidence * 100:.0f}%"
-                event_log.log_event(self.hand_label, details)
-                notifier.raise_alert(f"Cử chỉ SOS: {self.hand_label}", details, now=now)
+                self._log_event(self.hand_label, details)
+                self._raise_alert(f"Cử chỉ SOS: {self.hand_label}", details, now=now)
             elif cfg["enable_hand"] and cfg["enable_signal"] and self.signal_detected:
                 details = f"Xác suất {self.signal_probability * 100:.0f}%"
-                event_log.log_event("Signal for Help (chuỗi động tác)", details)
-                notifier.raise_alert("Signal for Help (chuỗi động tác)", details, now=now)
+                self._log_event("Signal for Help (chuỗi động tác)", details)
+                self._raise_alert("Signal for Help (chuỗi động tác)", details, now=now)
         self.was_alerting = sos_alert
 
         with self.lock:

@@ -35,6 +35,8 @@ digraph G {
 }""")
     st.dataframe(pd.DataFrame([
         ["Video / khung hình", "Bộ nhớ, lúc xử lý", "Không lưu", "Không ai"],
+        ["Video tải lên ở trang Thử bằng video", "File tạm lúc phân tích; kết quả trong phiên đăng nhập",
+         "File xoá ngay khi xong; kết quả mất khi đăng xuất / đóng trang", "Chỉ người tải lên"],
         ["Khung xương", "Bộ nhớ, cửa sổ 1,5 s", "Ghi đè liên tục", "Không ai"],
         ["Sự cố, trạng thái, cảnh báo, lần gửi", "events.db", f"{privacy.retention_days()} ngày rồi tự xoá",
          "Theo vai trò (trang Tài khoản & quyền)"],
@@ -180,7 +182,8 @@ with card("protect"):
 - **Xoá thật:** SQLite `secure_delete` ghi đè số 0 lên dữ liệu bị xoá, rồi `VACUUM` dọn khỏi file.
 - **Phân quyền** kiểm tra ở cả menu lẫn từng thao tác; bị từ chối cũng được ghi nhật ký.
 - **Link xác nhận** trong tin nhắn chỉ xác nhận đúng 1 cảnh báo, hết hạn sau 24 giờ, không mở được phần còn lại.
-- **Không lưu hình ảnh:** có ca kiểm thử tự động chứng minh mã không ghi ảnh hay video.
+- **Không lưu hình ảnh:** có ca kiểm thử tự động chứng minh mã không ghi ảnh hay video từ camera. Video tự tải lên
+  ở trang Thử bằng video chỉ nằm trong file tạm lúc phân tích rồi bị xoá.
 - Gợi ý dán biển “Khu vực có camera hỗ trợ an toàn” để khách / người giúp việc biết.
 """)
 

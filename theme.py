@@ -61,6 +61,7 @@ TONES = {  # (nền nhạt, màu nét) — màu icon theo ý nghĩa của chỉ 
 # Biểu tượng nét 24x24 (theo phong cách Lucide, giấy phép ISC). Dùng: svg("bell").
 ICONS = {
     "video": '<path d="m16 13 5.2 3.5a.5.5 0 0 0 .8-.4V7.9a.5.5 0 0 0-.8-.4L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+    "upload": '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',
     "bell": '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
     "list": '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/>',
     "phone": '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
@@ -123,7 +124,7 @@ def _mask_url(name):
 
 
 # Icon menu bên trái theo đường dẫn trang (trang mặc định Trực tiếp không có đường dẫn -> icon mặc định = video).
-_NAV_ICONS = {"alerts": "bell", "history": "list", "emergency_contacts": "phone", "camera_management": "camera",
+_NAV_ICONS = {"video_demo": "upload", "alerts": "bell","history": "list", "emergency_contacts": "phone", "camera_management": "camera",
               "settings": "settings", "dashboard": "chart", "evaluation": "flask", "version": "info", "account": "user",
               "users": "users", "privacy_center": "shield"}
 _NAV_ICON_CSS = "\n".join(
@@ -529,7 +530,8 @@ def fmt_duration(seconds):
 
 # Tiêu đề trang -> (nhóm menu, tên mục) cho dòng đường dẫn ở đầu trang.
 _CRUMBS = {
-    "Giám sát trực tiếp": ("Giám sát", "Trực tiếp"), "Cảnh báo": ("Giám sát", "Cảnh báo"),
+    "Giám sát trực tiếp": ("Giám sát", "Trực tiếp"), "Thử bằng video": ("Giám sát", "Thử bằng video"),
+    "Cảnh báo": ("Giám sát", "Cảnh báo"),
     "Nhật ký": ("Giám sát", "Nhật ký"), "Người liên hệ": ("Thiết lập", "Người liên hệ"),
     "Camera & lắp đặt": ("Thiết lập", "Camera & lắp đặt"), "Cấu hình": ("Thiết lập", "Cấu hình"),
     "Tổng quan": ("Báo cáo", "Tổng quan"), "Kiểm định": ("Báo cáo", "Kiểm định"), "Hồ sơ": ("Tài khoản", "Hồ sơ"),

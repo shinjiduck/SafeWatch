@@ -109,13 +109,28 @@ def test_khong_con_ban_app_cu():
 def test_khong_luu_hinh_anh_camera():
     """README §10: hình ảnh camera không được lưu hay đính kèm. Mã của app (ngoài training/) không có lệnh ghi ảnh/video."""
     bad = re.compile(r"cv2\.imwrite|VideoWriter|\.save\(|imencode")
+    # Ngoại lệ duy nhất: trang Thử bằng video tạo video kết quả + ảnh khoảnh khắc từ video NGƯỜI DÙNG TẢI LÊN (không
+    # phải camera), trong file tạm bị xoá ngay và trong bộ nhớ phiên — kiểm riêng ở test_video_tai_len_khong_luu_lai.
+    allowed = {"video_demo.py"}
     for dirpath, dirs, files in os.walk(ROOT):
         dirs[:] = [d for d in dirs if d not in ("training", "tests", ".git", ".venv", "__pycache__", "landing")]
         for f in files:
-            if f.endswith(".py"):
+            if f.endswith(".py") and not (dirpath == ROOT and f in allowed):
                 text = open(os.path.join(dirpath, f), encoding="utf-8").read()
                 m = bad.search(text)
                 assert not m, f"{os.path.relpath(os.path.join(dirpath, f), ROOT)} có '{m.group(0)}'"
+
+
+def test_video_tai_len_khong_luu_lai():
+    """Trang Thử bằng video: video tải lên và video kết quả chỉ nằm trong file tạm, bị xoá ngay sau khi xử lý; không
+    đụng tới camera trực tiếp; trang ghi rõ điều này cho người dùng."""
+    core, page = _read("video_demo.py"), _read("views/video_demo.py")
+    assert "tempfile.mkstemp" in core and "os.remove(out_path)" in core, "video kết quả phải là file tạm và bị xoá"
+    assert "tempfile.mkstemp" in page and "os.remove(path)" in page and "finally:" in page, \
+        "video tải lên phải là file tạm, xoá trong finally"
+    assert "webrtc_streamer" not in core + page, "trang video không được dùng camera trực tiếp"
+    assert "bị xoá ngay" in page, "trang phải nói cho người dùng biết video bị xoá"
+    assert "Video tải lên" in _read("views/privacy_center.py"), "bảng dữ liệu ở trang Quyền riêng tư phải có dòng này"
 
 
 def test_cau_khong_thay_the_nguoi_cham_soc_o_ca_3_noi():

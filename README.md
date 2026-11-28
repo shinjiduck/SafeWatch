@@ -164,6 +164,7 @@ Sau khi điền thì khởi động lại app. Vào **Người liên hệ** thê
 | Trang | Dùng để |
 |---|---|
 | **Giám sát → Trực tiếp** | Bật camera, xem trạng thái (An toàn / Đang theo dõi sau ngã / Khẩn cấp / Không có người), thời gian giám sát |
+| **Giám sát → Thử bằng video** | Tải lên video quay sẵn (tối đa 3 phút). SafeWatch phân tích bằng đúng bộ nhận diện của camera trực tiếp, cho xem video có khung xương + trạng thái, diễn biến theo thời gian, lúc phát hiện ngã, lúc gửi cảnh báo. Chọn được thời gian xác minh rút ngắn cho video ngắn; tuỳ chọn gửi cảnh báo thử (ghi rõ GIẢ LẬP). Dùng khi không demo trực tiếp được |
 | **Giám sát → Cảnh báo** | Cảnh báo chờ xác nhận, chi tiết gửi từng kênh, gửi SMS thử, giả lập sự kiện, bảng thời gian xuất CSV |
 | **Giám sát → Nhật ký** | Lịch sử sự cố và thay đổi trạng thái hệ thống |
 | **Thiết lập → Người liên hệ** | Thêm người nhận cảnh báo, thứ tự ưu tiên, Telegram Chat ID |
@@ -194,10 +195,11 @@ Muốn chạy lại kiểm định mô hình thì cần tải bộ dữ liệu v
 
 ```
 main.py                 Điểm vào: menu, logo, bộ gửi cảnh báo chạy nền, trang xác nhận /?ack=
-views/                  Các trang: live_view, alerts, history, emergency_contacts,
+views/                  Các trang: live_view, video_demo, alerts, history, emergency_contacts,
                         camera_management, settings, dashboard, evaluation, version, account,
                         users, privacy_center
 webrtc_processor.py     Xử lý từng khung hình (khung xương, ngã, cử chỉ, trạng thái)
+video_demo.py           Phân tích video tải lên bằng đúng bộ xử lý trên (đồng hồ theo video, không ghi nhật ký thật)
 detection_engine.py     Nạp model, cấu hình mặc định, bộ theo dõi ngã v2
 fall_v2.py              Model ngã v2 (đặc trưng chuỗi khung xương)
 framing.py              Quá gần / khuất / rời khung hình, giọng nói, luật ngã sau vật cản
@@ -245,6 +247,8 @@ PRODUCT.md, DESIGN.md   Mô tả sản phẩm và hệ thống thiết kế giao
 - **Không có video hay dữ liệu huấn luyện nào trong repo.** Các bộ dữ liệu (URFD, CAUCAFall, GMDCSA-24, Le2i, OmniFall, Charades…) phải tải từ nguồn gốc, theo giấy phép của từng bộ.
 - **Charades** chỉ được dùng để *đánh giá*, theo giấy phép của bộ dữ liệu. Repo chỉ công bố con số tổng hợp, không phân phối lại dữ liệu hay dữ liệu dẫn xuất.
 - **Hình ảnh camera** chỉ dùng để nhận diện, không được lưu lại hay đính kèm trong cảnh báo (`test_khong_luu_hinh_anh_camera`).
+  Video tự tải lên ở trang Thử bằng video chỉ nằm trong file tạm lúc phân tích rồi bị xoá; kết quả chỉ giữ trong phiên
+  đăng nhập (`test_video_tai_len_khong_luu_lai`).
 - **Mật khẩu / PIN** băm bằng scrypt kèm salt riêng; không lưu dạng gốc.
 - **Số điện thoại, email, Telegram Chat ID, hồ sơ sức khoẻ** mã hoá AES (Fernet) khi lưu. Khoá dữ liệu đặt ở `DATA_KEY` (secrets) hoặc tự tạo ở `data/.data_key` (đã trong `.gitignore`). **Mất khoá = mất các trường đã mã hoá.**
 - **Xoá là xoá thật:** SQLite `secure_delete` ghi đè dữ liệu bị xoá, rồi `VACUUM`. Dữ liệu quá hạn lưu tự xoá mỗi giờ.
