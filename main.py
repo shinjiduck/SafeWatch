@@ -67,6 +67,15 @@ notifier.RUNNING = start_notifier()
 # Các lệnh đều "nếu chưa có thì tạo", tốn khoảng 1 ms.
 auth.init_db()
 privacy.init_db()
+# Link "Tôi đã nhận" trong tin nhắn: secrets ghi localhost / để trống thì dùng địa chỉ thật mà người dùng đang mở app
+# (VD https://safewatch.streamlit.app) — người nhận mở link trên điện thoại mới vào được.
+if notifier.RUNNING is not None:
+    try:
+        _visitor_url = st.context.url
+    except Exception:  # noqa: BLE001
+        _visitor_url = None
+    notifier.RUNNING.public_base_url = notifier.choose_public_base_url(
+        notifier.RUNNING.configured_base_url, notifier.RUNNING.public_base_url, _visitor_url)
 
 # Link xác nhận trong email / SMS / Telegram: <PUBLIC_BASE_URL>/?ack=<mã> -> trang xác nhận riêng, KHÔNG cần đăng
 # nhập (người nhà đang gấp). Link chỉ xác nhận đúng cảnh báo đó và hết hạn sau notifier.LINK_TTL_SECONDS.

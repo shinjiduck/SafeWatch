@@ -359,6 +359,33 @@ def email_html(alert, ack_url=None):
 </table></td></tr></table></body></html>"""
 
 
+# ------------------------------------------------------------------ địa chỉ web cho link "Tôi đã nhận"
+
+
+def _is_local_url(url):
+    from urllib.parse import urlsplit
+
+    host = (urlsplit(url or "").hostname or "").lower()
+    return host in ("", "localhost", "127.0.0.1", "::1", "0.0.0.0")
+
+
+def choose_public_base_url(configured, current, visitor_url):
+    """Địa chỉ dùng trong link "Tôi đã nhận" của email / SMS / Telegram.
+    - Cấu hình PUBLIC_BASE_URL là tên miền thật -> dùng đúng giá trị đó.
+    - Cấu hình trống hoặc là localhost (người nhận mở trên điện thoại sẽ không vào được) -> dùng địa chỉ mà người
+      vừa mở app đang dùng (VD https://safewatch.streamlit.app), trừ khi địa chỉ đó cũng là localhost.
+    """
+    from urllib.parse import urlsplit
+
+    if configured and not _is_local_url(configured):
+        return configured
+    if visitor_url:
+        parts = urlsplit(visitor_url)
+        if parts.scheme and parts.netloc and not _is_local_url(visitor_url):
+            return f"{parts.scheme}://{parts.netloc}"
+    return current or configured
+
+
 # ------------------------------------------------------------------ Dispatcher
 
 
@@ -370,6 +397,7 @@ class Dispatcher:
         self.ack_timeout = ack_timeout
         self.max_rounds = max_rounds
         self.public_base_url = (public_base_url or "").rstrip("/") or None
+        self.configured_base_url = self.public_base_url  # giá trị trong secrets (có thể là localhost / trống)
         self._thread = None
         self._stop = threading.Event()
         self.last_error = None

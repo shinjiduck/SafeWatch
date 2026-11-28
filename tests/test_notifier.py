@@ -202,6 +202,16 @@ def test_esms_gui_dung_tham_so_va_bao_loi_ro_rang():
         notifier._post = original
 
 
+def test_link_xac_nhan_dung_dia_chi_that_thay_cho_localhost():
+    pick = notifier.choose_public_base_url
+    cloud = "https://safewatch.streamlit.app/users"
+    assert pick("http://localhost:8501", None, cloud) == "https://safewatch.streamlit.app", "localhost thì dùng địa chỉ thật"
+    assert pick(None, None, cloud) == "https://safewatch.streamlit.app", "để trống cũng vậy"
+    assert pick("https://nha-toi.vn", None, cloud) == "https://nha-toi.vn", "đã đặt tên miền thật thì giữ nguyên"
+    assert pick("http://localhost:8501", None, "http://localhost:8501/") == "http://localhost:8501", "chạy trên máy"
+    assert pick("http://localhost:8501", "https://safewatch.streamlit.app", "http://localhost:8501/") ==         "https://safewatch.streamlit.app", "đã biết địa chỉ thật thì không lùi về localhost"
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     failed = 0
